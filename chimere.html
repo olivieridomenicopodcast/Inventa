@@ -1243,7 +1243,7 @@ function newGameState(seed,nTowns){
     player:{x:start[0],y:start[1],fx:start[0],fy:start[1],mt:1,dur:MOVE_T,dir:'down',frame:0,pal:{skin:'#f2c9a0',hair:'#3a2418',shirt:'#e05a3a',pants:'#2a3a5a',hat:'#e9efff',long:false}},
     team:[],bag:{sfera:6,pozione:3,super:0},money:300,
     dex:{seen:[],caught:[]},defeated:[],picked:[],flags:{champion:false,labGift:false,houseGifts:[]},
-    lastHeal:[3,14],steps:0,time:0,zone:null,busy:false,started:false,visited:[]};
+    lastHeal:[3,14],steps:0,time:0,zone:null,busy:false,started:false,visited:[],shareExp:true};
   g.ents=map.ents.map(e=>({...e,fx:e.x,fy:e.y,mt:1,dur:MOVE_T,frame:0}));
   return g;
 }
@@ -1252,7 +1252,7 @@ function seeMon(id){if(!G.dex.seen.includes(id))G.dex.seen.push(id);}
 function catchMon(id){seeMon(id);if(!G.dex.caught.includes(id))G.dex.caught.push(id);}
 
 function saveData(){
-  return{v:1,seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited};
+  return{v:1,seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited,shareExp:G.shareExp};
 }
 function save(){
   if(!G||!G.started)return;
@@ -1309,7 +1309,7 @@ function loadGame(seed,nTowns){
 function gameFromSave(o,seed,nTowns){
   const g=newGameState(seed,nTowns);
   g.player.x=g.player.fx=o.p.x;g.player.y=g.player.fy=o.p.y;g.player.dir=o.p.dir;
-  g.team=(o.team||[]).filter(m=>m&&g.W.forms[m.form]&&m.moves);g.visited=o.visited||[];g.bag=o.bag;g.money=o.money;g.dex=o.dex;g.defeated=o.defeated;g.picked=o.picked;g.flags=o.flags;g.lastHeal=o.lastHeal;g.steps=o.steps;g.time=o.time||0;
+  g.team=(o.team||[]).filter(m=>m&&g.W.forms[m.form]&&m.moves);g.visited=o.visited||[];g.shareExp=o.shareExp!==false;g.bag=o.bag;g.money=o.money;g.dex=o.dex;g.defeated=o.defeated;g.picked=o.picked;g.flags=o.flags;g.lastHeal=o.lastHeal;g.steps=o.steps;g.time=o.time||0;
   g.ents=g.ents.filter(e=>!(e.kind==='item'&&g.picked.includes(e.id)));
   {const px=clamp(g.player.x|0,0,g.map.W-1),py=clamp(g.player.y|0,0,g.map.H-1);const bad=SOLID.has(g.map.tiles[py*g.map.W+px]);const q=bad?[3,13]:[px,py];g.player.x=g.player.fx=q[0];g.player.y=g.player.fy=q[1];}
   g.started=true;
@@ -1588,7 +1588,8 @@ async function shopFlow(){
   save();
 }
 class PartyScene{
-  constructor(opts){this.o=opts||{};this.sel=0;this.res=null;this.t=0;this.mode=this.o.mode||'view';this.sum=null;}
+  constructor(opts){this.o=opts||{};this.sel=0;this.res=null;this.t=0;this.mode=this.o.mode||'view';this.sum=null;this.moveFrom=null;this.busy=false;
+    if(this.mode==='pick'&&this.o.filter){const i=G.team.findIndex((m,ix)=>this.o.filter(m,ix));if(i>=0)this.sel=i;}}
   update(dt){this.t+=dt;}
   onKey(k){
     const n=G.team.length;
@@ -1599,9 +1600,23 @@ class PartyScene{
       if(this.mode==='pick'){
         if(this.o.filter&&!this.o.filter(G.team[this.sel],this.sel)){Snd.sfx('bump');return;}
         Snd.sfx('ok');this.finish(this.sel);
-      }else{this.sum=true;this.sumIdx=this.sel;Snd.sfx('ok');}
+      }else if(this.moveFrom!=null){
+        if(this.moveFrom!==this.sel){const a=this.moveFrom,b=this.sel;[G.team[a],G.team[b]]=[G.team[b],G.team[a]];Snd.sfx('gotcha');}
+        else Snd.sfx('back');
+        this.moveFrom=null;
+      }else{Snd.sfx('ok');this.openMenu();}
     }
-    else if(k==='b'||k==='start'){if(this.o.cancel===false){Snd.sfx('bump');return;}Snd.sfx('back');this.finish(-1);}
+    else if(k==='b'||k==='start'){
+      if(this.moveFrom!=null){this.moveFrom=null;Snd.sfx('back');return;}
+      if(this.o.cancel===false){Snd.sfx('bump');return;}Snd.sfx('back');this.finish(-1);
+    }
+  }
+  async openMenu(){
+    this.busy=true;
+    const c=await listMenu([{label:'Dettagli'},{label:'Sposta'},{label:'Indietro'}],{title:G.W.forms[G.team[this.sel].form].name.slice(0,10),w:96,x:VW-102,y:30});
+    this.busy=false;
+    if(c===0){this.sum=true;this.sumIdx=this.sel;}
+    else if(c===1){if(G.team.length<2){await say('Hai una sola Chimera: non c\'è nessuno con cui scambiare!');}else this.moveFrom=this.sel;}
   }
   onRepeat(k){this.onKey(k);}
   finish(v){const j=scenes.indexOf(this);if(j>=0)scenes.splice(j,1);this.res(v);}
@@ -1614,14 +1629,15 @@ class PartyScene{
     G.team.forEach((m,i)=>{
       const f=W.forms[m.form],st=monStats(m);
       const y=18+i*25,sel=i===this.sel;
-      ctx.fillStyle=m.hp<=0?'#3a1620':sel?'#24347a':'#161e48';ctx.fillRect(6,y,VW-12,23);
-      ctx.strokeStyle=sel?'#ffd23d':'#3a4680';ctx.strokeRect(6.5,y+.5,VW-13,22);
+      const mv=this.moveFrom===i;
+      ctx.fillStyle=m.hp<=0?'#3a1620':mv?'#5a3a14':sel?'#24347a':'#161e48';ctx.fillRect(6,y,VW-12,23);
+      ctx.strokeStyle=mv?'#ff9a3d':sel?'#ffd23d':'#3a4680';ctx.strokeRect(6.5,y+.5,VW-13,22);
       const sp=creatureSprite(W,f,false);ctx.drawImage(sp,10,y-1,24,24);
       txt(f.name,38,y+4,m.hp<=0?'#8a6a78':'#fff');txt('Lv'+m.lv,38,y+14,'#a8b4d8');
       hpBar(104,y+6,80,m.hp/st.hp);txt(`${m.hp}/${st.hp}`,VW-12,y+13,'#cdd6f4','right');
       f.types.forEach((t,j)=>typeChip(104+j*29,y+13,W,t));
     });
-    const hint=this.mode==='pick'?'A: scegli   B: indietro':'A: dettagli   B: esci';
+    const hint=this.mode==='pick'?'A: scegli   B: indietro':this.moveFrom!=null?'Dove la metti?  B: annulla':'A: opzioni   B: esci';
     txt(hint,VW/2,VH-11,'#8f9bbd','center');
   }
   drawSum(i){
@@ -1713,17 +1729,18 @@ async function bagUse(){
 }
 async function pauseMenu(){
   while(true){
-    const items=[{label:'Squadra'},{label:'Zaino'},{label:'Mappa'},{label:'Chimeredex'},{label:'Salva'},{label:'Esporta'},{label:'Suono: '+(Snd.on?'on':'off')},{label:'Titolo'},{label:'Chiudi'}];
-    const idx=await listMenu(items,{title:'START',w:108,x:VW-114,y:6});
-    if(idx<0||idx===8)return;
+    const items=[{label:'Squadra'},{label:'Zaino'},{label:'Mappa'},{label:'Chimeredex'},{label:'Salva'},{label:'Esporta'},{label:'Condividi PE: '+(G.shareExp?'on':'off')},{label:'Suono: '+(Snd.on?'on':'off')},{label:'Titolo'},{label:'Chiudi'}];
+    const idx=await listMenu(items,{title:'START',w:124,x:VW-130,y:6});
+    if(idx<0||idx===9)return;
     if(idx===0)await partyView();
     else if(idx===1)await bagUse();
     else if(idx===2){await mapFlow();return;}
     else if(idx===3)await dexView();
     else if(idx===4){save();Snd.sfx('gotcha');await say('Avventura salvata.');}
     else if(idx===5)await exportFlow();
-    else if(idx===6){Snd.init();Snd.setOn(!Snd.on);}
-    else if(idx===7){
+    else if(idx===6){G.shareExp=!G.shareExp;Snd.sfx('ok');await say(G.shareExp?'Condividi PE attivo: anche le Chimere che restano in squadra, senza combattere, ottengono metà dei PE.':'Condividi PE disattivato: solo le Chimere che combattono ottengono PE.');}
+    else if(idx===7){Snd.init();Snd.setOn(!Snd.on);}
+    else if(idx===8){
       const c=await ask('Tornare al titolo? Salviamo prima.',['Sì','No']);
       if(c===0){save();await fadeTo(1,300);gotoTitle();await fadeTo(0,300);return 'title';}
     }
@@ -1956,7 +1973,7 @@ const BATTLE_BG=[
 const mkB=(foeParty,opts)=>{
   const z=G.zone||G.map.zones[0];
   const bgc=BATTLE_BG[z.biome]||BATTLE_BG[0];
-  return{foeParty,foe:null,me:null,hpFoe:0,hpMe:0,text:null,shown:0,menu:null,waitKey:null,parts:[],flashA:0,ball:null,
+  return{foeParty,foe:null,me:null,hpFoe:0,hpMe:0,text:null,shown:0,menu:null,waitKey:null,parts:[],part:new Set(),flashA:0,ball:null,
     bg:[bgc[0],bgc[1],bgc[2],bgc[3],bgc[4]],opts,wild:!!opts.wild,trainer:opts.trainer||null,
     foePos:{x:190,y:102,dx:0,dy:0,s:1,a:1,flash:0,white:0},mePos:{x:66,y:132,dx:0,dy:0,s:1,a:1,flash:0,white:0},foeHidden:false,meHidden:false};
 };
@@ -2064,39 +2081,52 @@ function pickFoeMove(b){
   scored.sort((a,b)=>b[1]-a[1]);
   return Math.random()<.78?scored[0][0]:pick(Math.random,opts.map(o=>o));
 }
-async function gainXp(b,faintedFoe){
-  const W=G.W,me=b.me;if(me.hp<=0)return;
-  const f=W.forms[faintedFoe.form];
-  const xp=Math.max(1,Math.floor(f.yield*faintedFoe.lv/7*(b.trainer?1.5:1)));
-  await btext(`${monName(me)} ottiene ${xp} PE!`,750,false);
-  me.xp+=xp;
-  while(me.lv<60&&me.xp>=xpFor(me.lv+1)){
-    const old=monStats(me);
-    me.lv++;const st=monStats(me);
-    me.hp+=st.hp-old.hp;
-    Snd.sfx('up');b.hpMe=me.hp;
-    await btext(`${monName(me)} sale al livello ${me.lv}!`,900,false);
-    // nuove mosse
-    const line=W.lines[W.forms[me.form].line];
-    for(const [lv,id] of line.learn.filter(x=>x[0]===me.lv)){
-      if(me.moves.some(mm=>mm.id===id))continue;
+async function awardXp(b,m,xp,quiet){
+  const W=G.W;
+  if(m.lv>=60||m.hp<=0)return;
+  if(!quiet)await btext(`${monName(m)} ottiene ${xp} PE!`,750,false);
+  m.xp+=xp;
+  while(m.lv<60&&m.xp>=xpFor(m.lv+1)){
+    const old=monStats(m);
+    m.lv++;const st=monStats(m);
+    m.hp+=st.hp-old.hp;
+    Snd.sfx('up');if(m===b.me)b.hpMe=m.hp;
+    await btext(`${monName(m)} sale al livello ${m.lv}!`,900,false);
+    const line=W.lines[W.forms[m.form].line];
+    for(const [lv,id] of line.learn.filter(x=>x[0]===m.lv)){
+      if(m.moves.some(mm=>mm.id===id))continue;
       const nm=W.moves[id].name;
-      if(me.moves.length<4){me.moves.push({id,pp:W.moves[id].pp});await btext(`${monName(me)} impara ${nm}!`,900,false);}
+      if(m.moves.length<4){m.moves.push({id,pp:W.moves[id].pp});await btext(`${monName(m)} impara ${nm}!`,900,false);}
       else{
-        await btext(`${monName(me)} vuole imparare ${nm}, ma conosce già 4 mosse.`,0,true);
-        const items=me.moves.map(mm=>({label:W.moves[mm.id].name.slice(0,16),chip:W.moves[mm.id].type})).concat([{label:'Non imparare'}]);
+        await btext(`${monName(m)} vuole imparare ${nm}, ma conosce già 4 mosse.`,0,true);
+        const items=m.moves.map(mm=>({label:W.moves[mm.id].name.slice(0,16),chip:W.moves[mm.id].type})).concat([{label:'Non imparare'}]);
         const ix=await bmenu(items,{w:150,x:VW-156,y:VH-44-items.length*13-14});
-        if(ix>=0&&ix<4){const old=W.moves[me.moves[ix].id].name;me.moves[ix]={id,pp:W.moves[id].pp};await btext(`${monName(me)} dimentica ${old} e impara ${nm}!`,0,true);}
-        else await btext(`${monName(me)} non impara ${nm}.`,700,false);
+        if(ix>=0&&ix<4){const od=W.moves[m.moves[ix].id].name;m.moves[ix]={id,pp:W.moves[id].pp};await btext(`${monName(m)} dimentica ${od} e impara ${nm}!`,0,true);}
+        else await btext(`${monName(m)} non impara ${nm}.`,700,false);
       }
+    }
+  }
+}
+async function gainXp(b,faintedFoe){
+  const W=G.W;
+  const f=W.forms[faintedFoe.form];
+  const base=Math.max(1,Math.floor(f.yield*faintedFoe.lv/7*(b.trainer?1.5:1)));
+  const part=G.team.filter(m=>m.hp>0&&(b.part.has(m)||m===b.me));
+  for(const m of part)await awardXp(b,m,base,false);
+  if(G.shareExp){
+    const others=G.team.filter(m=>m.hp>0&&!part.includes(m)&&m.lv<60);
+    if(others.length){
+      const xp=Math.max(1,Math.floor(base/2));
+      await btext(`Condividi PE! Anche le altre Chimere ottengono ${xp} PE.`,900,false);
+      for(const m of others)await awardXp(b,m,xp,true);
     }
   }
 }
 function aliveCount(team){return team.filter(m=>m.hp>0).length;}
 async function sendOut(b,m,isFoeSide){
   const W=G.W,pos=isFoeSide?b.foePos:b.mePos;
-  if(isFoeSide){b.foe=m;b.hpFoe=m.hp;b.foeHidden=false;seeMon(m.form);}
-  else{b.me=m;b.hpMe=m.hp;b.meHidden=false;}
+  if(isFoeSide){b.foe=m;b.hpFoe=m.hp;b.foeHidden=false;seeMon(m.form);b.part=new Set(b.me&&b.me.hp>0?[b.me]:[]);}
+  else{b.me=m;b.hpMe=m.hp;b.meHidden=false;b.part.add(m);}
   m.stg={atk:0,def:0,spd:0};
   pos.s=0;pos.a=1;
   Snd.sfx('catch');
@@ -2517,6 +2547,7 @@ async function introFlow(){
   G.team[0].hp=monStats(G.team[0]).hp;
   Snd.sfx('gotcha');
   await say('Ti ho dato anche qualche Sfera e delle Pozioni. Buona fortuna, e divertiti!');
+  await say(`Un consiglio: nel menu Start trovi "Condividi PE", attivo di base. Anche le Chimere che restano in squadra, senza combattere, crescono. Con Squadra, poi Sposta, puoi cambiare l'ordine.`);
 }
 
 /* =====================================================================
