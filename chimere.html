@@ -1243,7 +1243,7 @@ function newGameState(seed,nTowns){
     player:{x:start[0],y:start[1],fx:start[0],fy:start[1],mt:1,dur:MOVE_T,dir:'down',frame:0,pal:{skin:'#f2c9a0',hair:'#3a2418',shirt:'#e05a3a',pants:'#2a3a5a',hat:'#e9efff',long:false}},
     team:[],bag:{sfera:6,pozione:3,super:0},money:300,
     dex:{seen:[],caught:[]},defeated:[],picked:[],flags:{champion:false,labGift:false,houseGifts:[]},
-    lastHeal:[3,14],steps:0,time:0,zone:null,busy:false,started:false,visited:[],shareExp:true};
+    lastHeal:[3,14],steps:0,time:0,zone:null,busy:false,started:false,visited:[],shareExp:true,pc:Array.from({length:8},()=>Array(20).fill(null))};
   g.ents=map.ents.map(e=>({...e,fx:e.x,fy:e.y,mt:1,dur:MOVE_T,frame:0}));
   return g;
 }
@@ -1252,7 +1252,7 @@ function seeMon(id){if(!G.dex.seen.includes(id))G.dex.seen.push(id);}
 function catchMon(id){seeMon(id);if(!G.dex.caught.includes(id))G.dex.caught.push(id);}
 
 function saveData(){
-  return{v:1,seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited,shareExp:G.shareExp};
+  return{v:1,seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited,shareExp:G.shareExp,pc:G.pc};
 }
 function save(){
   if(!G||!G.started)return;
@@ -1309,7 +1309,7 @@ function loadGame(seed,nTowns){
 function gameFromSave(o,seed,nTowns){
   const g=newGameState(seed,nTowns);
   g.player.x=g.player.fx=o.p.x;g.player.y=g.player.fy=o.p.y;g.player.dir=o.p.dir;
-  g.team=(o.team||[]).filter(m=>m&&g.W.forms[m.form]&&m.moves);g.visited=o.visited||[];g.shareExp=o.shareExp!==false;g.bag=o.bag;g.money=o.money;g.dex=o.dex;g.defeated=o.defeated;g.picked=o.picked;g.flags=o.flags;g.lastHeal=o.lastHeal;g.steps=o.steps;g.time=o.time||0;
+  g.team=(o.team||[]).filter(m=>m&&g.W.forms[m.form]&&m.moves);g.visited=o.visited||[];g.shareExp=o.shareExp!==false;g.pc=Array.from({length:8},(_,b)=>Array.from({length:20},(_,i)=>{const m=o.pc&&o.pc[b]&&o.pc[b][i];return m&&g.W.forms[m.form]&&Array.isArray(m.moves)?m:null;}));g.bag=o.bag;g.money=o.money;g.dex=o.dex;g.defeated=o.defeated;g.picked=o.picked;g.flags=o.flags;g.lastHeal=o.lastHeal;g.steps=o.steps;g.time=o.time||0;
   g.ents=g.ents.filter(e=>!(e.kind==='item'&&g.picked.includes(e.id)));
   {const px=clamp(g.player.x|0,0,g.map.W-1),py=clamp(g.player.y|0,0,g.map.H-1);const bad=SOLID.has(g.map.tiles[py*g.map.W+px]);const q=bad?[3,13]:[px,py];g.player.x=g.player.fx=q[0];g.player.y=g.player.fy=q[1];}
   g.started=true;
@@ -1436,13 +1436,20 @@ class Overworld{
     const exit=async()=>{await moveEntAwait(p,x,y+1,.2);p.dir='down';};
     const W=G.W;
     if(kind===BUILD.CURA){
-      await say('Benvenuto al Centro Cura! Lascia le tue Chimere a me.');
-      await fadeTo(1,250);Snd.sfx('heal');await sleep(700);
-      for(const m of G.team)healFull(m);
+      await say('Benvenuto al Centro Cura!');
       G.lastHeal=[x,y+1];
-      await fadeTo(0,250);
-      await say('Ecco fatto! Le tue Chimere sono in splendida forma. A presto!');
-      save();
+      while(true){
+        const c=await ask('Che cosa posso fare per te?',['Curare la squadra','Usare il Box','Niente, grazie']);
+        if(c===0){
+          await fadeTo(1,250);Snd.sfx('heal');await sleep(700);
+          for(const m of G.team)healFull(m);
+          await fadeTo(0,250);
+          await say('Ecco fatto! Le tue Chimere sono in splendida forma.');
+          save();
+        }else if(c===1){await boxFlow();save();}
+        else break;
+      }
+      await say('A presto!');
     }else if(kind===BUILD.SHOP){
       await say('Benvenuto al Negozio!');
       await shopFlow();
@@ -1640,8 +1647,11 @@ class PartyScene{
     const hint=this.mode==='pick'?'A: scegli   B: indietro':this.moveFrom!=null?'Dove la metti?  B: annulla':'A: opzioni   B: esci';
     txt(hint,VW/2,VH-11,'#8f9bbd','center');
   }
-  drawSum(i){
-    const m=G.team[i],W=G.W,f=W.forms[m.form],st=monStats(m);
+  drawSum(i){drawSummary(G.team[i],'◀ ▶ cambia   A/B chiudi');}
+}
+function drawSummary(m,footer){
+    setFont();
+    const W=G.W,f=W.forms[m.form],st=monStats(m);
     txt(f.name+'  Lv'+m.lv,8,6,'#ffd23d');
     ctx.drawImage(creatureSprite(W,f,false),8,18,64,64);
     f.types.forEach((t,j)=>typeChip(10+j*30,86,W,t));
@@ -1654,8 +1664,7 @@ class PartyScene{
       typeChip(x,y,W,d.type);txt(d.name.length>15?d.name.slice(0,15)+'.':d.name,x,y+11,'#fff');
       txt(`Pot ${d.power||'-'}  PP ${mv.pp}/${d.pp}`,x,y+21,'#9aa6c8');
     });
-    txt('◀ ▶ cambia   A/B chiudi',VW/2,VH-10,'#8f9bbd','center');
-  }
+        txt(footer,VW/2,VH-10,'#8f9bbd','center');
 }
 function partyPick(opts){return new Promise(res=>{const s=new PartyScene({...opts,mode:'pick'});s.res=res;scenes.push(s);});}
 function partyView(){return new Promise(res=>{const s=new PartyScene({mode:'view'});s.res=res;scenes.push(s);});}
@@ -1718,6 +1727,166 @@ async function bagFlow(inBattle){
     return {item:k,target:ti};
   }
 }
+
+/* ---- Box (PC) ---- */
+const PC_BOXES=8,PC_COLS=5,PC_ROWS=4,PC_SLOTS=20;
+function pcFree(){for(let b=0;b<PC_BOXES;b++){const i=G.pc[b].indexOf(null);if(i>=0)return[b,i];}return null;}
+const aliveIn=team=>team.some(m=>m.hp>0);
+class SummaryScene{
+  constructor(m){this.m=m;this.res=null;}
+  update(){}
+  onKey(k){if(k==='a'||k==='b'||k==='start'){Snd.sfx('back');const j=scenes.indexOf(this);if(j>=0)scenes.splice(j,1);this.res();}}
+  draw(){ctx.fillStyle='#0a1030';ctx.fillRect(0,0,VW,VH);drawSummary(this.m,'A/B chiudi');}
+}
+function showSummary(m){return new Promise(res=>{const s=new SummaryScene(m);s.res=res;scenes.push(s);});}
+class BoxScene{
+  constructor(){this.pane='box';this.cx=0;this.cy=0;this.pi=0;this.box=0;this.held=null;this.origin=null;this.busy=false;this.t=0;this.res=null;this.opaque=true;
+    const f=G.pc.findIndex(b=>b.some(m=>m));if(f>=0)this.box=f;}
+  update(dt){this.t+=dt;}
+  cur(){
+    if(this.pane==='party')return G.team[this.pi]||null;
+    if(this.pane==='box')return G.pc[this.box][this.cy*PC_COLS+this.cx]||null;
+    return null;
+  }
+  onKey(k){
+    if(this.busy)return;
+    if(k==='up'||k==='down'||k==='left'||k==='right'){this.move(k);Snd.sfx('sel');return;}
+    if(k==='a')this.act();
+    else if(k==='b'||k==='start')this.back();
+  }
+  onRepeat(k){this.onKey(k);}
+  move(k){
+    if(this.pane==='party'){
+      if(k==='up')this.pi=Math.max(0,this.pi-1);else if(k==='down')this.pi=Math.min(5,this.pi+1);
+      else if(k==='right'){this.pane='box';this.cx=0;this.cy=Math.min(PC_ROWS-1,Math.floor(this.pi*PC_ROWS/6));}
+    }else if(this.pane==='box'){
+      if(k==='left'){if(this.cx>0)this.cx--;else{this.pane='party';this.pi=Math.min(5,Math.round(this.cy*1.5));}}
+      else if(k==='right')this.cx=Math.min(PC_COLS-1,this.cx+1);
+      else if(k==='up'){if(this.cy>0)this.cy--;else this.pane='tabs';}
+      else if(k==='down')this.cy=Math.min(PC_ROWS-1,this.cy+1);
+    }else{
+      if(k==='left')this.box=(this.box+PC_BOXES-1)%PC_BOXES;else if(k==='right')this.box=(this.box+1)%PC_BOXES;
+      else if(k==='down')this.pane='box';
+    }
+  }
+  async act(){
+    if(this.pane==='tabs')return;
+    if(this.held){this.place();return;}
+    const m=this.cur();if(!m){Snd.sfx('bump');return;}
+    this.busy=true;
+    const W=G.W,f=W.forms[m.form];
+    const c=await listMenu([{label:'Sposta'},{label:'Dettagli'},{label:'Libera'},{label:'Indietro'}],{title:f.name.slice(0,11),w:100,x:VW-106,y:30});
+    if(c===0)this.pickUp();
+    else if(c===1)await showSummary(m);
+    else if(c===2){
+      if(this.removeOk()){
+        const a=await ask(`Liberare ${f.name}? Non potrai più riaverlo.`,['No','Sì, liberalo']);
+        if(a===1){this.takeCur();Snd.sfx('faint');await say(`${f.name} è tornato in libertà. Ciao ciao!`);}
+      }else await say('Devi tenere almeno una Chimera in grado di combattere in squadra.');
+    }
+    this.busy=false;
+  }
+  removeOk(){
+    if(this.pane!=='party')return true;
+    const rest=G.team.filter((_,i)=>i!==this.pi);
+    return rest.length>0&&aliveIn(rest);
+  }
+  takeCur(){
+    if(this.pane==='party')return G.team.splice(this.pi,1)[0];
+    const i=this.cy*PC_COLS+this.cx,m=G.pc[this.box][i];G.pc[this.box][i]=null;return m;
+  }
+  pickUp(){
+    if(!this.removeOk()){Snd.sfx('bump');this.warn='Serve almeno una Chimera sana in squadra!';this.warnT=this.t+2;return;}
+    this.origin=this.pane==='party'?{pane:'party',idx:this.pi}:{pane:'box',box:this.box,slot:this.cy*PC_COLS+this.cx};
+    this.held=this.takeCur();Snd.sfx('ok');
+    if(this.pane==='party')this.pi=Math.min(this.pi,Math.max(0,G.team.length));
+  }
+  place(){
+    if(this.pane==='tabs'){return;}
+    if(this.pane==='party'){
+      if(this.pi>=G.team.length){G.team.push(this.held);this.held=null;}
+      else{
+        const old=G.team[this.pi];G.team[this.pi]=this.held;
+        if(!aliveIn(G.team)){G.team[this.pi]=old;Snd.sfx('bump');this.warn='Serve almeno una Chimera sana in squadra!';this.warnT=this.t+2;return;}
+        this.held=old;
+      }
+    }else{
+      const i=this.cy*PC_COLS+this.cx,old=G.pc[this.box][i];
+      if(old&&this.origin&&this.origin.pane==='box'&&false){}
+      healFull(this.held);G.pc[this.box][i]=this.held;this.held=old;
+    }
+    Snd.sfx('gotcha');
+    if(!this.held)this.origin=null;
+  }
+  back(){
+    if(this.held){
+      // rimette al posto d'origine
+      const h=this.held;this.held=null;
+      const o=this.origin;this.origin=null;
+      if(o&&o.pane==='party'&&G.team.length<6)G.team.splice(Math.min(o.idx,G.team.length),0,h);
+      else if(o&&o.pane==='box'&&!G.pc[o.box][o.slot])G.pc[o.box][o.slot]=h;
+      else if(G.team.length<6)G.team.push(h);
+      else{const f=pcFree();if(f)G.pc[f[0]][f[1]]=h;}
+      Snd.sfx('back');return;
+    }
+    if(!aliveIn(G.team)){Snd.sfx('bump');return;}
+    Snd.sfx('back');const j=scenes.indexOf(this);if(j>=0)scenes.splice(j,1);this.res();
+  }
+  draw(){
+    setFont();const W=G.W;
+    ctx.fillStyle='#0a1030';ctx.fillRect(0,0,VW,VH);
+    // pannello squadra
+    box(2,2,94,172,.9);
+    txt('SQUADRA',8,7,'#ffd23d');
+    for(let i=0;i<6;i++){
+      const y=19+i*25,m=G.team[i],sel=this.pane==='party'&&this.pi===i;
+      ctx.fillStyle=sel?'#24347a':'#161e48';ctx.fillRect(6,y,86,23);
+      if(sel){ctx.strokeStyle='#ffd23d';ctx.strokeRect(6.5,y+.5,85,22);}
+      if(m){
+        const f=W.forms[m.form];
+        ctx.globalAlpha=m.hp<=0?.45:1;ctx.drawImage(creatureSprite(W,f,false),7,y,23,23);ctx.globalAlpha=1;
+        txt(f.name.slice(0,7),32,y+4,m.hp<=0?'#8a6a78':'#fff');txt('Lv'+m.lv,32,y+14,'#a8b4d8');
+      }
+    }
+    // pannello box
+    box(98,2,156,172,.9);
+    const tabSel=this.pane==='tabs';
+    txt('◀',104,7,tabSel?'#ffd23d':'#6a76a8');txt(`BOX ${this.box+1}`,176,7,tabSel?'#ffd23d':'#fff','center');txt('▶',246,7,tabSel?'#ffd23d':'#6a76a8','right');
+    const filled=G.pc[this.box].filter(Boolean).length;
+    txt(`${filled}/${PC_SLOTS}`,176,16,'#8f9bbd','center');
+    const gx=103,gy=26,cw=29,ch=26;
+    for(let r=0;r<PC_ROWS;r++)for(let c=0;c<PC_COLS;c++){
+      const x=gx+c*cw,y=gy+r*ch,m=G.pc[this.box][r*PC_COLS+c],sel=this.pane==='box'&&this.cx===c&&this.cy===r;
+      ctx.fillStyle=sel?'#24347a':'#131a40';ctx.fillRect(x,y,cw-2,ch-2);
+      if(sel){ctx.strokeStyle='#ffd23d';ctx.strokeRect(x+.5,y+.5,cw-3,ch-3);}
+      if(m)ctx.drawImage(creatureSprite(W,W.forms[m.form],false),x+2,y,24,24);
+    }
+    // info
+    const m=this.cur();
+    ctx.fillStyle='#0d1338';ctx.fillRect(102,134,148,36);
+    if(m&&!this.held){
+      const f=W.forms[m.form],st=monStats(m);
+      txt(f.name,106,138,'#fff');txt('Lv'+m.lv,246,138,'#ffd23d','right');
+      f.types.forEach((t,j)=>typeChip(106+j*29,150,W,t));
+      hpBar(170,152,76,m.hp/st.hp);txt(`${m.hp}/${st.hp}`,246,160,'#9aa6c8','right');
+    }else if(this.held){
+      txt(`In mano: ${W.forms[this.held.form].name}`.slice(0,18),106,138,'#ffd23d');
+      txt('A: posa',106,150,'#8f9bbd');txt('B: annulla',106,160,'#8f9bbd');
+    }else{txt('A: opzioni',106,143,'#8f9bbd');txt('B: esci',106,155,'#8f9bbd');}
+    if(this.warn&&this.t<this.warnT){box(30,70,196,26,.97);txt(this.warn,128,79,'#ff9b7a','center');}
+    // mostro in mano accanto al cursore
+    if(this.held){
+      let x,y;
+      if(this.pane==='party'){x=60;y=19+this.pi*25-6;}
+      else if(this.pane==='box'){x=gx+this.cx*cw+8;y=gy+this.cy*ch-8;}
+      else{x=170;y=20;}
+      ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x+12,y+26,9,3,0,0,7);ctx.fill();
+      ctx.drawImage(creatureSprite(W,W.forms[this.held.form],false),x,y+Math.sin(this.t*8)*1.5,26,26);
+    }
+  }
+}
+function boxFlow(){return new Promise(res=>{const s=new BoxScene();s.res=res;scenes.push(s);});}
+
 async function bagUse(){
   while(true){
     const r=await bagFlow(false);
@@ -1729,18 +1898,22 @@ async function bagUse(){
 }
 async function pauseMenu(){
   while(true){
-    const items=[{label:'Squadra'},{label:'Zaino'},{label:'Mappa'},{label:'Chimeredex'},{label:'Salva'},{label:'Esporta'},{label:'Condividi PE: '+(G.shareExp?'on':'off')},{label:'Suono: '+(Snd.on?'on':'off')},{label:'Titolo'},{label:'Chiudi'}];
-    const idx=await listMenu(items,{title:'START',w:124,x:VW-130,y:6});
-    if(idx<0||idx===9)return;
+    const items=[{label:'Squadra'},{label:'Zaino'},{label:'Mappa'},{label:'Box'},{label:'Chimeredex'},{label:'Salva'},{label:'Esporta'},{label:'Condividi PE: '+(G.shareExp?'on':'off')},{label:'Suono: '+(Snd.on?'on':'off')},{label:'Titolo'},{label:'Chiudi'}];
+    const idx=await listMenu(items,{title:'START',w:124,x:VW-130,y:4});
+    if(idx<0||idx===10)return;
     if(idx===0)await partyView();
     else if(idx===1)await bagUse();
     else if(idx===2){await mapFlow();return;}
-    else if(idx===3)await dexView();
-    else if(idx===4){save();Snd.sfx('gotcha');await say('Avventura salvata.');}
-    else if(idx===5)await exportFlow();
-    else if(idx===6){G.shareExp=!G.shareExp;Snd.sfx('ok');await say(G.shareExp?'Condividi PE attivo: anche le Chimere che restano in squadra, senza combattere, ottengono metà dei PE.':'Condividi PE disattivato: solo le Chimere che combattono ottengono PE.');}
-    else if(idx===7){Snd.init();Snd.setOn(!Snd.on);}
-    else if(idx===8){
+    else if(idx===3){
+      if(G.zone&&G.zone.kind==='town')await boxFlow();
+      else await say('Il Box si usa nelle città: nei Centri Cura c\'è il terminale.');
+    }
+    else if(idx===4)await dexView();
+    else if(idx===5){save();Snd.sfx('gotcha');await say('Avventura salvata.');}
+    else if(idx===6)await exportFlow();
+    else if(idx===7){G.shareExp=!G.shareExp;Snd.sfx('ok');await say(G.shareExp?'Condividi PE attivo: anche le Chimere che restano in squadra, senza combattere, ottengono metà dei PE.':'Condividi PE disattivato: solo le Chimere che combattono ottengono PE.');}
+    else if(idx===8){Snd.init();Snd.setOn(!Snd.on);}
+    else if(idx===9){
       const c=await ask('Tornare al titolo? Salviamo prima.',['Sì','No']);
       if(c===0){save();await fadeTo(1,300);gotoTitle();await fadeTo(0,300);return 'title';}
     }
@@ -2186,7 +2359,12 @@ async function tryCatch(b){
     await btext(`Gotcha! ${f.name} è stato catturato!`,0,true);
     b.ball=null;
     if(G.team.length<6){G.team.push(foe);}
-    else await btext(`La squadra è piena: ${f.name} è stato lasciato libero...`,0,true);
+    else{
+      foe.stg={atk:0,def:0,spd:0};foe.status=null;
+      const slot=pcFree();
+      if(slot){healFull(foe);G.pc[slot[0]][slot[1]]=foe;await btext(`La squadra è piena: ${f.name} è stato mandato nel Box ${slot[0]+1}.`,0,true);}
+      else await btext(`Squadra e Box sono pieni: ${f.name} è stato lasciato libero...`,0,true);
+    }
     return true;
   }
   b.ball=null;b.foeHidden=false;spawnParts(190,70,'#fff',10,40);
@@ -2579,7 +2757,7 @@ function boot(){
 resize();
 const ready=(document.fonts&&document.fonts.load)?Promise.race([document.fonts.load('8px "Press Start 2P"'),sleep(1800)]):Promise.resolve();
 ready.then(boot);
-window.__g={importSaveText,exportCode,saveData,mapFlow,get B(){return curB;},postBattle,evolveMon,blackout,arenaFlow,endingScene,pauseMenu,save,loadGame,get G(){return G;},scenes,press:doPress,release:doRelease,buildWorld,genMap,runBattle,mkMon,creatureSprite,startGame,get title(){return titleScene;},say,tween,fade,TL,SOLID,walkable,tileAt,monStats,eff,formForLine,getAtlas,charSheet,Snd};
+window.__g={boxFlow,importSaveText,exportCode,saveData,mapFlow,get B(){return curB;},postBattle,evolveMon,blackout,arenaFlow,endingScene,pauseMenu,save,loadGame,get G(){return G;},scenes,press:doPress,release:doRelease,buildWorld,genMap,runBattle,mkMon,creatureSprite,startGame,get title(){return titleScene;},say,tween,fade,TL,SOLID,walkable,tileAt,monStats,eff,formForLine,getAtlas,charSheet,Snd};
 })();
 </script>
 </body>
