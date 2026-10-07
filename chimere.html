@@ -18,6 +18,11 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 canvas#g{display:block;border-radius:8px;image-rendering:pixelated;image-rendering:crisp-edges;background:#000}
 .hint{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);text-align:center;padding:0 12px}
 .hint kbd{font-family:inherit;border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:1px 6px;margin:0 2px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 12px}
+.quick button{font-family:var(--body);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;border-radius:99px;background:rgba(14,18,36,.7);border:1px solid rgba(255,255,255,.18);color:#e9efff;user-select:none;-webkit-user-select:none;touch-action:manipulation;transition:.2s}
+.quick button b{color:var(--ac);font-weight:700;margin-right:4px}
+.quick button:hover{border-color:var(--ac);box-shadow:0 0 18px -6px var(--ac)}
+.quick button:active{background:rgba(61,255,176,.3)}
 .pad{display:none;position:fixed;left:0;right:0;bottom:max(14px,env(safe-area-inset-bottom));padding:0 18px;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:20}
 .pad>*{pointer-events:auto}
 .dpad{position:relative;width:150px;height:150px}
@@ -39,7 +44,10 @@ canvas#g{display:block;border-radius:8px;image-rendering:pixelated;image-renderi
 <body>
 <header class="top"><a class="brand" href="index.html"><i></i>INVENTA<span class="crumb">/ CHIMERE</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a><button class="pill" id="bSnd">Suono <b id="sndS">on</b></button></div></header>
 <div class="frame"><canvas id="g"></canvas></div>
-<div class="hint"><kbd>←↑↓→</kbd> muovi · <kbd>Z</kbd> / <kbd>Invio</kbd> conferma · <kbd>X</kbd> / <kbd>Esc</kbd> indietro · <kbd>M</kbd> menu</div>
+<div class="hint"><kbd>←↑↓→</kbd> muovi · <kbd>Z</kbd> / <kbd>Invio</kbd> conferma · <kbd>X</kbd> / <kbd>Esc</kbd> indietro · <kbd>M</kbd> start · <kbd>N</kbd> select/mappa · <kbd>I</kbd> zaino · <kbd>P</kbd> squadra · <kbd>E</kbd> dex</div>
+<div class="quick">
+  <button data-k="start"><b>START</b> Menu</button><button data-k="select"><b>SELECT</b> Mappa</button><button data-k="bag">Zaino</button><button data-k="party">Squadra</button><button data-k="dex">Dex</button>
+</div>
 <div class="pad">
   <div class="dpad"><button data-k="up">▲</button><button data-k="left">◀</button><button data-k="right">▶</button><button data-k="down">▼</button></div>
   <div class="ab"><button data-k="b">B</button><button data-k="a">A</button></div>
@@ -1084,9 +1092,9 @@ function typeChip(x,y,W,t){
 }
 
 const scenes=[];
-let G=null;
+let G=null,OW=null;
 const input={held:[],press:[]};
-const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyZ:'a',Enter:'a',Space:'a',KeyX:'b',Escape:'b',Backspace:'b',KeyM:'start',Tab:'start'};
+const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyZ:'a',Enter:'a',Space:'a',KeyX:'b',Escape:'b',Backspace:'b',KeyM:'start',Tab:'start',KeyN:'select',KeyQ:'select',KeyI:'bag',KeyP:'party',KeyE:'dex'};
 function doPress(k){
   Snd.init();if(Snd.ctx&&Snd.ctx.state==='suspended'&&Snd.on)Snd.ctx.resume();
   if(['up','down','left','right'].includes(k)){const i=input.held.indexOf(k);if(i>=0)input.held.splice(i,1);input.held.push(k);}
@@ -1110,6 +1118,10 @@ document.querySelectorAll('.pad button').forEach(b=>{
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
 });
 $('#bSnd').onclick=()=>{Snd.init();Snd.setOn(!Snd.on);};
+document.querySelectorAll('.quick button').forEach(b=>{
+  b.addEventListener('pointerdown',e=>e.preventDefault());
+  b.addEventListener('click',()=>{b.blur();doPress(b.dataset.k);});
+});
 
 function waitKeys(){}
 const tweens=[];
@@ -1231,7 +1243,7 @@ function newGameState(seed,nTowns){
     player:{x:start[0],y:start[1],fx:start[0],fy:start[1],mt:1,dur:MOVE_T,dir:'down',frame:0,pal:{skin:'#f2c9a0',hair:'#3a2418',shirt:'#e05a3a',pants:'#2a3a5a',hat:'#e9efff',long:false}},
     team:[],bag:{sfera:6,pozione:3,super:0},money:300,
     dex:{seen:[],caught:[]},defeated:[],picked:[],flags:{champion:false,labGift:false,houseGifts:[]},
-    lastHeal:[3,14],steps:0,time:0,zone:null,busy:false,started:false};
+    lastHeal:[3,14],steps:0,time:0,zone:null,busy:false,started:false,visited:[]};
   g.ents=map.ents.map(e=>({...e,fx:e.x,fy:e.y,mt:1,dur:MOVE_T,frame:0}));
   return g;
 }
@@ -1239,18 +1251,67 @@ const MOVE_T=.17;
 function seeMon(id){if(!G.dex.seen.includes(id))G.dex.seen.push(id);}
 function catchMon(id){seeMon(id);if(!G.dex.caught.includes(id))G.dex.caught.push(id);}
 
+function saveData(){
+  return{v:1,seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited};
+}
 function save(){
   if(!G||!G.started)return;
-  const o={seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time)};
-  lsSet('chimere.save.'+G.seed+'.'+G.nTowns,o);
+  lsSet('chimere.save.'+G.seed+'.'+G.nTowns,saveData());
   lsSet('chimere.last',{seed:G.seed,nTowns:G.nTowns});
+}
+function validSave(o){
+  return !!(o&&typeof o==='object'&&typeof o.seed==='string'&&/^[A-Z0-9]{4,8}$/.test(o.seed)&&[3,4,5].includes(o.nTowns)
+    &&Array.isArray(o.team)&&o.team.length>0&&o.team.length<=6&&o.team.every(m=>m&&Number.isFinite(m.form)&&Number.isFinite(m.lv)&&Number.isFinite(m.hp)&&Array.isArray(m.moves))
+    &&o.p&&Number.isFinite(o.p.x)&&Number.isFinite(o.p.y)&&o.bag&&typeof o.bag==='object'&&Number.isFinite(o.money)&&o.dex&&Array.isArray(o.dex.seen)&&Array.isArray(o.dex.caught)
+    &&Array.isArray(o.defeated)&&Array.isArray(o.picked)&&o.flags&&Array.isArray(o.lastHeal));
+}
+const SAVE_PREFIX='CHIM1:';
+function exportCode(o){return SAVE_PREFIX+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
+function importSaveText(text){
+  try{
+    let t=String(text||'').trim();
+    if(!t)return{ok:false,msg:'Nessun contenuto.'};
+    if(t.startsWith(SAVE_PREFIX))t=decodeURIComponent(escape(atob(t.slice(SAVE_PREFIX.length).replace(/\s+/g,''))));
+    const o=JSON.parse(t);
+    if(!validSave(o))return{ok:false,msg:'Salvataggio non valido.'};
+    const W=buildWorld(o.seed,o.nTowns);
+    if(o.team.some(m=>!W.forms[m.form]||m.moves.some(mm=>!W.moves[mm.id])))return{ok:false,msg:'Salvataggio incompatibile con questo mondo.'};
+    lsSet('chimere.save.'+o.seed+'.'+o.nTowns,o);
+    lsSet('chimere.last',{seed:o.seed,nTowns:o.nTowns});
+    return{ok:true,seed:o.seed,nTowns:o.nTowns};
+  }catch(e){return{ok:false,msg:'Codice non leggibile.'};}
+}
+function downloadText(name,text){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+function pickFile(){
+  return new Promise(res=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='.json,.txt,application/json,text/plain';inp.style.display='none';
+    inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f){res(null);inp.remove();return;}const r=new FileReader();r.onload=()=>{res(String(r.result));inp.remove();};r.onerror=()=>{res(null);inp.remove();};r.readAsText(f);};
+    inp.addEventListener('cancel',()=>{res(null);inp.remove();});
+    document.body.appendChild(inp);inp.click();
+  });
+}
+async function exportFlow(){
+  save();
+  const o=saveData(),code=exportCode(o);
+  downloadText(`chimere-${G.seed}-${G.nTowns}.json`,JSON.stringify(o));
+  let copied=false;
+  try{await navigator.clipboard.writeText(code);copied=true;}catch(e){}
+  Snd.sfx('gotcha');
+  await say(copied?'Partita esportata! Ho scaricato il file e copiato il codice negli appunti. Per ripristinarla: Titolo, poi Importa partita.':'Partita esportata! Ho scaricato il file. Per ripristinarla: Titolo, poi Importa partita.');
 }
 function loadGame(seed,nTowns){
   const o=lsGet('chimere.save.'+seed+'.'+nTowns,null);if(!o)return null;
+  try{return gameFromSave(o,seed,nTowns);}catch(e){console.error(e);return null;}
+}
+function gameFromSave(o,seed,nTowns){
   const g=newGameState(seed,nTowns);
   g.player.x=g.player.fx=o.p.x;g.player.y=g.player.fy=o.p.y;g.player.dir=o.p.dir;
-  g.team=o.team;g.bag=o.bag;g.money=o.money;g.dex=o.dex;g.defeated=o.defeated;g.picked=o.picked;g.flags=o.flags;g.lastHeal=o.lastHeal;g.steps=o.steps;g.time=o.time||0;
+  g.team=(o.team||[]).filter(m=>m&&g.W.forms[m.form]&&m.moves);g.visited=o.visited||[];g.bag=o.bag;g.money=o.money;g.dex=o.dex;g.defeated=o.defeated;g.picked=o.picked;g.flags=o.flags;g.lastHeal=o.lastHeal;g.steps=o.steps;g.time=o.time||0;
   g.ents=g.ents.filter(e=>!(e.kind==='item'&&g.picked.includes(e.id)));
+  {const px=clamp(g.player.x|0,0,g.map.W-1),py=clamp(g.player.y|0,0,g.map.H-1);const bad=SOLID.has(g.map.tiles[py*g.map.W+px]);const q=bad?[3,13]:[px,py];g.player.x=g.player.fx=q[0];g.player.y=g.player.fy=q[1];}
   g.started=true;
   return g;
 }
@@ -1303,12 +1364,19 @@ class Overworld{
       else{if(!this.bumpT||this.t-this.bumpT>.35){Snd.sfx('bump');this.bumpT=this.t;}}
     }else this.turnWait=0;
   }
+  zoneCheck(){
+    const z=G.map.zoneAt(G.player.x);
+    if(G.zone!==z){
+      G.zone=z;this.banner={t:0,name:z.name,kind:z.kind};
+      const key=z.kind+z.idx;if(!G.visited.includes(key))G.visited.push(key);
+      Snd.music(z.kind==='town'?'town':'route',G.seed+z.kind+z.idx);if(G.started)save();
+    }
+  }
   async onStep(){
     const p=G.player;
     G.busy=true;
     try{
-      const z=G.map.zoneAt(p.x);
-      if(G.zone!==z){G.zone=z;this.banner={t:0,name:z.name,kind:z.kind};Snd.music(z.kind==='town'?'town':'route',G.seed+z.kind+z.idx);if(G.started)save();}
+      this.zoneCheck();
       // allenatori
       for(const e of G.ents){
         if(e.kind!=='trainer'||G.defeated.includes(e.id))continue;
@@ -1427,6 +1495,10 @@ class Overworld{
         }catch(err){console.error(err);}
         G.busy=false;
       })();
+    }else if((k==='select'||k==='bag'||k==='party'||k==='dex')&&p.mt>=1){
+      G.busy=true;(async()=>{try{
+        if(k==='select')await mapFlow();else if(k==='bag')await bagUse();else if(k==='party')await partyView();else await dexView();
+      }catch(err){console.error(err);}G.busy=false;})();
     }else if(k==='start'&&p.mt>=1){
       G.busy=true;(async()=>{try{await pauseMenu();}catch(err){console.error(err);}G.busy=false;})();
     }
@@ -1630,28 +1702,129 @@ async function bagFlow(inBattle){
     return {item:k,target:ti};
   }
 }
+async function bagUse(){
+  while(true){
+    const r=await bagFlow(false);
+    if(!r||!r.item)return;
+    const m=G.team[r.target],st=monStats(m);const amt=r.item==='pozione'?30:80;
+    m.hp=Math.min(st.hp,m.hp+amt);G.bag[r.item]--;Snd.sfx('heal');
+    await say(`${monName(m)} recupera PS!`);
+  }
+}
 async function pauseMenu(){
   while(true){
-    const items=[{label:'Squadra'},{label:'Zaino'},{label:'Chimeredex'},{label:'Salva'},{label:'Suono: '+(Snd.on?'on':'off')},{label:'Titolo'},{label:'Chiudi'}];
-    const idx=await listMenu(items,{title:'MENU',w:104,x:VW-110,y:6});
-    if(idx<0||idx===6)return;
+    const items=[{label:'Squadra'},{label:'Zaino'},{label:'Mappa'},{label:'Chimeredex'},{label:'Salva'},{label:'Esporta'},{label:'Suono: '+(Snd.on?'on':'off')},{label:'Titolo'},{label:'Chiudi'}];
+    const idx=await listMenu(items,{title:'START',w:108,x:VW-114,y:6});
+    if(idx<0||idx===8)return;
     if(idx===0)await partyView();
-    else if(idx===1){
-      const r=await bagFlow(false);
-      if(r&&r.item){
-        const m=G.team[r.target],st=monStats(m);const amt=r.item==='pozione'?30:80;
-        m.hp=Math.min(st.hp,m.hp+amt);G.bag[r.item]--;Snd.sfx('heal');
-        await say(`${monName(m)} recupera PS!`);
-      }
-    }
-    else if(idx===2)await dexView();
-    else if(idx===3){save();Snd.sfx('gotcha');await say('Avventura salvata.');}
-    else if(idx===4){Snd.init();Snd.setOn(!Snd.on);}
-    else if(idx===5){
+    else if(idx===1)await bagUse();
+    else if(idx===2){await mapFlow();return;}
+    else if(idx===3)await dexView();
+    else if(idx===4){save();Snd.sfx('gotcha');await say('Avventura salvata.');}
+    else if(idx===5)await exportFlow();
+    else if(idx===6){Snd.init();Snd.setOn(!Snd.on);}
+    else if(idx===7){
       const c=await ask('Tornare al titolo? Salviamo prima.',['Sì','No']);
       if(c===0){save();await fadeTo(1,300);gotoTitle();await fadeTo(0,300);return 'title';}
     }
   }
+}
+
+/* ---- Mappa ---- */
+const miniCache=new Map();
+function zoneMini(z){
+  const key=G.seed+'|'+z.kind+z.idx;
+  if(miniCache.has(key))return miniCache.get(key);
+  const m=G.map,S=4,cv=document.createElement('canvas');cv.width=z.w*S;cv.height=m.H*S;
+  const c=cv.getContext('2d'),pal=PAL[z.biome];
+  const col={[TL.GRASS]:pal.g[0],[TL.TALL]:pal.tall[0],[TL.PATH]:pal.path[0],[TL.TREE]:pal.leaf[1],[TL.WATER]:pal.water[0],[TL.FLOWER]:pal.g[2],[TL.FENCE]:'#8a5a30',[TL.WALL]:'#efe3cc',[TL.WIN]:'#8fd0f0',[TL.DOOR]:'#5a3a1c',[TL.SIGN]:'#d8b078',[TL.ROCK]:'#8c8f96',[TL.BRIDGE]:'#b8824a',[TL.LAMP]:pal.g[0]};
+  for(let y=0;y<m.H;y++)for(let x=0;x<z.w;x++){
+    const id=m.tiles[y*m.W+z.x0+x],au=m.aux[y*m.W+z.x0+x];
+    c.fillStyle=(id===TL.ROOFT||id===TL.ROOFB)?ROOFS[au]:(col[id]||pal.g[0]);
+    c.fillRect(x*S,y*S,S,S);
+  }
+  miniCache.set(key,cv);return cv;
+}
+const BUILD_NAME={1:'Centro Cura',2:'Negozio',3:'Casa',4:'Arena',5:'Laboratorio'};
+const BUILD_COL={1:'#ff4d4d',2:'#ffd23d',4:'#ff9a3d',5:'#4cd08a'};
+class MapScene{
+  constructor(){this.zones=G.map.zones;this.t=0;this.res=null;const i=this.zones.indexOf(G.zone||this.zones[0]);this.sel=Math.max(0,i);}
+  seen(z){return G.visited.includes(z.kind+z.idx);}
+  update(dt){this.t+=dt;}
+  onKey(k){
+    const n=this.zones.length;
+    if(k==='up'||k==='left'){this.sel=(this.sel+n-1)%n;Snd.sfx('sel');}
+    else if(k==='down'||k==='right'){this.sel=(this.sel+1)%n;Snd.sfx('sel');}
+    else if(k==='a'){
+      const z=this.zones[this.sel];
+      if(z.kind==='town'&&this.seen(z)){Snd.sfx('ok');this.finish(z);}else Snd.sfx('bump');
+    }
+    else if(k==='b'||k==='start'||k==='select'){Snd.sfx('back');this.finish(null);}
+  }
+  onRepeat(k){this.onKey(k);}
+  finish(v){const j=scenes.indexOf(this);if(j>=0)scenes.splice(j,1);this.res(v);}
+  draw(){
+    setFont();const W=G.W;
+    ctx.fillStyle='#0a1030';ctx.fillRect(0,0,VW,VH);
+    txt('MAPPA',8,5,'#ffd23d');txt('Seme '+G.seed,VW-8,5,'#8f9bbd','right');
+    // elenco zone
+    this.zones.forEach((z,i)=>{
+      const y=18+i*13,sel=i===this.sel,seen=this.seen(z);
+      if(sel){ctx.fillStyle='#24347a';ctx.fillRect(4,y-2,104,13);}
+      const name=seen?z.name:(z.kind==='town'?'???':'  ???');
+      const here=G.zone===z;
+      const col=!seen?'#5a6488':z.kind==='town'?'#fff':'#a8b4d8';
+      txt((z.kind==='town'?'● ':'  ')+(z.kind==='route'?'':'')+name.slice(0,z.kind==='town'?13:12),8,y,col);
+      if(here&&Math.floor(this.t*3)%2===0){ctx.fillStyle='#ff4d4d';ctx.fillRect(100,y+2,4,4);}
+    });
+    // minimappa
+    const z=this.zones[this.sel],seen=this.seen(z);
+    const mw=z.w*4,mh=G.map.H*4,mx=116+Math.floor((140-mw)/2),my=18;
+    ctx.fillStyle='#000';ctx.fillRect(mx-2,my-2,mw+4,mh+4);
+    if(seen){
+      ctx.drawImage(zoneMini(z),mx,my);
+      if(z.kind==='town'){
+        G.map.doors.filter(d=>d.zone===z.idx&&BUILD_COL[d.kind]).forEach(d=>{
+          const x=mx+(d.x-z.x0)*4+2,y=my+d.y*4+2;
+          ctx.fillStyle=BUILD_COL[d.kind];ctx.beginPath();ctx.arc(x,y,3.2,0,7);ctx.fill();ctx.strokeStyle='#000';ctx.lineWidth=.6;ctx.stroke();
+        });
+      }
+      if(G.zone===z&&Math.floor(this.t*4)%2===0){
+        ctx.fillStyle='#fff';ctx.fillRect(mx+(G.player.x-z.x0)*4-1,my+G.player.y*4-1,6,6);ctx.fillStyle='#ff4d4d';ctx.fillRect(mx+(G.player.x-z.x0)*4,my+G.player.y*4,4,4);
+      }
+    }else{
+      ctx.fillStyle='#10163a';ctx.fillRect(mx,my,mw,mh);txt('?',mx+mw/2,my+mh/2-4,'#3a4680','center');
+    }
+    // info
+    box(4,118,VW-8,54,.85);
+    if(!seen){txt('Zona ancora da scoprire.',12,126,'#8f9bbd');}
+    else if(z.kind==='town'){
+      txt(z.name,12,124,'#ffd23d');
+      const ks=[...new Set(G.map.doors.filter(d=>d.zone===z.idx).map(d=>d.kind))].filter(k=>k!==3).map(k=>BUILD_NAME[k]);
+      txt(ks.join(' · '),12,138,'#c9d3f5');
+      txt('A: vola qui   B: chiudi',12,153,'#7dff9a');
+    }else{
+      const R=W.routes[z.idx];
+      txt(z.name,12,124,'#ffd23d');
+      txt(`Livelli ${R.lvMin}-${R.lvMax+1}`,12,138,'#c9d3f5');
+      txt('Tipi: '+R.feat.map(t=>W.types[t].n).join(', '),12,151,'#a8b4d8');
+      const tot=G.map.ents.filter(e=>e.kind==='trainer'&&e.id.startsWith('t'+z.idx+'_')).length,done=G.defeated.filter(id=>id.startsWith('t'+z.idx+'_')).length;
+      txt(`Allenatori battuti ${done}/${tot}`,12,163,'#8f9bbd');
+    }
+  }
+}
+async function mapFlow(){
+  const z=await new Promise(res=>{const s=new MapScene();s.res=res;scenes.push(s);});
+  if(!z)return;
+  if(z===G.zone){await say('Sei già qui!');return;}
+  const c=await ask(`Volare a ${z.name}?`,['Sì','No']);
+  if(c!==0)return;
+  const d=G.map.doors.find(d=>d.zone===z.idx&&d.kind===BUILD.CURA)||{x:z.x0+3,y:12};
+  Snd.sfx('up');
+  await fadeTo(1,400);
+  const p=G.player;p.x=p.fx=d.x;p.y=p.fy=d.y+1;p.mt=1;p.dir='down';
+  G.zone=null;if(OW)OW.zoneCheck();
+  await fadeTo(0,400);
 }
 
 /* =====================================================================
@@ -2188,9 +2361,21 @@ class TitleScene{
     const it=[];
     if(this.cont)it.push({k:'cont',label:'Continua'});
     it.push({k:'new',label:'Nuova avventura'});
+    it.push({k:'import',label:'Importa partita'});
     it.push({k:'size',label:'Percorso: '+SIZES[this.sz][0]});
     it.push({k:'seed',label:'Seme: '+this.seed});
     return it;
+  }
+  async importFlow(){
+    const c=await listMenu([{label:'Da file'},{label:'Incolla codice'},{label:'Annulla'}],{title:'IMPORTA',w:124,x:VW/2-62,y:56});
+    if(c<0||c===2)return;
+    let text=null;
+    if(c===0)text=await pickFile();else text=prompt('Incolla il codice di salvataggio:','');
+    if(!text)return;
+    const r=importSaveText(text);
+    if(!r.ok){Snd.sfx('bump');await say(r.msg+' Riprova con un file o un codice esportato da Chimere.');return;}
+    this.cont={seed:r.seed,nTowns:r.nTowns};this.seed=r.seed;this.sz=Math.max(0,SIZES.findIndex(s=>s[1]===r.nTowns));this.rebuild();this.sel=0;
+    Snd.sfx('gotcha');await say(`Partita importata! Seme ${r.seed}, ${r.nTowns} città. Scegli Continua per riprendere.`);
   }
   update(dt){this.t+=dt;}
   onKey(k){
@@ -2207,6 +2392,7 @@ class TitleScene{
       else if(it.k==='seed'&&(k==='left'||k==='right')){this.seed=newSeed();this.cont=null;this.rebuild();Snd.sfx('sel');}
       else if(it.k==='cont'&&k==='a'){Snd.sfx('ok');startGame(true);}
       else if(it.k==='new'&&k==='a'){Snd.sfx('ok');startGame(false);}
+      else if(it.k==='import'&&k==='a'){Snd.sfx('ok');this.importFlow();}
     }
   }
   draw(){
@@ -2236,13 +2422,12 @@ class TitleScene{
     });
     // menu
     const its=this.items();
-    const mw=150,mx=VW/2-mw/2,my=108;
-    box(mx,my,mw,its.length*14+10,.8);
+    const mw=150,mx=VW/2-mw/2,my=100;
+    box(mx,my,mw,its.length*12+10,.8);
     its.forEach((it,i)=>{
       const col=i===this.sel?'#fff':'#9aa6c8';
-      txt((i===this.sel?'▶ ':'  ')+it.label,mx+8,my+8+i*14,col);
+      txt((i===this.sel?'▶ ':'  ')+it.label,mx+8,my+7+i*12,col);
     });
-    txt(`${SIZES[this.sz][1]} città · ${W.forms.length} forme · ${W.types.length-1} tipi`,VW/2,VH-14,'#8f9bbd','center');
   }
 }
 let titleScene=null;
@@ -2270,7 +2455,7 @@ async function startGame(cont){
       await introFlow();
     }
     scenes.length=0;
-    const ow=new Overworld();scenes.push(ow);
+    const ow=new Overworld();OW=ow;scenes.push(ow);
     G.started=true;G.zone=null;
     await fadeTo(0,300);
     ow.onStep();
@@ -2363,7 +2548,7 @@ function boot(){
 resize();
 const ready=(document.fonts&&document.fonts.load)?Promise.race([document.fonts.load('8px "Press Start 2P"'),sleep(1800)]):Promise.resolve();
 ready.then(boot);
-window.__g={get B(){return curB;},postBattle,evolveMon,blackout,arenaFlow,endingScene,pauseMenu,save,loadGame,get G(){return G;},scenes,press:doPress,release:doRelease,buildWorld,genMap,runBattle,mkMon,creatureSprite,startGame,get title(){return titleScene;},say,tween,fade,TL,SOLID,walkable,tileAt,monStats,eff,formForLine,getAtlas,charSheet,Snd};
+window.__g={importSaveText,exportCode,saveData,mapFlow,get B(){return curB;},postBattle,evolveMon,blackout,arenaFlow,endingScene,pauseMenu,save,loadGame,get G(){return G;},scenes,press:doPress,release:doRelease,buildWorld,genMap,runBattle,mkMon,creatureSprite,startGame,get title(){return titleScene;},say,tween,fade,TL,SOLID,walkable,tileAt,monStats,eff,formForLine,getAtlas,charSheet,Snd};
 })();
 </script>
 </body>
