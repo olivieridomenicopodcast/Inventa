@@ -1252,13 +1252,27 @@ function seeMon(id){if(!G.dex.seen.includes(id))G.dex.seen.push(id);}
 function catchMon(id){seeMon(id);if(!G.dex.caught.includes(id))G.dex.caught.push(id);}
 
 function saveData(){
-  return{v:1,seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited,shareExp:G.shareExp,pc:G.pc};
+  return{v:1,ts:Date.now(),seed:G.seed,nTowns:G.nTowns,p:{x:G.player.x,y:G.player.y,dir:G.player.dir},team:G.team,bag:G.bag,money:G.money,dex:G.dex,defeated:G.defeated,picked:G.picked,flags:G.flags,lastHeal:G.lastHeal,steps:G.steps,time:Math.floor(G.time),visited:G.visited,shareExp:G.shareExp,pc:G.pc};
 }
 function save(){
   if(!G||!G.started)return;
   lsSet('chimere.save.'+G.seed+'.'+G.nTowns,saveData());
   lsSet('chimere.last',{seed:G.seed,nTowns:G.nTowns});
 }
+function listSaves(){
+  const out=[];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(!k||!k.startsWith('chimere.save.'))continue;
+      const o=lsGet(k,null);
+      if(validSave(o))out.push({key:k,seed:o.seed,nTowns:o.nTowns,o});
+    }
+  }catch(e){}
+  out.sort((a,b)=>(b.o.ts||0)-(a.o.ts||0));
+  return out;
+}
+const saveExists=(seed,n)=>!!lsGet('chimere.save.'+seed+'.'+n,null);
 function validSave(o){
   return !!(o&&typeof o==='object'&&typeof o.seed==='string'&&/^[A-Z0-9]{4,8}$/.test(o.seed)&&[3,4,5].includes(o.nTowns)
     &&Array.isArray(o.team)&&o.team.length>0&&o.team.length<=6&&o.team.every(m=>m&&Number.isFinite(m.form)&&Number.isFinite(m.lv)&&Number.isFinite(m.hp)&&Array.isArray(m.moves))
@@ -2564,15 +2578,51 @@ class TitleScene{
     this.stars=[...Array(70)].map(()=>[Math.random()*VW,Math.random()*VH*.65,Math.random()+.2]);
     this.rebuild();
   }
-  rebuild(){this.W=buildWorld(this.seed,SIZES[this.sz][1]);this.hue=hashStr(this.seed)%360;}
+  rebuild(){
+    const n=SIZES[this.sz][1];
+    this.W=buildWorld(this.seed,n);this.hue=hashStr(this.seed)%360;
+    this.cont=saveExists(this.seed,n)?{seed:this.seed,nTowns:n}:null;
+    this.hasSaves=listSaves().length>0;
+  }
   items(){
     const it=[];
     if(this.cont)it.push({k:'cont',label:'Continua'});
     it.push({k:'new',label:'Nuova avventura'});
+    if(this.hasSaves)it.push({k:'load',label:'Carica partita'});
     it.push({k:'import',label:'Importa partita'});
     it.push({k:'size',label:'Percorso: '+SIZES[this.sz][0]});
     it.push({k:'seed',label:'Seme: '+this.seed});
     return it;
+  }
+  async newGame(){
+    if(this.cont){
+      const c=await ask('Esiste già una partita con questo seme e questo percorso. Sovrascriverla con una nuova avventura?',['No','Sì, sovrascrivi']);
+      if(c!==1)return;
+    }
+    startGame(false);
+  }
+  async loadFlow(){
+    while(true){
+      const list=listSaves();
+      if(!list.length){this.hasSaves=false;this.sel=0;return;}
+      const items=list.map(x=>{
+        const lead=x.o.team[0],mins=Math.floor((x.o.time||0)/60);
+        return{label:`${x.seed} · ${x.nTowns} città`,right:`Lv${lead.lv} ${mins}m`};
+      }).concat([{label:'Indietro'}]);
+      const i=await listMenu(items,{title:'PARTITE SALVATE',w:240,x:8,y:14});
+      if(i<0||i>=list.length)return;
+      const sv=list[i];
+      const c=await listMenu([{label:'Continua'},{label:'Elimina'},{label:'Indietro'}],{title:`${sv.seed} · ${sv.nTowns} città`,w:130,x:VW/2-65,y:60});
+      if(c===0){
+        this.seed=sv.seed;this.sz=Math.max(0,SIZES.findIndex(z=>z[1]===sv.nTowns));this.rebuild();
+        startGame(true);return;
+      }else if(c===1){
+        const a=await ask(`Eliminare la partita ${sv.seed}? Non si può annullare.`,['No','Sì, elimina']);
+        if(a===1){try{localStorage.removeItem(sv.key);}catch(e){}
+          const last=lsGet('chimere.last',null);if(last&&last.seed===sv.seed&&last.nTowns===sv.nTowns){try{localStorage.removeItem('chimere.last');}catch(e){}}
+          this.rebuild();Snd.sfx('faint');}
+      }
+    }
   }
   async importFlow(){
     const c=await listMenu([{label:'Da file'},{label:'Incolla codice'},{label:'Annulla'}],{title:'IMPORTA',w:124,x:VW/2-62,y:56});
@@ -2588,6 +2638,7 @@ class TitleScene{
   update(dt){this.t+=dt;}
   onKey(k){
     const its=this.items(),n=its.length;
+    if(this.sel>=n)this.sel=0;
     if(k==='up'){this.sel=(this.sel+n-1)%n;Snd.sfx('sel');}
     else if(k==='down'){this.sel=(this.sel+1)%n;Snd.sfx('sel');}
     else{
@@ -2599,7 +2650,8 @@ class TitleScene{
       }
       else if(it.k==='seed'&&(k==='left'||k==='right')){this.seed=newSeed();this.cont=null;this.rebuild();Snd.sfx('sel');}
       else if(it.k==='cont'&&k==='a'){Snd.sfx('ok');startGame(true);}
-      else if(it.k==='new'&&k==='a'){Snd.sfx('ok');startGame(false);}
+      else if(it.k==='new'&&k==='a'){Snd.sfx('ok');this.newGame();}
+      else if(it.k==='load'&&k==='a'){Snd.sfx('ok');this.loadFlow();}
       else if(it.k==='import'&&k==='a'){Snd.sfx('ok');this.importFlow();}
     }
   }
@@ -2630,7 +2682,7 @@ class TitleScene{
     });
     // menu
     const its=this.items();
-    const mw=150,mx=VW/2-mw/2,my=100;
+    const mw=150,mx=VW/2-mw/2,my=Math.min(100,VH-(its.length*12+10)-3);
     box(mx,my,mw,its.length*12+10,.8);
     its.forEach((it,i)=>{
       const col=i===this.sel?'#fff':'#9aa6c8';
