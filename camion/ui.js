@@ -17,12 +17,13 @@ addEventListener('keydown',e=>{
   if(!started)return;
   const k=e.key.length===1?e.key.toLowerCase():e.key;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
-  if(e.target&&e.target.tagName==='INPUT')return;
+  if(e.target&&e.target.tagName==='INPUT'){if(e.key==='Escape'&&modalKind)closeModal();return;}
   if(e.repeat&&['m','e','c','l','n','Escape'].includes(k))return;
   keys[k]=true;audioInit();
   if(k==='Escape'){if(mapOpen)closeMap();else if(modalKind)closeModal();else openPause();}
   else if(k==='m'){mapOpen?closeMap():openMap();}
   else if(k==='e')interact();
+  else if(k==='f'){modalKind==='dir'?closeModal():openDirectory();}
   else if(k==='c'){toggleCruise();}
   else if(k==='l'){G.lights=!G.lights;toast(G.lights?'Luci accese':'Luci spente',900);}
   else if(k==='h')horn();
@@ -77,10 +78,12 @@ function openCompany(o){
     const jobs=W.jobsFor(s,comp,G.day).filter(j=>!G.taken[j.id]);
     h+=`<h3>Carichi disponibili · giorno ${G.day+1}</h3>`;
     if(!jobs.length)h+='<div class="sub">Oggi non ci sono più carichi qui. Torna domani!</div>';
-    for(const j of jobs){
+    for(let j of jobs){
+      const cap=G.truck.model.cap,part=j.tons>cap;
+      if(part)j=Object.assign({},j,{tons:cap,pay:Math.round(j.pay*cap/j.tons/5)*5,part:true});
       G.menuData.jobs[j.id]=j;const cg=CARGO_BY[j.cargo],ds=W._site.get(j.to),dc=W.companiesOf(ds).find(c=>c.id===j.toComp);
       let why=null;if(G.job)why='Hai già un incarico';else if(G.level<cg.lvl)why='Livello '+cg.lvl;else if(j.tons>G.truck.model.cap)why='Max '+G.truck.model.cap+' t';
-      h+=`<div class="row"><div class="ic">${cg.ic}</div><div><div class="t">${cg.n} · ${j.tons} t ${cargoTags(cg,j)}</div><div class="d">→ ${dc.name}, ${ds.name} · ${(j.dist/1000).toFixed(1)} km · tempo ${mmss(j.secs)}${why?` · <b style="color:#ff9a4d">${why}</b>`:''}</div></div><div class="pay">${money(j.pay)}</div><button class="mb" data-a="take" data-id="${j.id}" ${why?'disabled':''}>Accetta</button></div>`;
+      h+=`<div class="row"><div class="ic">${cg.ic}</div><div><div class="t">${cg.n} · ${j.tons} t ${j.part?'<span class="tag g">Carico ridotto</span>':''}${cargoTags(cg,j)}</div><div class="d">→ ${dc.name}, ${ds.name} · ${(j.dist/1000).toFixed(1)} km · tempo ${mmss(j.secs)}${why?` · <b style="color:#ff9a4d">${why}</b>`:''}</div></div><div class="pay">${money(j.pay)}</div><button class="mb" data-a="take" data-id="${j.id}" ${why?'disabled':''}>Accetta</button></div>`;
     }
   }else h+='<div class="sub" style="margin-top:12px">Questa azienda non spedisce merci: accetta solo consegne.</div>';
   if(job&&!(job.toComp===comp.id))h+=`<h3>Incarico in corso</h3><div class="sub">${CARGO_BY[job.cargo].ic} ${CARGO_BY[job.cargo].n} per ${W._site.get(job.to).name}</div><button class="mb gh" data-a="cancel">Annulla incarico (penale 10%)</button>`;
@@ -179,6 +182,7 @@ function act(a,d){
   else if(a==='fuelrescue'){closeModal();rescueFuel();}
   else if(a==='quit'){saveGame(true);closeModal();location.reload();}
   else if(a==='resclose'){closeModal();}
+  else if(a==='dirgps'){gpsToCompany(d.c,d.s);closeModal();}
 }
 function showResult(r){
   const cg=CARGO_BY[r.job.cargo];
@@ -187,6 +191,53 @@ function showResult(r){
   <div style="font-family:var(--disp);font-size:30px;font-weight:900;color:#4dff9a;margin:10px 0">${money(r.pay)} <span style="font-size:14px;color:var(--ac)">+${r.xp} XP</span></div>${r.up?`<div class="row"><div class="ic">⭐</div><div><div class="t">Livello ${r.level}!</div><div class="d">Nuovi carichi sbloccati: ${CARGO.filter(c=>c.lvl===r.level).map(c=>c.ic+' '+c.n).join(', ')||'prossimamente…'}</div></div><div></div></div>`:''}
   <button class="mb" data-a="close">Continua</button>`,'result');
 }
+
+
+/* ---------- elenco aziende / ricerca ---------- */
+let dirQ='',dirF='all';
+function allCompanies(){
+  const out=[];
+  for(let j=-CORE-1;j<=CORE+1;j++)for(let i=-CORE-1;i<=CORE+1;i++){
+    if(!isKnown(i,j))continue;const s=W.site(i,j);if(!s.exists)continue;
+    for(const c of W.companiesOf(s))out.push({c,s});
+  }
+  for(const k in G.explored){const[i,j]=k.split(',').map(Number);if(Math.abs(i)<=CORE+1&&Math.abs(j)<=CORE+1)continue;const s=W.site(i,j);if(s.exists)for(const c of W.companiesOf(s))out.push({c,s});}
+  return out;
+}
+function openDirectory(){
+  if(!G)return;if(mapOpen)closeMap();
+  const keep=modalKind==='dir';
+  const h=`<button class="x" data-a="close">✕</button><h2>🔎 Cerca aziende</h2><div class="sub">Trova un'azienda o un tipo di carico e imposta il navigatore.</div>
+  <input id="dirIn" class="srch" placeholder="Nome azienda, città, carico (es. legname)…" value="${dirQ.replace(/"/g,'&quot;')}" autocomplete="off" spellcheck="false">
+  <div class="chips" id="dirChips"><button data-f="all">Tutte</button><button data-f="out">Che producono</button><button data-f="in">Che ricevono</button><button data-f="job">Con il mio carico</button></div><div id="dirRes"></div>`;
+  if(!keep)openModal(h,'dir');
+  const inp=document.querySelector('#dirIn');
+  inp.oninput=()=>{dirQ=inp.value;dirRender();};
+  document.querySelectorAll('#dirChips button').forEach(b=>b.onclick=()=>{dirF=b.dataset.f;dirRender();});
+  dirRender();if(!MOB)inp.focus();
+}
+function dirRender(){
+  document.querySelectorAll('#dirChips button').forEach(b=>b.classList.toggle('on',b.dataset.f===dirF));
+  const q=dirQ.trim().toLowerCase(),list=allCompanies();
+  const res=list.filter(({c,s})=>{
+    if(dirF==='out'&&!c.ind.out.length)return false;if(dirF==='in'&&!c.ind.in.length)return false;
+    if(dirF==='job'&&!(G.job&&c.ind.in.includes(G.job.cargo)))return false;
+    if(!q)return true;
+    const txt=(c.name+' '+s.name+' '+c.ind.n+' '+c.ind.out.concat(c.ind.in).map(x=>CARGO_BY[x].n).join(' ')).toLowerCase();
+    return q.split(/\s+/).every(w=>txt.includes(w));
+  }).map(o=>(o.d=Math.hypot(o.s.x-G.x,o.s.y-G.y),o)).sort((a,b)=>a.d-b.d).slice(0,40);
+  let h='';
+  for(const{c,s,d} of res){
+    h+=`<div class="row"><div class="ic">${IND_IC[c.ind.id]||'🏢'}</div><div><div class="t">${c.name}</div><div class="d">${c.ind.n} · ${s.name} · ${(d/1000).toFixed(1)} km${c.ind.out.length?'<br>Produce: '+c.ind.out.map(x=>CARGO_BY[x].n).join(', '):''}${c.ind.in.length?'<br>Riceve: '+c.ind.in.slice(0,5).map(x=>CARGO_BY[x].n).join(', ')+(c.ind.in.length>5?'…':''):''}</div></div><div></div><button class="mb" data-a="dirgps" data-c="${c.id}" data-s="${s.id}">GPS</button></div>`;
+  }
+  document.querySelector('#dirRes').innerHTML=h||'<div class="sub">Nessuna azienda trovata.</div>';
+}
+function gpsToCompany(cid,sid){
+  const s=W._site.get(sid),C=W.city(s),p=C.pois.find(q=>q.kind==='company'&&q.comp.id===cid);if(!p)return;
+  setGps({x:p.x,y:p.y,label:p.comp.name+' · '+s.name,site:s.id});toast('Navigatore verso '+p.comp.name,2200);
+}
+$('#bFind').onclick=()=>openDirectory();
+$('#tF').addEventListener('pointerdown',e=>{e.preventDefault();openDirectory();});
 
 /* ---------- mappa a schermo intero ---------- */
 const mapcv=$('#mapcv'),mc=mapcv.getContext('2d'),mv={x:0,y:0,z:.06,sel:null};
@@ -242,17 +293,19 @@ function drawMap(){
 }
 function sideMap(){
   const side=$('#mapside');
-  if(!mv.sel){side.innerHTML=`<h2>Regione di ${W.region}</h2><div style="color:var(--dim);line-height:1.6;margin-top:6px">Tocca una città o un avamposto per vedere servizi e aziende e impostare il navigatore.<br><br>Fuori dal confine rosso si estendono le <b style="color:var(--ink)">Terre Libere</b>: la mappa continua all'infinito e si svela man mano che la esplori.</div><div class="kv" style="margin-top:14px"><div>Celle esplorate<b>${Object.keys(G.explored).length}</b></div><div>Scoperte<b>${G.stats.disc}</b></div></div>${G.gps?'<button class="mb gh" data-m="nogps">Spegni navigatore</button>':''}`;return;}
+  if(!mv.sel){side.innerHTML=`<button class="mb" data-m="find" style="width:100%;margin-bottom:12px">🔎 Cerca aziende</button><h2>Regione di ${W.region}</h2><div style="color:var(--dim);line-height:1.6;margin-top:6px">Tocca una città o un avamposto per vedere servizi e aziende e impostare il navigatore.<br><br>Fuori dal confine rosso si estendono le <b style="color:var(--ink)">Terre Libere</b>: la mappa continua all'infinito e si svela man mano che la esplori.</div><div class="kv" style="margin-top:14px"><div>Celle esplorate<b>${Object.keys(G.explored).length}</b></div><div>Scoperte<b>${G.stats.disc}</b></div></div>${G.gps?'<button class="mb gh" data-m="nogps">Spegni navigatore</button>':''}`;return;}
   const s=W._site.get(mv.sel),comps=W.companiesOf(s),d=Math.hypot(s.x-G.x,s.y-G.y);
   let h=`<h2>${s.name}</h2><div style="color:var(--dim);margin-bottom:8px">${s.size?['','Piccola città','Città','Grande città'][s.size]:'Avamposto'} · ${fmt(s.pop)} abitanti · ${BIOME_N[s.biome]}${s.coast?' · costa':''}<br>${(d/1000).toFixed(1)} km da te</div>
   <div style="margin:6px 0">${s.services.gas?'<span class="tag w">⛽ € '+s.fuel.toFixed(2)+'</span>':''}${s.services.garage?'<span class="tag w">🔧 officina</span>':''}${s.services.dealer?'<span class="tag b">🚚 concessionaria</span>':''}</div>
   <div style="display:flex;gap:6px;margin:10px 0"><button class="mb" data-m="gps">Imposta GPS</button><button class="mb gh" data-m="center">Centra</button></div><h3 style="font-family:var(--disp);font-size:11px;letter-spacing:.16em;color:var(--ac);text-transform:uppercase;margin:10px 0 6px">Aziende</h3>`;
-  for(const c of comps){h+=`<div class="row" style="grid-template-columns:auto 1fr;padding:8px 10px"><div class="ic" style="font-size:20px;width:30px">${IND_IC[c.ind.id]||'🏢'}</div><div><div class="t" style="font-size:13px">${c.name}</div><div class="d">${c.ind.out.length?'Produce '+c.ind.out.map(x=>CARGO_BY[x].n).join(', '):''}${c.ind.out.length&&c.ind.in.length?' · ':''}${c.ind.in.length?'Riceve '+c.ind.in.slice(0,4).map(x=>CARGO_BY[x].n).join(', ')+(c.ind.in.length>4?'…':''):''}</div></div></div>`;}
+  for(const c of comps){h+=`<div class="row" style="grid-template-columns:auto 1fr auto;padding:8px 10px"><div class="ic" style="font-size:20px;width:30px">${IND_IC[c.ind.id]||'🏢'}</div><div><div class="t" style="font-size:13px">${c.name}</div><div class="d">${c.ind.out.length?'Produce '+c.ind.out.map(x=>CARGO_BY[x].n).join(', '):''}${c.ind.out.length&&c.ind.in.length?' · ':''}${c.ind.in.length?'Riceve '+c.ind.in.slice(0,4).map(x=>CARGO_BY[x].n).join(', ')+(c.ind.in.length>4?'…':''):''}</div></div><button class="mb" style="padding:7px 11px" data-m="cgps" data-c="${c.id}" data-s="${s.id}">GPS</button></div>`;}
   side.innerHTML=h;
 }
 $('#mapside').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;const s=mv.sel&&W._site.get(mv.sel);
   if(b.dataset.m==='gps'&&s){setGps({x:s.x,y:s.y,label:s.name,site:s.id});toast('Navigatore verso '+s.name);closeMap();}
   else if(b.dataset.m==='center'&&s){mv.x=s.x;mv.y=s.y;mv.z=.12;drawMap();}
+  else if(b.dataset.m==='find'){openDirectory();}
+  else if(b.dataset.m==='cgps'){gpsToCompany(b.dataset.c,b.dataset.s);closeMap();}
   else if(b.dataset.m==='nogps'){G.gps=null;sideMap();drawMap();}});
 let mdrag=null,mmoved=0;
 mapcv.addEventListener('pointerdown',e=>{mdrag={x:e.clientX,y:e.clientY};mmoved=0;mapcv.setPointerCapture(e.pointerId);mapcv.style.cursor='grabbing';});

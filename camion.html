@@ -65,6 +65,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:mani
 .mob #gps canvas{width:24px;height:24px}
 .mob #touch #tM{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 134px)}
 .mob #touch #tC{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 190px)}
+.mob #touch #tF{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 302px)}
 .mob #touch #tP{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 246px)}
 /* modali */
 #modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(2,4,10,.6);backdrop-filter:blur(4px);padding:14px}
@@ -93,6 +94,9 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:mani
 .kv div{padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.05);font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
 .kv b{display:block;font-family:var(--disp);font-size:17px;color:var(--ink);letter-spacing:0;margin-top:2px;text-transform:none}
 .sw{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.sw button{width:30px;height:30px;border-radius:50%;border:2px solid transparent}.sw button.on{border-color:#fff}
+.srch{width:100%;font:inherit;font-size:15px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:11px 14px;outline:none;margin:6px 0 10px;user-select:text;-webkit-user-select:text}
+.srch:focus{border-color:var(--ac)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.chips button{font-size:11px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.05)}.chips button.on{background:var(--ac);color:#111;border-color:var(--ac)}
 .help td{padding:3px 12px 3px 0;font-size:13px;color:var(--dim)}.help kbd{font-family:var(--disp);font-size:11px;background:rgba(255,255,255,.1);border-radius:6px;padding:2px 7px;color:var(--ink)}
 /* mappa */
 #mapov{position:fixed;inset:0;z-index:18;background:#05080f}
@@ -100,6 +104,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:mani
 #mapside{position:absolute;right:12px;top:12px;bottom:12px;width:min(330px,calc(100vw - 24px));overflow:auto;padding:16px;pointer-events:auto;font-size:13px}
 #mapside h2{font-family:var(--disp);font-size:17px;font-weight:900;margin-bottom:2px}
 #mapclose{position:absolute;left:12px;top:12px;width:42px;height:42px;border-radius:50%;font-size:17px;background:var(--gl);border:1px solid var(--line)}
+@media(max-width:700px){#mapside{top:auto;left:12px;right:12px;bottom:12px;width:auto;max-height:46vh}#maplegend{display:none}}
 #maplegend{position:absolute;left:12px;bottom:12px;padding:10px 14px;font-size:12px;color:var(--dim);line-height:1.6}
 /* start */
 #start{position:fixed;inset:0;z-index:25;overflow:auto;background:radial-gradient(1200px 700px at 70% -10%,#1b2a4a 0,#070a14 60%),#05060d;display:grid;place-items:center;padding:20px;touch-action:pan-y}
@@ -137,7 +142,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:mani
   </div>
   <div id="gps" class="glass hide"><canvas id="gpsA" width="60" height="60"></canvas><div><div id="gpsT" style="font-weight:700"></div><div id="gpsD" style="font-size:11px;color:var(--dim)"></div></div></div>
   <div id="hr">
-    <div id="hbtn"><button class="glass" id="bMap" title="Mappa (M)">🗺️</button><button class="glass" id="bMenu" title="Menu (Esc)">☰</button></div>
+    <div id="hbtn"><button class="glass" id="bFind" title="Cerca aziende (F)">🔎</button><button class="glass" id="bMap" title="Mappa (M)">🗺️</button><button class="glass" id="bMenu" title="Menu (Esc)">☰</button></div>
     <div id="jobc" class="glass hide"></div>
   </div>
   <div id="dash" class="glass">
@@ -151,7 +156,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:mani
     <button id="tL" style="left:14px;bottom:14px">◀</button><button id="tR" style="left:92px;bottom:14px">▶</button>
     <button id="tG" style="right:14px;bottom:14px;width:78px;height:78px">▲</button><button id="tB" style="right:100px;bottom:14px">▼</button>
     <button id="tE" style="right:14px;bottom:106px;font-size:15px;font-family:var(--disp)">E</button>
-    <button id="tM" style="width:48px;height:48px;font-size:17px">🗺️</button>
+    <button id="tM" style="width:48px;height:48px;font-size:17px">🗺️</button><button id="tF" style="width:48px;height:48px;font-size:17px">🔎</button>
     <button id="tC" style="width:48px;height:48px;font-size:12px">CC</button>
     <button id="tP" style="width:48px;height:48px;font-size:17px">☰</button>
   </div>
