@@ -57,9 +57,27 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 #load{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#05060d;color:var(--dim);font-family:var(--disp);letter-spacing:.3em;font-size:12px;transition:opacity .6s}
 #load.gone{opacity:0;pointer-events:none}
 #uiToggle{display:none}
+#uiClose{display:none;position:sticky;top:0;align-self:flex-end;z-index:2;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid var(--line);font-size:15px;margin:-6px -6px -22px 0;flex:none}
+#ui,#ui *{touch-action:pan-y}
+#ui{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+input[type=range]{touch-action:pan-y;height:22px;background:linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,.14)) center/100% 4px no-repeat}
+#arc{position:fixed;inset:0;z-index:15;display:none;place-items:center;background:rgba(2,4,10,.62);backdrop-filter:blur(4px);padding:14px;touch-action:pan-y}
+#arc.open{display:grid}
+#arc .box{width:min(760px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:20px;position:relative}
+#arc h2{font-family:var(--disp);font-size:16px;letter-spacing:.1em;margin-bottom:12px}
+#arc .x{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08)}
+#arcGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+#arcGrid .tile{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#0a0d18;text-align:left}
+#arcGrid .tile:hover{border-color:var(--ac)}
+#arcGrid .tile img{width:100%;height:100%;object-fit:cover;display:block}
+#arcGrid .tile span{position:absolute;left:0;right:0;bottom:0;padding:16px 8px 6px;font-size:11px;background:linear-gradient(transparent,rgba(0,0,0,.85));line-height:1.3}
+#arcGrid .tile .del{position:absolute;right:4px;top:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);font-size:11px;opacity:.0;transition:.2s}
+#arcGrid .tile:hover .del,#arcGrid .tile.sel .del{opacity:1}
+#arc .empty{color:var(--dim);font-size:13px;grid-column:1/-1;padding:10px 0}
 @media (max-width:900px){
   #ui{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:46vh;transform:translateY(calc(100% + 20px))}
   body.ui #ui{transform:none}
+  #uiClose{display:block}
   #uiToggle{display:block;position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:6}
   body.ui #uiToggle{display:none}
   #mini{width:120px;height:120px;bottom:60px}
@@ -70,11 +88,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 </head>
 <body>
 <canvas id="cv"></canvas>
-<header class="top"><a class="brand" href="index.html"><i></i>INVENTA<span class="crumb">/ CITTÀ</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a><button class="pill" id="bLink">Link</button><button class="pill" id="bShot">Foto</button></div></header>
+<header class="top"><a class="brand" href="index.html"><i></i>INVENTA<span class="crumb">/ CITTÀ</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a><button class="pill" id="bArc">Archivio <b id="cnt">0</b></button><button class="pill" id="bLink">Link</button><button class="pill" id="bShot">Foto</button></div></header>
 <div id="toast"></div>
 <button class="pill" id="uiToggle">Controlli</button>
 
 <aside id="ui" class="panel">
+  <button id="uiClose" aria-label="Chiudi controlli">✕</button>
   <div>
     <h3>Seme</h3>
     <div class="seedrow"><input id="seed" maxlength="8" spellcheck="false" autocomplete="off"><button class="dice" id="bDice" title="Nuova città (N)">⚄</button></div>
@@ -109,6 +128,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div id="mini" class="panel"><canvas id="miniC"></canvas></div>
 <div id="card" class="panel"><button class="x" id="cardX">✕</button><b id="cardT"></b><small id="cardS"></small></div>
 <div id="hint">trascina · rotella per lo zoom · clic su un veicolo per seguirlo · H foto</div>
+<div id="arc"><div class="panel box"><button class="x" id="arcX">✕</button><h2>Archivio città</h2><div id="arcGrid"></div></div></div>
 <div id="load">GENERO LA CITTÀ…</div>
 
 <script>
@@ -1286,6 +1306,7 @@ addEventListener('keydown',e=>{
   if(e.target.matches('input,select'))return;
   const k=e.key.toLowerCase(),st=40/cam.z;
   if(k==='h'){document.body.classList.toggle('photo');}
+  if(e.key==='Escape'){arcOpen(false);document.body.classList.remove('ui');}
   else if(k==='n'||k===' '){e.preventDefault();$('#bDice').click();}
   else if(k==='+'||k==='=')cam.tz=clamp(cam.tz*1.25,.12,4);
   else if(k==='-')cam.tz=clamp(cam.tz/1.25,.12,4);
@@ -1309,7 +1330,7 @@ function rebuild(keepCam){
     $('#stats').innerHTML=`${city.stats.pop.toLocaleString('it-IT')} abitanti<br>${city.stats.b.toLocaleString('it-IT')} edifici · ${city.stats.roads} km di strade<br>${city.districts.length} quartieri`;
     $('#card').style.display='none';cardCar=null;
     $('#load').classList.add('gone');
-    writeHash();
+    writeHash();arcAdd();
     window.__gen=Math.round(performance.now()-t0);
   },30);
 }
@@ -1363,6 +1384,37 @@ $('#bExport').onclick=async()=>{
   c.setTransform(1,0,0,1,0,0);
   out.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`citta-${P.seed}-poster.png`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);toast('Poster scaricato');});
 };
+
+/* ---- archivio delle città create ---- */
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+let archive=lsGet('inventa.citta.archive',[]);
+const arcKey=o=>[o.seed,o.style,o.size,o.water].join('|');
+function arcAdd(){
+  const o={seed:P.seed,style:P.style,size:P.size,water:P.water,name:city.name,thumb:null};
+  const i=archive.findIndex(a=>arcKey(a)===arcKey(o));
+  if(i>=0){o.thumb=archive[i].thumb;archive.splice(i,1);}
+  archive.unshift(o);if(archive.length>48)archive.length=48;
+  arcThumb(o);lsSet('inventa.citta.archive',archive);$('#cnt').textContent=archive.length;
+}
+function arcThumb(o){
+  try{const f=document.createElement('canvas');f.width=miniBase.width;f.height=miniBase.height;f.getContext('2d').putImageData(miniBase,0,0);const t=document.createElement('canvas');t.width=t.height=112;t.getContext('2d').drawImage(f,0,0,112,112);o.thumb=t.toDataURL('image/jpeg',.7);}catch(e){}
+}
+function arcOpen(open){
+  const a=$('#arc');if(open===undefined)open=!a.classList.contains('open');a.classList.toggle('open',open);
+  if(!open)return;const g=$('#arcGrid');g.innerHTML='';
+  if(!archive.length){g.innerHTML='<div class="empty">Ancora nessuna città. Inventane una.</div>';return;}
+  archive.forEach((a2,i)=>{const b=document.createElement('div');b.className='tile';b.tabIndex=0;
+    b.innerHTML=`${a2.thumb?`<img alt="" src="${a2.thumb}">`:''}<span><b>${a2.name}</b><br>${(STYLES[a2.style]||{}).n||a2.style} · ${a2.size}</span><button class="del" title="Elimina">✕</button>`;
+    b.onclick=e=>{if(e.target.closest('.del')){archive.splice(i,1);lsSet('inventa.citta.archive',archive);$('#cnt').textContent=archive.length;arcOpen(true);return;}
+      P.seed=a2.seed;P.style=a2.style;P.size=a2.size;P.water=a2.water;arcOpen(false);syncUi();rebuild(false);};
+    g.appendChild(b);});
+}
+$('#bArc').onclick=()=>arcOpen();$('#arcX').onclick=()=>arcOpen(false);
+$('#arc').addEventListener('pointerdown',e=>{if(e.target.id==='arc')arcOpen(false);});
+$('#cnt').textContent=archive.length;
+$('#uiClose').onclick=()=>document.body.classList.remove('ui');
+cv.addEventListener('pointerdown',()=>{if(innerWidth<=900)document.body.classList.remove('ui');});
 $('#uiToggle').onclick=()=>document.body.classList.add('ui');
 document.querySelector('.top').addEventListener('click',e=>{if(e.target.closest('.brand'))return;document.body.classList.remove('ui');});
 
