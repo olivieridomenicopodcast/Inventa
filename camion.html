@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060d">
+<title>Inventa · Camion</title>
+<meta name="description" content="Simulatore di camion procedurale: mappa, città, aziende, carichi e concessionarie generate dal seme, con terre libere infinite.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2305060d'/%3E%3Crect x='6' y='22' width='34' height='20' rx='3' fill='%23ffc83d'/%3E%3Crect x='42' y='28' width='16' height='14' rx='3' fill='%23ff7a3d'/%3E%3Ccircle cx='16' cy='46' r='5' fill='%23e9efff'/%3E%3Ccircle cx='48' cy='46' r='5' fill='%23e9efff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Unbounded:wght@300;600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--ac:#ffc83d;--gl:rgba(10,14,28,.78)}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
+#cv{position:fixed;inset:0;display:block;background:#0b1018}
+.hide{display:none!important}
+.glass{background:var(--gl);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#hud>*{position:absolute}
+#hl{left:max(12px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:99px;font-size:13px;font-weight:500;letter-spacing:.02em}
+.chip b{font-family:var(--disp);font-weight:600;color:var(--ac)}
+.xpb{display:inline-block;width:54px;height:5px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden}
+.xpb i{display:block;height:100%;background:var(--ac)}
+#hr{right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:8px;align-items:flex-end;max-width:min(330px,56vw)}
+#hbtn{display:flex;gap:6px;pointer-events:auto}
+#hbtn button{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:17px}
+#jobc{padding:10px 13px;font-size:12.5px;line-height:1.35;width:100%}
+#jobc .t{font-family:var(--disp);font-size:11px;letter-spacing:.14em;color:var(--ac);text-transform:uppercase;margin-bottom:3px}
+#jobc .bar{height:4px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden;margin-top:6px}#jobc .bar i{display:block;height:100%;background:var(--ac)}
+#jobc.late .bar i{background:#ff5a4d}
+#gps{left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:6px 14px;font-size:13px}
+#gps canvas{width:30px;height:30px}
+#dash{left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:flex-end;gap:14px;padding:10px 18px}
+#spd{font-family:var(--disp);font-weight:900;font-size:40px;line-height:1;min-width:2.3ch;text-align:right}
+#spd small{font-size:11px;font-weight:300;letter-spacing:.12em;margin-left:4px;color:var(--dim)}
+#lim{width:38px;height:38px;border-radius:50%;border:4px solid #e63b2e;background:#fff;color:#111;display:grid;place-items:center;font-weight:800;font-size:14px;font-family:var(--body)}
+#lim.none{opacity:.25}
+.gauges{display:flex;flex-direction:column;gap:5px;min-width:96px}
+.g{font-size:10.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.g i{flex:1;height:6px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden;min-width:56px}.g i b{display:block;height:100%;background:#4dd0ff}
+.g.d i b{background:#ff7a3d}
+#cc{font-size:10.5px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;text-align:center}
+#cc.on{color:#4dff9a}
+#prompt{left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 92px);transform:translateX(-50%);padding:9px 16px;font-size:14px;text-align:center;pointer-events:auto;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#prompt kbd{font-family:var(--disp);background:var(--ac);color:#111;border-radius:6px;padding:2px 7px;margin-right:6px;font-size:12px}
+#mini{right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:176px;height:176px;border-radius:50%;border:2px solid rgba(255,255,255,.28);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#touch{inset:0;pointer-events:none}
+#touch button{position:absolute;pointer-events:auto;border-radius:50%;width:66px;height:66px;background:rgba(10,14,28,.55);border:1px solid rgba(255,255,255,.22);font-size:22px;display:grid;place-items:center;touch-action:none}
+#touch button:active,#touch button.on{background:rgba(255,200,61,.45)}
+.mob #mini{width:120px;height:120px;bottom:auto;top:max(60px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right))}
+.mob #hr{top:auto;bottom:max(10px,env(safe-area-inset-bottom));right:max(10px,env(safe-area-inset-right));}
+.mob #hbtn{display:none}
+.mob #dash{bottom:max(88px,calc(env(safe-area-inset-bottom) + 88px))}
+.mob #prompt{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 156px)}
+.mob #jobc{display:none}
+.mob #hl{top:max(8px,env(safe-area-inset-top))}
+#toast{white-space:normal;max-width:min(560px,92vw);text-align:center;border-radius:18px;line-height:1.4}
+.mob .chip{font-size:11.5px;padding:5px 10px;gap:6px}
+.mob #hl{flex-direction:row;flex-wrap:wrap;max-width:calc(100vw - 150px);gap:5px}
+.mob .xpb{width:30px}
+.mob #gps{left:12px;top:calc(max(8px,env(safe-area-inset-top)) + 70px);transform:none;max-width:calc(100vw - 150px);padding:5px 10px;font-size:12px}
+.mob #gps canvas{width:24px;height:24px}
+.mob #touch #tM{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 134px)}
+.mob #touch #tC{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 190px)}
+.mob #touch #tP{left:auto;right:14px;bottom:auto;top:calc(max(60px,env(safe-area-inset-top)) + 246px)}
+/* modali */
+#modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(2,4,10,.6);backdrop-filter:blur(4px);padding:14px}
+#modal .box{width:min(860px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px 24px;background:rgba(12,16,32,.96);border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);touch-action:pan-y}
+#modal h2{font-family:var(--disp);font-weight:900;font-size:20px;letter-spacing:.06em;margin-bottom:4px}
+#modal h3{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ac);margin:16px 0 8px}
+#modal .sub{color:var(--dim);font-size:13px;margin-bottom:6px}
+#modal .x{position:sticky;float:right;top:0;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);font-size:15px}
+.row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:rgba(255,255,255,.03)}
+.row .ic{font-size:26px;width:40px;text-align:center}
+.row .t{font-weight:700;font-size:14px}.row .d{font-size:12px;color:var(--dim);line-height:1.45}
+.row .pay{font-family:var(--disp);font-weight:700;color:#4dff9a;font-size:15px;text-align:right}
+.tag{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid var(--line);margin-right:4px;color:var(--dim)}
+.tag.w{color:#ff9a4d;border-color:#ff9a4d66}.tag.g{color:#4dff9a;border-color:#4dff9a66}.tag.b{color:#4dd0ff;border-color:#4dd0ff66}
+.mb{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:10px 16px;border-radius:99px;background:var(--ac);color:#111;pointer-events:auto;white-space:nowrap}
+.mb:disabled{opacity:.35;cursor:not-allowed}
+.mb.gh{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line)}
+.mb.rd{background:#ff5a4d;color:#fff}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.spec{display:grid;grid-template-columns:70px 1fr 52px;gap:8px;align-items:center;font-size:11px;color:var(--dim);margin:2px 0}
+.spec i{height:5px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden}.spec i b{display:block;height:100%;background:var(--ac)}.spec span{color:var(--ink);text-align:right}
+.tcard{border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.03)}
+.tcard canvas{width:100%;height:60px;display:block;margin-bottom:6px}
+.tcard .nm{font-weight:700;font-size:14px}.tcard .br{font-size:11px;color:var(--dim);margin-bottom:6px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:8px 0}
+.kv div{padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.05);font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.kv b{display:block;font-family:var(--disp);font-size:17px;color:var(--ink);letter-spacing:0;margin-top:2px;text-transform:none}
+.sw{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.sw button{width:30px;height:30px;border-radius:50%;border:2px solid transparent}.sw button.on{border-color:#fff}
+.help td{padding:3px 12px 3px 0;font-size:13px;color:var(--dim)}.help kbd{font-family:var(--disp);font-size:11px;background:rgba(255,255,255,.1);border-radius:6px;padding:2px 7px;color:var(--ink)}
+/* mappa */
+#mapov{position:fixed;inset:0;z-index:18;background:#05080f}
+#mapcv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#mapside{position:absolute;right:12px;top:12px;bottom:12px;width:min(330px,calc(100vw - 24px));overflow:auto;padding:16px;pointer-events:auto;font-size:13px}
+#mapside h2{font-family:var(--disp);font-size:17px;font-weight:900;margin-bottom:2px}
+#mapclose{position:absolute;left:12px;top:12px;width:42px;height:42px;border-radius:50%;font-size:17px;background:var(--gl);border:1px solid var(--line)}
+#maplegend{position:absolute;left:12px;bottom:12px;padding:10px 14px;font-size:12px;color:var(--dim);line-height:1.6}
+/* start */
+#start{position:fixed;inset:0;z-index:25;overflow:auto;background:radial-gradient(1200px 700px at 70% -10%,#1b2a4a 0,#070a14 60%),#05060d;display:grid;place-items:center;padding:20px;touch-action:pan-y}
+#start .in{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+@media(max-width:820px){#start .in{grid-template-columns:1fr}}
+#start h1{font-family:var(--disp);font-weight:900;font-size:clamp(40px,8vw,76px);letter-spacing:.04em;line-height:.95}
+#start h1 span{color:var(--ac)}
+#start .lead{color:var(--dim);margin:14px 0 20px;line-height:1.6;max-width:46ch}
+#start .pn{padding:18px 20px}
+#start label{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.seedrow{display:flex;gap:8px;margin:6px 0 14px}
+.seedrow input{flex:1;font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:.2em;text-transform:uppercase;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:11px 14px;color:var(--ink);min-width:0;outline:none}
+.seedrow input:focus{border-color:var(--ac)}
+.seedrow button{width:48px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:18px}
+#wstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+#wstat div{padding:9px 6px;border-radius:12px;background:rgba(255,255,255,.05);text-align:center;font-size:10px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+#wstat b{display:block;font-family:var(--disp);font-size:18px;color:var(--ink);letter-spacing:0}
+.srow{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 12px;border:1px solid var(--line);border-radius:12px;margin-top:6px;font-size:12.5px;background:rgba(255,255,255,.03);cursor:pointer;pointer-events:auto}
+.srow:hover{border-color:var(--ac)}
+@media(max-width:640px){#modal .box{padding:16px 14px}.row{grid-template-columns:auto 1fr;}.row .pay{grid-column:1/3;text-align:left}.row>.mb{grid-column:1/3}#dash{padding:8px 12px;gap:10px}#spd{font-size:32px}.top{display:none}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="hud" class="hide">
+  <div id="hl">
+    <div class="chip glass">💶 <b id="hMoney">0</b></div>
+    <div class="chip glass">Lv <b id="hLvl">1</b><span class="xpb"><i id="hXp" style="width:0"></i></span></div>
+    <div class="chip glass"><span id="hClock">08:00</span><span id="hWx">☀️</span></div>
+    <div class="chip glass" id="hZoneC"><span id="hZone"></span></div>
+  </div>
+  <div id="gps" class="glass hide"><canvas id="gpsA" width="60" height="60"></canvas><div><div id="gpsT" style="font-weight:700"></div><div id="gpsD" style="font-size:11px;color:var(--dim)"></div></div></div>
+  <div id="hr">
+    <div id="hbtn"><button class="glass" id="bMap" title="Mappa (M)">🗺️</button><button class="glass" id="bMenu" title="Menu (Esc)">☰</button></div>
+    <div id="jobc" class="glass hide"></div>
+  </div>
+  <div id="dash" class="glass">
+    <div class="gauges"><div class="g">⛽ <i><b id="gFuel"></b></i></div><div class="g d">🔧 <i><b id="gDmg"></b></i></div></div>
+    <div style="text-align:center"><div id="spd">0<small>km/h</small></div><div id="cc">cruise · C</div></div>
+    <div id="lim">–</div>
+  </div>
+  <div id="prompt" class="glass hide"></div>
+  <canvas id="mini" class="glass" width="352" height="352"></canvas>
+  <div id="touch" class="hide">
+    <button id="tL" style="left:14px;bottom:14px">◀</button><button id="tR" style="left:92px;bottom:14px">▶</button>
+    <button id="tG" style="right:14px;bottom:14px;width:78px;height:78px">▲</button><button id="tB" style="right:100px;bottom:14px">▼</button>
+    <button id="tE" style="right:14px;bottom:106px;font-size:15px;font-family:var(--disp)">E</button>
+    <button id="tM" style="width:48px;height:48px;font-size:17px">🗺️</button>
+    <button id="tC" style="width:48px;height:48px;font-size:12px">CC</button>
+    <button id="tP" style="width:48px;height:48px;font-size:17px">☰</button>
+  </div>
+</div>
+
+<div id="mapov" class="hide"><canvas id="mapcv"></canvas><button id="mapclose">✕</button><div id="mapside" class="glass"></div><div id="maplegend" class="glass"></div></div>
+<div id="modal" class="hide"></div>
+
+<div id="start">
+  <div class="in">
+    <div>
+      <div class="brand" style="margin-bottom:24px"><i></i>INVENTA <span class="crumb">/ CAMION</span></div>
+      <h1>CA<span>MION</span></h1>
+      <p class="lead">Un seme, un mondo intero: città, aziende, carichi, strade, concessionarie e camion generati dal nulla. Trasporta merci, compra mezzi migliori e, oltre il confine, esplora le <b>Terre Libere</b>: una mappa infinita tutta da scoprire.</p>
+      <table class="help"><tr><td><kbd>W</kbd> <kbd>S</kbd> / <kbd>↑</kbd> <kbd>↓</kbd></td><td>acceleratore · freno e retromarcia</td></tr><tr><td><kbd>A</kbd> <kbd>D</kbd> / <kbd>←</kbd> <kbd>→</kbd></td><td>sterzo</td></tr><tr><td><kbd>E</kbd></td><td>interagisci (aziende, pompe, officine…)</td></tr><tr><td><kbd>M</kbd> · <kbd>C</kbd> · <kbd>L</kbd> · <kbd>H</kbd> · <kbd>Spazio</kbd></td><td>mappa · cruise control · luci · clacson · freno a mano</td></tr><tr><td><kbd>N</kbd> · <kbd>Esc</kbd></td><td>navigatore sul carico · menu</td></tr></table>
+    </div>
+    <div class="glass pn">
+      <label>Seme del mondo</label>
+      <div class="seedrow"><input id="seedIn" maxlength="8" value="" spellcheck="false" autocomplete="off"><button id="seedDice" title="Seme casuale">⚄</button></div>
+      <div id="wstat"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mb" id="goNew" style="flex:1">Nuova partita</button><button class="mb gh" id="goCont" style="flex:1">Continua</button></div>
+      <div id="saves" style="margin-top:12px"></div>
+      <div style="margin-top:14px;font-size:11.5px;color:var(--dim);line-height:1.6">Il seme decide tutto: mappa, nomi, aziende, prezzi, flotta dei marchi. Stesso seme, stesso mondo.</div>
+      <div style="margin-top:12px"><a class="pill" href="index.html">← Hub</a></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script src="camion/world.js"></script>
+<script src="camion/city.js"></script>
+<script src="camion/render.js"></script>
+<script src="camion/game.js"></script>
+<script src="camion/ui.js"></script>
+</body>
+</html>
