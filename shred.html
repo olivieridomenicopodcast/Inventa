@@ -90,6 +90,7 @@ h1.logo span{color:var(--ac)}
    <h1 class="logo">SH<span>RED</span></h1>
    <p class="lead">Ogni seme è una canzone metal inedita, con riff, breakdown e assoli composti sul momento. Premi i tasti a tempo e fatti il tuo concerto.</p>
    <div class="keys"><kbd style="background:#3ddc6a">1</kbd><kbd style="background:#ff4d5a">2</kbd><kbd style="background:#ffd23d">3</kbd><kbd style="background:#3d9bff">4</kbd><kbd style="background:#ff8a3d">5</kbd><span>sulla tastiera · sul telefono tocca i pulsanti colorati</span></div>
+   <div class="keys" style="line-height:1.5"><span>I tasti seguono ciò che senti: <b style="color:#3ddc6a">1</b> chitarra bassa · <b style="color:#ff4d5a">2</b> rullante · <b style="color:#ffd23d">3</b> piatti e accordi · <b style="color:#3d9bff">4</b> <b style="color:#ff8a3d">5</b> note acute e assoli.</span></div>
    <div class="keys"><kbd style="background:#6ab6ff">Spazio</kbd><span>Star Power · <kbd style="background:#fff">Esc</kbd> pausa</span></div>
    <div class="recent" id="recent"></div>
   </div>
@@ -473,28 +474,41 @@ function makeSong(seed,lenIdx){
   const order={d:0,b:1,g:2,l:3};ev.sort((a,b)=>a.t-b.t||order[a.k]-order[b.k]);
   return{M,ev,secs,total,bpm:M.bpm,sps:60/M.bpm/4,root};
 }
-/* ---------- spartito per le corsie ---------- */
+/* ---------- spartito per le corsie ----------
+   Le corsie seguono ciò che si sente:
+   1 = chitarra bassa (palm mute sulla tonica) · 2 = colpi di rullante e dissonanze
+   3 = piatti, tom e accordi medi · 4-5 = note acute della chitarra e melodia solista */
 function buildChart(song,diff){
   const D=DIFFS[diff],L=D.lanes,sps=song.sps,root=song.root;
-  const pats={};
-  const patFor=(sid)=>pats[sid]||(pats[sid]=(()=>{const r=mulberry32(hashStr(song.M.name+sid));const n=6+Math.floor(r()*4);return Array.from({length:n},(_,i)=>i===0?0:Math.floor(r()*r()*4));})());
-  const notes=[];let last=-9;
-  const g=song.ev.filter(e=>e.k==='g');
-  for(const e of g){
-    const T=e.t*sps,sub=e.t%STEPS;
-    if(diff===0&&!(e.t%4===0||(e.d>=4&&!e.pm)))continue;
-    if(diff===1&&!(e.t%2===0||e.acc))continue;
-    if(T-last<D.gap-1e-6)continue;
-    const rel=e.p[0]-root;let base;
-    if(e.pm||e.sid==='end'&&false)base=patFor(e.sid)[e.ord%patFor(e.sid).length];
-    else base=rel<=0?(e.acc?0:patFor(e.sid)[e.ord%patFor(e.sid).length]):rel<=3?1:rel<=6?2:rel<=9?3:4;
-    let lane=clamp(Math.round(base*(L-1)/4),0,L-1);
+  const drums={};
+  for(const e of song.ev)if(e.k==='d'){(drums[e.t]=drums[e.t]||new Set()).add(e.i);}
+  const laneOf=(p,e)=>{
+    const rel=p-root;
+    if(rel>=12)return rel%12<=4?3:4;                 // melodia acuta
+    if(rel>0)return rel<=2?1:rel<=5?2:rel<=8?3:4;     // gradi della scala: più acuto = corsia più alta
+    const dr=drums[e.t];
+    if(dr&&(dr.has('crash')||dr.has('china')||dr.has('tomH')||dr.has('tomM')||dr.has('tomL')))return 2;
+    if(dr&&dr.has('snare'))return 1;
+    return 0;                                         // palm mute sulla tonica
+  };
+  const scale=l=>clamp(Math.round(l*(L-1)/4),0,L-1);
+  const notes=[];
+  const keep=(arr,filt,gap,mk)=>{let last=-9;for(const e of arr){if(!filt(e))continue;const T=e.t*sps;if(T-last<gap-1e-6)continue;mk(e,T);last=T;}};
+  const g=song.ev.filter(e=>e.k==='g'),ld=song.ev.filter(e=>e.k==='l');
+  keep(g,e=>diff===0?(e.t%4===0||(e.d>=4&&!e.pm)):diff===1?(e.t%2===0||e.acc):true,D.gap,(e,T)=>{
+    const top=Math.max(...e.p),lane=scale(laneOf(e.pm?e.p[0]:top,e));
     const hold=(!e.pm&&e.d>=4)?Math.max(.15,e.d*sps-.05):0;
-    const n={t:T,lane,hold,star:false,state:0,holding:false,e:e};
-    notes.push(n);
-    if(diff===3&&e.acc&&e.p.length>1&&!hold){const l2=clamp(lane+1+(e.p[1]-root>9?1:0),0,L-1);if(l2!==lane)notes.push({t:T,lane:l2,hold:0,star:false,state:0,holding:false,e:e,chord:true});}
-    last=T;
-  }
+    notes.push({t:T,lane,hold,star:false,state:0,holding:false,e});
+    if(diff===3&&e.acc&&e.p.length>1&&!hold){const l2=scale(laneOf(e.p[1],e));const lo=Math.min(lane,l2===lane?clamp(lane+1,0,L-1):l2),hi=lo===lane?(l2===lane?clamp(lane+1,0,L-1):l2):lane;
+      const second=l2!==lane?l2:clamp(lane+1,0,L-1);if(second!==lane)notes.push({t:T,lane:second,hold:0,star:false,state:0,holding:false,e,chord:true});}
+  });
+  // assolo / melodia: note acute con la loro vera altezza
+  keep(ld,e=>true,Math.max(D.gap,.2),(e,T)=>{
+    const lane=scale(clamp(Math.round(((e.p[0]-root)%12)/12*2)+3,3,4));
+    const clash=notes.some(n=>Math.abs(n.t-T)<.05&&n.lane===lane);
+    if(clash)return;
+    notes.push({t:T,lane,hold:e.d>=3?Math.max(.12,e.d*sps-.05):0,star:false,state:0,holding:false,e,lead:true});
+  });
   notes.sort((a,b)=>a.t-b.t||a.lane-b.lane);
   // frasi star power
   const r=mulberry32(hashStr(song.M.name+'|star'+diff));let i=18+Math.floor(r()*10),gid=0;
