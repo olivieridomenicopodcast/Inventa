@@ -135,7 +135,7 @@ function openPause(){
   const h=`<button class="x" data-a="close">✕</button><h2>Pausa</h2><div class="sub">Seme ${G.seed} · giorno ${G.day+1} · ${fmtClock()}</div>
   <div class="kv"><div>Cassa<b>${money(G.money)}</b></div><div>Livello<b>${G.level}</b></div><div>Consegne<b>${G.done}</b></div><div>Distanza<b>${fmt(G.km/1000)} km</b></div></div>
   <h3>Il tuo camion</h3><div class="row"><div class="ic">🚛</div><div><div class="t">${m.bn} ${m.name}</div><div class="d">${m.hp} cv · ${m.cap} t · serbatoio ${Math.round(tankMax(T))} L · ${m.axles} · danni ${Math.round(T.dmg*100)}% · mod: motore ${T.up.eng}, serbatoio ${T.up.tank}, gomme ${T.up.tyre}, aero ${T.up.aero}</div></div><div></div></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="mb" data-a="close">Riprendi</button><button class="mb gh" data-a="save">Salva</button><button class="mb gh" data-a="map">Mappa</button><button class="mb gh" data-a="info">Info sul mondo</button><button class="mb gh" data-a="help">Comandi</button><button class="mb gh" data-a="snd">Suono: ${AU.on?'on':'off'}</button></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="mb" data-a="close">Riprendi</button><button class="mb gh" data-a="save">Salva</button><button class="mb gh" data-a="map">Mappa</button><button class="mb gh" data-a="info">Info sul mondo</button><button class="mb gh" data-a="help">Comandi</button><button class="mb gh" data-a="snd">Suono: ${AU.on?'on':'off'}</button><a class="mb gh" href="index.html" style="text-decoration:none">← Hub</a></div>
   <h3>Emergenze</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mb gh" data-a="tow">Soccorso su strada · € 300</button><button class="mb gh" data-a="fuelrescue">Soccorso carburante</button>${G.job?'<button class="mb gh" data-a="cancel">Annulla incarico</button>':''}<button class="mb rd" data-a="quit">Esci al titolo</button></div>`;
   openModal(h,'pause');
 }
@@ -446,7 +446,7 @@ function beginGame(cont){
   $('#start').classList.add('hide');$('#hud').classList.remove('hide');started=true;
   cam.x=G.x;cam.y=G.y;wasWild=!W.isCore(G.x,G.y);
   for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++)getChunk(W,Math.floor(G.x/CHUNK)+i,Math.floor(G.y/CHUNK)+j);
-  if(!cont){setTimeout(()=>toast('Benvenuto! Vai a un\'azienda (cerchio giallo) e premi E per prendere un carico.',5200),500);}
+  if(!cont){setTimeout(()=>toast('Vai a un cerchio giallo e premi E per prendere un carico!',5200),500);}
   history.replaceState(null,'','#'+seed);
   last=performance.now()/1000;
 }

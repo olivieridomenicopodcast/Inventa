@@ -12,7 +12,8 @@
 <link rel="stylesheet" href="shared.css">
 <style>
 :root{--ac:#ffc83d;--gl:rgba(10,14,28,.78)}
-html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#cv{touch-action:none}
 #cv{position:fixed;inset:0;display:block;background:#0b1018}
 .hide{display:none!important}
 .glass{background:var(--gl);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
@@ -103,7 +104,10 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none
 /* start */
 #start{position:fixed;inset:0;z-index:25;overflow:auto;background:radial-gradient(1200px 700px at 70% -10%,#1b2a4a 0,#070a14 60%),#05060d;display:grid;place-items:center;padding:20px;touch-action:pan-y}
 #start .in{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
-@media(max-width:820px){#start .in{grid-template-columns:1fr}}
+@media(max-width:820px){#start .in{grid-template-columns:minmax(0,1fr)}#start{place-items:start center}}
+#start .in>*{min-width:0}
+.mob .help{display:none}
+.help td{word-break:break-word}
 #start h1{font-family:var(--disp);font-weight:900;font-size:clamp(40px,8vw,76px);letter-spacing:.04em;line-height:.95}
 #start h1 span{color:var(--ac)}
 #start .lead{color:var(--dim);margin:14px 0 20px;line-height:1.6;max-width:46ch}
