@@ -168,7 +168,7 @@ function genMap(seed,kind){
   const carCol=['#c0392b','#2980b9','#27ae60','#f1c40f','#ecf0f1','#2c3e50','#8e44ad','#e67e22','#7f8c8d','#16a085','#d35400'];
   const nearBin=(x,y)=>bins.some(b=>Math.hypot(b.x-x,b.y-y)<5);
   for(const rd of M.roads){
-    if(!rd.main&&r()<.7)continue;
+    if(!rd.main)continue;
     const n=Math.floor((rd.b-rd.a)/22);
     for(let k=0;k<n;k++){
       if(r()>.28)continue;

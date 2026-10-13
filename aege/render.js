@@ -202,6 +202,8 @@ function drawScene(c,M,S,cam,W,H,t){
   for(const tr of M.trees){if(!vis(tr.x-tr.r,tr.y-tr.r,tr.x+tr.r,tr.y+tr.r))continue;c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.arc(tr.x+.5,tr.y+.6,tr.r,0,TAU);c.fill();c.fillStyle=PAL.tree[tr.c];c.beginPath();c.arc(tr.x,tr.y,tr.r,0,TAU);c.fill();c.fillStyle='rgba(255,255,255,.1)';c.beginPath();c.arc(tr.x-tr.r*.25,tr.y-tr.r*.25,tr.r*.55,0,TAU);c.fill();}
   // auto parcheggiate
   for(const car of M.cars){if(!vis(car.x-3,car.y-3,car.x+3,car.y+3))continue;drawCar(c,car);}
+  // traffico
+  if(S.traffic)for(const c2 of S.traffic){if(c2.x<vx0-6||c2.x>vx1+6||c2.y<vy0-6||c2.y>vy1+6)continue;drawTraffic(c,c2);}
   // bidoni
   for(const b of M.bins){if(b.hide)continue;if(b.x<vx0-3||b.x>vx1+3||b.y<vy0-3||b.y>vy1+3)continue;drawBin(c,b,t,b.type===M.kind&&S.hint);}
   // camion + Fratesi
@@ -274,4 +276,16 @@ function drawBuilding(c,b,t){
     c.fillStyle='#8ec4e8';c.globalAlpha=.55;for(let x=b.x0+6;x<b.x1-8;x+=11)c.fillRect(x,b.y0+h/2-3,3,6);c.globalAlpha=1;
     c.fillStyle='#d94a3d';c.fillRect(b.x0,b.y1-1.6,w,1.6);
   }
+}
+
+function drawTraffic(c,k){
+  c.save();c.translate(k.x,k.y);c.rotate(k.ang);
+  const w=1.9,h=4.4;
+  c.fillStyle='rgba(0,0,0,.28)';rrect(c,-h/2+.25,-w/2+.25,h,w,.5);c.fill();
+  c.fillStyle=k.col;rrect(c,-h/2,-w/2,h,w,.5);c.fill();
+  c.fillStyle='rgba(20,30,45,.75)';rrect(c,-h*.22,-w/2+.25,h*.36,w-.5,.25);c.fill();
+  c.fillStyle='rgba(255,255,255,.2)';c.fillRect(h*.18,-w/2+.3,.4,w-.6);
+  c.fillStyle='#fff3b0';c.fillRect(h/2-.25,-w/2+.15,.25,.4);c.fillRect(h/2-.25,w/2-.55,.25,.4);
+  c.fillStyle=k.v<.5||k.brk?'#ff3030':'#9a1a1a';c.fillRect(-h/2,-w/2+.15,.22,.4);c.fillRect(-h/2,w/2-.55,.22,.4);
+  c.restore();
 }
