@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060d">
+<title>Inventa · Atlante</title>
+<meta name="description" content="Atlante: città italiane in pixel art a grandezza reale, un pixel per metro, ricavate da dati OpenStreetMap. Zoom, ricerca di vie e luoghi, giorno e notte.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2305060d'/%3E%3Crect x='10' y='34' width='14' height='14' fill='%23c8764a'/%3E%3Crect x='28' y='24' width='12' height='24' fill='%23bdb9b0'/%3E%3Crect x='44' y='30' width='12' height='18' fill='%23a94b34'/%3E%3Crect x='6' y='50' width='52' height='4' fill='%234a8bbd'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Unbounded:wght@300;600;900&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--ac:#e8a45a;--gl:rgba(10,14,28,.8)}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;background:#0b1118;cursor:grab;touch-action:none}
+#cv.drag{cursor:grabbing}
+.glass{background:var(--gl);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#ui{position:fixed;inset:0;pointer-events:none;z-index:5}
+#ui>*{position:absolute;pointer-events:auto}
+#sb{left:max(12px,env(safe-area-inset-left));top:calc(max(14px,env(safe-area-inset-top)) + 46px);width:min(340px,calc(100vw - 24px))}
+#q{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--gl);border:1px solid var(--line);border-radius:14px;padding:11px 14px;outline:none;user-select:text;-webkit-user-select:text;backdrop-filter:blur(10px)}
+#q:focus{border-color:var(--ac)}
+#res{margin-top:6px;max-height:min(46vh,380px);overflow:auto;padding:4px}
+#res:empty{display:none}
+#res button{display:flex;width:100%;justify-content:space-between;gap:10px;text-align:left;padding:9px 11px;border-radius:10px;font-size:13.5px}
+#res button:hover,#res button.on{background:rgba(255,255,255,.09)}
+#res small{color:var(--dim);font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+#tools{right:max(12px,env(safe-area-inset-right));top:calc(max(14px,env(safe-area-inset-top)) + 46px);display:flex;flex-direction:column;gap:8px}
+#tools button{width:42px;height:42px;border-radius:12px;font-size:18px;display:grid;place-items:center}
+#tools button.on{background:var(--ac);color:#1a1006}
+#info{left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);padding:12px 18px;min-width:220px;max-width:min(420px,calc(100vw - 24px));text-align:center}
+#info b{font-family:var(--disp);font-size:15px;display:block;margin-bottom:2px}
+#info span{font-size:12px;color:var(--dim)}
+#info .x{position:absolute;right:8px;top:6px;width:24px;height:24px;font-size:12px;color:var(--dim)}
+#mini{left:max(12px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));width:168px;height:140px;border-radius:12px;border:1px solid var(--line);cursor:pointer}
+#scale{right:calc(max(12px,env(safe-area-inset-right)) + 58px);bottom:max(18px,env(safe-area-inset-bottom));font-size:11px;letter-spacing:.08em;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
+#scale i{display:block;height:6px;border:2px solid #fff;border-top:0;margin-top:3px;box-shadow:0 1px 3px #000}
+#attr{right:max(12px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));font-size:10px;color:rgba(255,255,255,.7);text-shadow:0 1px 2px #000;pointer-events:none}
+#load{position:fixed;inset:0;z-index:20;background:radial-gradient(900px 600px at 60% 20%,#1d3a4e 0,#06080f 70%);display:grid;place-items:center;text-align:center;transition:opacity .5s}
+#load.hide{opacity:0;pointer-events:none}
+#load h1{font-family:var(--disp);font-weight:900;font-size:clamp(34px,8vw,64px);letter-spacing:.05em}
+#load h1 span{color:var(--ac)}
+#load p{color:var(--dim);margin-top:10px;font-size:14px}
+#lbar{width:min(260px,70vw);height:6px;border-radius:9px;background:rgba(255,255,255,.12);margin:18px auto 0;overflow:hidden}
+#lbar i{display:block;height:100%;width:0;background:var(--ac);transition:width .2s}
+@media(max-width:640px){#mini{width:120px;height:100px}.top{display:none}#sb{top:max(12px,env(safe-area-inset-top))}#tools{top:max(12px,env(safe-area-inset-top))}#scale{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 74px);right:max(12px,env(safe-area-inset-right))}#info{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 4px);left:auto;right:max(12px,env(safe-area-inset-right));transform:none;max-width:calc(100vw - 150px);text-align:left;min-width:0}#mini{bottom:max(16px,env(safe-area-inset-bottom))}#attr{display:none}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ ATLANTE</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
+<div id="ui">
+  <div id="sb"><input id="q" placeholder="Cerca una via o un luogo…" autocomplete="off" spellcheck="false"><div id="res" class="glass"></div></div>
+  <div id="tools">
+    <button class="glass" id="bIn" title="Zoom +">＋</button>
+    <button class="glass" id="bOut" title="Zoom −">－</button>
+    <button class="glass" id="bHome" title="Tutta la città">⌂</button>
+    <button class="glass on" id="bLab" title="Nomi">Aa</button>
+    <button class="glass" id="bNight" title="Giorno / notte">🌙</button>
+  </div>
+  <div id="info" class="glass" hidden><button class="x" id="iX">✕</button><b id="iN"></b><span id="iS"></span></div>
+  <canvas id="mini" class="glass" width="336" height="280"></canvas>
+  <div id="scale"><span id="sTxt">100 m</span><i id="sBar" style="width:100px"></i></div>
+  <div id="attr">© Contributori di OpenStreetMap · ODbL</div>
+</div>
+<div id="load"><div><h1>ATLAN<span>TE</span></h1><p id="lTxt">Disegno la città…</p><div id="lbar"><i id="lb"></i></div></div></div>
+<div id="toast"></div>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const cv=$('#cv'),ctx=cv.getContext('2d'),mini=$('#mini'),mc=mini.getContext('2d');
+let DPR=1,W=0,H=0;
+let city=null,dayImg=null,nightImg=null,night=0,nightTarget=0,showLab=true;
+const cam={x:0,y:0,z:1};
+let dirty=true,minZ=.1,maxZ=16;
+let flyTo=null,vel={x:0,y:0},sel=null;
+const params=new URLSearchParams(location.search);
+
+function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);fitMin();dirty=true;}
+function fitMin(){if(!city)return;minZ=Math.max(.12,Math.min(W/city.w,H/city.h)*.9);}
+addEventListener('resize',resize);
+
+function loadImg(src,prog){return new Promise((res,rej)=>{
+  const xhr=new XMLHttpRequest();xhr.open('GET',src);xhr.responseType='blob';
+  xhr.onprogress=e=>{if(e.lengthComputable&&prog)prog(e.loaded/e.total);};
+  xhr.onload=()=>{if(xhr.status!==200)return rej(new Error(src));const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(xhr.response);};
+  xhr.onerror=rej;xhr.send();});}
+
+/* ---------- avvio ---------- */
+async function init(){
+  resize();
+  let id=params.get('c')||'pesaro';
+  try{const idx=await (await fetch('atlante/index.json')).json();if(!idx.some(c=>c.id===id))id=idx[0].id;}catch(e){}
+  try{
+    city=await (await fetch('atlante/'+id+'.json')).json();
+    $('#lTxt').textContent='Disegno '+city.name+'…';
+    dayImg=await loadImg('atlante/'+id+'_day.png',p=>{$('#lb').style.width=Math.round(p*100)+'%';});
+  }catch(e){$('#lTxt').textContent='Non riesco a caricare la città. Riprova.';return;}
+  buildMini();fitMin();
+  home(true);
+  const q=params.get('q');if(q){const r=search(q);if(r.length)go(r[0]);}
+  $('#load').classList.add('hide');
+  dirty=true;requestAnimationFrame(frame);
+  document.title='Inventa · Atlante · '+city.name;
+}
+function home(instant){
+  const z=Math.min(W/city.w,H/city.h)*1.05;
+  const t={x:city.w/2,y:city.h/2,z:clamp(z,minZ,maxZ)};
+  if(instant){Object.assign(cam,t);}else fly(t);
+  dirty=true;
+}
+function fly(t,dur){flyTo={from:{...cam},to:t,t:0,dur:dur||1.1};}
+
+/* ---------- disegno ---------- */
+const FONT='"Pixelify Sans","Space Grotesk",monospace';
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=Math.min(.05,(now-(frame.t||now))/1000);frame.t=now;
+  if(flyTo){flyTo.t+=dt;let u=clamp(flyTo.t/flyTo.dur,0,1);u=u*u*(3-2*u);const a=flyTo.from,b=flyTo.to;
+    // zoom in scala logaritmica, così il volo è fluido
+    cam.z=Math.exp(Math.log(a.z)+(Math.log(b.z)-Math.log(a.z))*u);cam.x=a.x+(b.x-a.x)*u;cam.y=a.y+(b.y-a.y)*u;dirty=true;if(flyTo.t>=flyTo.dur)flyTo=null;}
+  if(Math.abs(vel.x)+Math.abs(vel.y)>.02&&!drag){cam.x-=vel.x*dt/cam.z;cam.y-=vel.y*dt/cam.z;vel.x*=Math.pow(.02,dt);vel.y*=Math.pow(.02,dt);dirty=true;}
+  if(Math.abs(night-nightTarget)>.002){night+=(nightTarget-night)*Math.min(1,dt*2.4);dirty=true;}else if(night!==nightTarget){night=nightTarget;dirty=true;}
+  if(!dirty)return;dirty=false;
+  clampCam();
+  draw();
+}
+function clampCam(){cam.x=clamp(cam.x,0,city.w);cam.y=clamp(cam.y,0,city.h);}
+const toScr=(x,y)=>[(x-cam.x)*cam.z+W/2,(y-cam.y)*cam.z+H/2];
+const toMap=(sx,sy)=>[(sx-W/2)/cam.z+cam.x,(sy-H/2)/cam.z+cam.y];
+function draw(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle='#0b1118';ctx.fillRect(0,0,W,H);
+  ctx.imageSmoothingEnabled=cam.z<1;ctx.imageSmoothingQuality='low';
+  const x0=(0-cam.x)*cam.z+W/2,y0=(0-cam.y)*cam.z+H/2;
+  ctx.drawImage(dayImg,x0,y0,city.w*cam.z,city.h*cam.z);
+  if(night>.003&&nightImg){ctx.globalAlpha=night;ctx.drawImage(nightImg,x0,y0,city.w*cam.z,city.h*cam.z);ctx.globalAlpha=1;}
+  if(showLab)drawLabels();
+  if(sel){const [sx,sy]=toScr(sel.x,sel.y);ctx.save();ctx.strokeStyle='#fff';ctx.lineWidth=2;const p=8+Math.sin(performance.now()/180)*2;ctx.beginPath();ctx.arc(sx,sy,p+6,0,7);ctx.stroke();ctx.strokeStyle='#e8a45a';ctx.beginPath();ctx.arc(sx,sy,p+9,0,7);ctx.stroke();ctx.restore();dirty=true;}
+  drawMini();updScale();
+}
+const PRIO={primary:3,secondary:3,trunk:3,tertiary:2,residential:1,unclassified:1,living_street:1,pedestrian:1,service:0,footway:0,cycleway:0,path:0,steps:0,track:0};
+function drawLabels(){
+  const z=cam.z;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+  const boxes=[];
+  const hit=(b)=>{for(const o of boxes){if(b[0]<o[2]&&b[2]>o[0]&&b[1]<o[3]&&b[3]>o[1])return true;}return false;};
+  // luoghi
+  const kmin={parco:0,spiaggia:0,acqua:0,storico:1.2,teatro:1.2,palazzo:1.6,chiesa:2,scuola:2.6,hotel:3.2};
+  const pois=city.pois;
+  ctx.font='700 '+clamp(11+z*.8,12,17)+'px '+FONT;
+  for(const p of pois){
+    const need=kmin[p.k]!==undefined?kmin[p.k]:2.6;if(z<Math.max(.35,need))continue;
+    const [sx,sy]=toScr(p.x,p.y);if(sx<-80||sx>W+80||sy<-30||sy>H+30)continue;
+    const w=ctx.measureText(p.n).width,b=[sx-w/2-3,sy-9,sx+w/2+3,sy+9];if(hit(b))continue;boxes.push(b);
+    ctx.lineWidth=4;ctx.strokeStyle='rgba(20,16,10,.85)';ctx.strokeText(p.n,sx,sy);
+    ctx.fillStyle=p.k==='parco'?'#c9f0a8':p.k==='acqua'||p.k==='spiaggia'?'#bfe4ff':'#ffe6b0';ctx.fillText(p.n,sx,sy);
+  }
+  // vie
+  if(z<1.7)return;
+  const fs=clamp(8+z*.9,10,15);ctx.font='500 '+fs+'px '+FONT;
+  const list=city.streets;
+  for(const s of list){
+    const pr=PRIO[s.c]!==undefined?PRIO[s.c]:0;
+    if(z<(pr>=3?1.7:pr===2?2.2:pr===1?3.0:5))continue;
+    const [sx,sy]=toScr(s.x,s.y);if(sx<-120||sx>W+120||sy<-40||sy>H+40)continue;
+    const w=ctx.measureText(s.n).width,r=Math.abs(s.a)*Math.PI/180,bw=Math.abs(Math.cos(r))*w+Math.abs(Math.sin(r))*fs,bh=Math.abs(Math.sin(r))*w+Math.abs(Math.cos(r))*fs;
+    const b=[sx-bw/2,sy-bh/2,sx+bw/2,sy+bh/2];if(hit(b))continue;boxes.push(b);
+    ctx.save();ctx.translate(sx,sy);ctx.rotate(r);ctx.lineWidth=3.5;ctx.strokeStyle='rgba(30,26,22,.8)';ctx.strokeText(s.n,0,0);ctx.fillStyle='#fffdf2';ctx.fillText(s.n,0,0);ctx.restore();
+  }
+}
+function updScale(){
+  const mpp=city.scale?1/(cam.z*city.scale):1/cam.z; // metri per pixel schermo
+  const nice=[5,10,20,50,100,200,500,1000,2000];let m=nice[0];for(const n of nice){if(n/mpp<=140)m=n;}
+  $('#sTxt').textContent=m>=1000?(m/1000)+' km':m+' m';$('#sBar').style.width=(m/mpp)+'px';
+}
+
+/* ---------- minimappa ---------- */
+let miniBase=null;
+function buildMini(){
+  const c=document.createElement('canvas');const s=Math.min(336/city.w,280/city.h);c.width=Math.round(city.w*s);c.height=Math.round(city.h*s);
+  const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(dayImg,0,0,c.width,c.height);miniBase={c,s,ox:(336-c.width)/2,oy:(280-c.height)/2};
+}
+function drawMini(){
+  mc.fillStyle='#2f6fa6';mc.fillRect(0,0,336,280);mc.drawImage(miniBase.c,miniBase.ox,miniBase.oy);
+  const s=miniBase.s,vw=W/cam.z*s,vh=H/cam.z*s,cx=miniBase.ox+cam.x*s,cy=miniBase.oy+cam.y*s;
+  mc.strokeStyle='#fff';mc.lineWidth=3;mc.strokeRect(cx-vw/2,cy-vh/2,vw,vh);mc.strokeStyle='#e8a45a';mc.lineWidth=1.5;mc.strokeRect(cx-vw/2,cy-vh/2,vw,vh);
+}
+function miniPick(e){const r=mini.getBoundingClientRect();const sx=(e.clientX-r.left)/r.width*336,sy=(e.clientY-r.top)/r.height*280;
+  cam.x=clamp((sx-miniBase.ox)/miniBase.s,0,city.w);cam.y=clamp((sy-miniBase.oy)/miniBase.s,0,city.h);flyTo=null;dirty=true;}
+let mdrag=false;
+mini.addEventListener('pointerdown',e=>{mdrag=true;mini.setPointerCapture(e.pointerId);miniPick(e);});
+mini.addEventListener('pointermove',e=>{if(mdrag)miniPick(e);});
+mini.addEventListener('pointerup',()=>mdrag=false);
+
+/* ---------- input: trascina, pizzica, rotellina ---------- */
+const ptrs=new Map();let drag=false,last=null,pinch=null,moved=0,down=null;
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});flyTo=null;vel.x=vel.y=0;
+  if(ptrs.size===1){drag=true;last={x:e.clientX,y:e.clientY,t:performance.now()};moved=0;down={x:e.clientX,y:e.clientY};cv.classList.add('drag');}
+  else if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:cam.z};drag=false;}
+});
+cv.addEventListener('pointermove',e=>{
+  if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2&&pinch){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;zoomAt(mx,my,clamp(pinch.z*d/pinch.d,minZ,maxZ));return;}
+  if(drag&&last){const dx=e.clientX-last.x,dy=e.clientY-last.y,now=performance.now(),dt=Math.max(1,now-last.t)/1000;
+    cam.x-=dx/cam.z;cam.y-=dy/cam.z;moved+=Math.abs(dx)+Math.abs(dy);vel.x=vel.x*.5+dx/dt*.5;vel.y=vel.y*.5+dy/dt*.5;last={x:e.clientX,y:e.clientY,t:now};dirty=true;}
+});
+function up(e){
+  ptrs.delete(e.pointerId);cv.classList.remove('drag');
+  if(ptrs.size<2)pinch=null;
+  if(drag&&ptrs.size===0){drag=false;if(moved<6&&down)pick(down.x,down.y);if(performance.now()-last.t>90){vel.x=vel.y=0;}}
+  if(ptrs.size===1){const [p]=[...ptrs.values()];last={x:p.x,y:p.y,t:performance.now()};drag=true;}
+}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{e.preventDefault();flyTo=null;zoomAt(e.clientX,e.clientY,clamp(cam.z*Math.exp(-e.deltaY*.0016),minZ,maxZ));},{passive:false});
+cv.addEventListener('dblclick',e=>{flyTo=null;const [mx,my]=toMap(e.clientX,e.clientY);fly({x:mx,y:my,z:clamp(cam.z*2.2,minZ,maxZ)},.5);});
+function zoomAt(sx,sy,z){const [mx,my]=toMap(sx,sy);cam.z=z;cam.x=mx-(sx-W/2)/z;cam.y=my-(sy-H/2)/z;dirty=true;}
+function zoomBy(f){flyTo=null;fly({x:cam.x,y:cam.y,z:clamp(cam.z*f,minZ,maxZ)},.35);}
+$('#bIn').onclick=()=>zoomBy(1.8);$('#bOut').onclick=()=>zoomBy(1/1.8);$('#bHome').onclick=()=>home(false);
+$('#bLab').onclick=e=>{showLab=!showLab;e.currentTarget.classList.toggle('on',showLab);dirty=true;};
+$('#bNight').onclick=async()=>{
+  const btn=$('#bNight');
+  if(!nightImg){btn.textContent='…';try{nightImg=await loadImg('atlante/'+city.id+'_night.png');}catch(_){toast('Non riesco a caricare la versione notturna');btn.textContent='🌙';return;}}
+  nightTarget=nightTarget?0:1;btn.textContent=nightTarget?'☀️':'🌙';btn.classList.toggle('on',!!nightTarget);dirty=true;
+};
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'){if(e.key==='Escape')e.target.blur();return;}
+  const s=60/cam.z;flyTo=null;
+  if(e.key==='ArrowLeft'||e.key==='a'){cam.x-=s;dirty=true;}else if(e.key==='ArrowRight'||e.key==='d'){cam.x+=s;dirty=true;}
+  else if(e.key==='ArrowUp'||e.key==='w'){cam.y-=s;dirty=true;}else if(e.key==='ArrowDown'||e.key==='s'){cam.y+=s;dirty=true;}
+  else if(e.key==='+'||e.key==='='){zoomBy(1.5);}else if(e.key==='-'){zoomBy(1/1.5);}
+  else if(e.key==='n'){$('#bNight').click();}else if(e.key==='l'){$('#bLab').click();}else if(e.key==='0'||e.key==='Home'){home(false);}
+  else if(e.key==='/'){e.preventDefault();$('#q').focus();}
+});
+
+/* ---------- selezione e info ---------- */
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200);}
+function coords(x,y){const [lon0,lat0,lon1,lat1]=city.bbox;const lon=lon0+x/city.w*(lon1-lon0),lat=lat1-y/city.h*(lat1-lat0);return lat.toFixed(5)+'° N, '+lon.toFixed(5)+'° E';}
+function pick(sx,sy){
+  const [mx,my]=toMap(sx,sy);let best=null,bd=1e9;
+  const th=(cam.z<1?30:22)/cam.z;
+  for(const p of city.pois){const d=Math.hypot(p.x-mx,p.y-my);if(d<bd&&d<Math.max(th,10)){bd=d;best=p;}}
+  if(best){sel=best;showInfo(best.n,[best.k,best.a].filter(Boolean).join(' · ')+(best.a?'':'')+' — '+coords(best.x,best.y));}
+  else{sel=null;showInfo('Pesaro'.replace('Pesaro',city.name),'Qui: '+coords(mx,my)+' · '+Math.round(mx)+' m E · '+Math.round(my)+' m S dall’angolo NO');}
+  dirty=true;
+}
+function showInfo(n,s){$('#info').hidden=false;$('#iN').textContent=n;$('#iS').textContent=s;}
+$('#iX').onclick=()=>{$('#info').hidden=true;sel=null;dirty=true;};
+
+/* ---------- ricerca ---------- */
+function search(q){
+  q=q.trim().toLowerCase();if(!q)return[];
+  const out=[],seen=new Set();
+  for(const p of city.pois)if(p.n.toLowerCase().includes(q)){out.push({n:p.n,k:p.k,x:p.x,y:p.y,z:5,poi:p});}
+  for(const s of city.streets){if(s.n.toLowerCase().includes(q)&&!seen.has(s.n)){seen.add(s.n);out.push({n:s.n,k:'via',x:s.x,y:s.y,z:3.2});}}
+  out.sort((a,b)=>{const ai=a.n.toLowerCase().startsWith(q)?0:1,bi=b.n.toLowerCase().startsWith(q)?0:1;return ai-bi||a.n.length-b.n.length;});
+  return out.slice(0,40);
+}
+function go(r){
+  flyTo=null;fly({x:r.x,y:r.y,z:r.z},1.2);
+  if(r.poi){sel=r.poi;showInfo(r.n,[r.k,r.poi.a].filter(Boolean).join(' · '));}else{sel=null;showInfo(r.n,'Via · '+city.name);}
+  $('#res').innerHTML='';$('#q').blur();
+}
+let results=[];
+$('#q').addEventListener('input',e=>{
+  results=search(e.target.value);
+  const el=$('#res');el.innerHTML='';
+  results.forEach(r=>{const b=document.createElement('button');b.innerHTML='<span></span><small></small>';b.firstChild.textContent=r.n;b.lastChild.textContent=r.k;b.onclick=()=>go(r);el.appendChild(b);});
+});
+$('#q').addEventListener('keydown',e=>{if(e.key==='Enter'&&results.length)go(results[0]);});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#sb'))$('#res').innerHTML='';});
+
+init();
+window.__atl={cam,get city(){return city;},go,search,home,get night(){return night;},draw:()=>{dirty=true;}};
+})();
+</script>
+</body>
+</html>
