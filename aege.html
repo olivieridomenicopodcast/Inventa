@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060d">
+<title>Inventa · AEGE</title>
+<meta name="description" content="AEGE: guida il compattatore bianco e svuota i bidoni della raccolta differenziata. Città, aziende e strade sono palindromi generati dal seme.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2305060d'/%3E%3Crect x='6' y='22' width='36' height='20' rx='3' fill='%23ffffff'/%3E%3Crect x='44' y='28' width='14' height='14' rx='3' fill='%23e9efff'/%3E%3Crect x='10' y='30' width='24' height='5' fill='%232f9e4f'/%3E%3Ccircle cx='16' cy='46' r='5' fill='%23888'/%3E%3Ccircle cx='48' cy='46' r='5' fill='%23888'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Unbounded:wght@300;600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--ac:#3ddc84;--gl:rgba(10,14,28,.78)}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;background:#0b1018;touch-action:none}
+.hide{display:none!important}
+.glass{background:var(--gl);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#hud>*{position:absolute}
+#hl{left:max(12px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:99px;font-size:13px;font-weight:500;letter-spacing:.02em}
+.chip b{font-family:var(--disp);font-weight:600;color:var(--ac)}
+.dot{width:12px;height:12px;border-radius:4px;display:inline-block;border:1px solid rgba(255,255,255,.5)}
+#hr{right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+#hbtn{display:flex;gap:6px;pointer-events:auto}
+#hbtn button{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:17px}
+#obj{left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);padding:8px 16px;font-size:13px;text-align:center;max-width:min(520px,52vw)}
+#obj small{display:block;color:var(--dim);font-size:11px;letter-spacing:.06em}
+#dash{left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:flex-end;gap:16px;padding:10px 18px}
+#spd{font-family:var(--disp);font-weight:900;font-size:36px;line-height:1;min-width:2.3ch;text-align:right}
+#spd small{font-size:11px;font-weight:300;letter-spacing:.12em;margin-left:4px;color:var(--dim)}
+.gauge{display:flex;flex-direction:column;gap:5px;min-width:150px}
+.gauge .lb{white-space:nowrap;gap:8px;font-size:10.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;display:flex;justify-content:space-between}
+.gauge i{height:8px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden;display:block}.gauge i b{display:block;height:100%;background:var(--ac);transition:width .15s}
+.gauge.full i b{background:#ff7a3d}
+#prompt{left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 84px);transform:translateX(-50%);padding:9px 16px;font-size:14px;text-align:center;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#prompt kbd{font-family:var(--disp);background:var(--ac);color:#04160c;border-radius:6px;padding:2px 7px;margin-right:6px;font-size:12px}
+#mini{right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:198px;height:144px;border-radius:12px;border:2px solid rgba(255,255,255,.28);box-shadow:0 8px 30px rgba(0,0,0,.5);pointer-events:auto}
+#touch{inset:0;pointer-events:none}
+#touch button{position:absolute;pointer-events:auto;border-radius:50%;width:68px;height:68px;background:rgba(10,14,28,.55);border:1px solid rgba(255,255,255,.22);font-size:24px;display:grid;place-items:center;touch-action:none}
+#touch button.on,#touch button:active{background:rgba(61,220,132,.45)}
+#tL{left:14px;bottom:20px}#tR{left:92px;bottom:20px}
+#tG{right:14px;bottom:20px}#tB{right:92px;bottom:20px}
+#tA{right:20px;bottom:104px;width:84px!important;height:84px!important;font-size:30px!important;background:rgba(61,220,132,.35)!important}
+.mob #mini{width:120px;height:88px;bottom:auto;top:max(60px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right))}
+.mob #hbtn{display:none}
+.mob #dash{bottom:max(100px,calc(env(safe-area-inset-bottom) + 100px));padding:7px 12px;gap:10px}
+.mob #spd{font-size:26px}.mob .gauge{min-width:100px}
+.mob #prompt{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 168px);font-size:13px}
+.mob #obj{left:12px;transform:none;top:calc(max(8px,env(safe-area-inset-top)) + 84px);max-width:calc(100vw - 150px);text-align:left;font-size:12px;padding:6px 12px}
+.mob #hl{flex-direction:row;flex-wrap:wrap;max-width:calc(100vw - 150px);gap:5px}
+.mob .chip{font-size:11.5px;padding:5px 10px;gap:6px}
+.mob #hr{top:auto;bottom:max(10px,env(safe-area-inset-bottom));right:auto;left:50%;transform:translateX(-50%);display:none}
+#toast{top:max(150px,calc(env(safe-area-inset-top) + 150px))!important;white-space:normal;max-width:min(560px,92vw);text-align:center;border-radius:18px;line-height:1.4}
+/* modali */
+#modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(2,4,10,.6);backdrop-filter:blur(4px);padding:14px}
+#modal .box{width:min(620px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px 24px;background:rgba(12,16,32,.96);border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);touch-action:pan-y}
+#modal h2{font-family:var(--disp);font-weight:900;font-size:20px;letter-spacing:.06em;margin-bottom:4px}
+#modal .sub{color:var(--dim);font-size:13px;margin-bottom:10px;line-height:1.5}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.kv div{padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.05);font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.kv b{display:block;font-family:var(--disp);font-size:17px;color:var(--ink);letter-spacing:0;margin-top:2px;text-transform:none}
+.stars{font-size:34px;letter-spacing:6px;color:#ffd24d;margin:6px 0}
+.mb{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:11px 18px;border-radius:99px;background:var(--ac);color:#04160c;pointer-events:auto;white-space:nowrap}
+.mb.gh{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+/* mappa */
+#mapov{position:fixed;inset:0;z-index:18;background:rgba(5,8,15,.92);display:grid;place-items:center;padding:14px}
+#mapov canvas{max-width:100%;max-height:calc(100vh - 28px);border-radius:14px;border:1px solid var(--line)}
+#mapclose{position:absolute;left:12px;top:12px;width:42px;height:42px;border-radius:50%;font-size:17px;background:var(--gl);border:1px solid var(--line)}
+/* start */
+#start{position:fixed;inset:0;z-index:25;overflow:auto;background:radial-gradient(1200px 700px at 70% -10%,#17402f 0,#070a14 60%),#05060d;display:grid;place-items:center;padding:70px 20px 24px;touch-action:pan-y}
+#start .in{width:min(980px,100%);display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:820px){#start .in{grid-template-columns:minmax(0,1fr)}#start{place-items:start center}}
+#start .in>*{min-width:0}
+#start h1{font-family:var(--disp);font-weight:900;font-size:clamp(46px,9vw,84px);letter-spacing:.06em;line-height:.95}
+#start h1 span{color:var(--ac)}
+#start .lead{color:var(--dim);margin:14px 0 16px;line-height:1.6;max-width:46ch}
+#start .pn{padding:18px 20px}
+#start label,.lbl{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.seedrow{display:flex;gap:8px;margin:6px 0 14px}
+.seedrow input{flex:1;font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:.2em;text-transform:uppercase;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:11px 14px;color:var(--ink);min-width:0;outline:none;user-select:text;-webkit-user-select:text}
+.seedrow input:focus{border-color:var(--ac)}
+.seedrow button{width:48px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:18px}
+#kinds{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0 14px}
+.kc{display:flex;gap:10px;align-items:center;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:rgba(255,255,255,.04)}
+.kc.on{border-color:var(--c);background:rgba(255,255,255,.1);box-shadow:0 0 22px -8px var(--c)}
+.kc .bn{width:26px;height:32px;border-radius:5px 5px 4px 4px;background:var(--c);position:relative;flex:none;border:1px solid rgba(255,255,255,.4)}
+.kc .bn::before{content:'';position:absolute;left:-2px;right:-2px;top:-4px;height:9px;border-radius:4px;background:var(--l)}
+.kc.two .bn{background:linear-gradient(90deg,#3d8a3d 50%,#7a4a27 50%)}
+.kc.two .bn::before{background:linear-gradient(90deg,#2f6f2f 50%,#5a3419 50%)}
+.kc .nm{font-weight:700;font-size:13.5px}.kc .ds{font-size:11px;color:var(--dim);line-height:1.35}
+#best{font-size:12px;color:var(--dim);margin:10px 0}
+.help td{padding:3px 12px 3px 0;font-size:13px;color:var(--dim)}.help kbd{font-family:var(--disp);font-size:11px;background:rgba(255,255,255,.1);border-radius:6px;padding:2px 7px;color:var(--ink)}
+.mob .help{display:none}
+#start .btn{width:100%;margin-top:6px}
+#truckprev{width:100%;height:auto;display:block;margin:12px 0 4px}
+@media(max-width:640px){#modal .box{padding:16px 14px}.top{display:none}#kinds{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="hud" class="hide">
+  <div id="hl">
+    <div class="chip glass">⏱ <b id="hTime">20:00</b></div>
+    <div class="chip glass">♻ <b id="hBins">0/0</b></div>
+    <div class="chip glass">★ <b id="hScore">0</b></div>
+  </div>
+  <div id="obj" class="glass"><span id="oT">—</span><small id="oS"></small></div>
+  <div id="hr">
+    <div class="chip glass"><span class="dot" id="hDot"></span><b id="hKind" style="color:var(--ink)">—</b></div>
+    <div id="hbtn">
+      <button class="glass" id="bMap" title="Mappa (M)">🗺</button>
+      <button class="glass" id="bSnd" title="Audio">🔊</button>
+      <button class="glass" id="bPause" title="Pausa (Esc)">⏸</button>
+    </div>
+  </div>
+  <div id="dash" class="glass">
+    <div id="spd">0<small>km/h</small></div>
+    <div class="gauge" id="gLoad"><div class="lb"><span>Carico</span><span id="gTxt">0 / 0 L</span></div><i><b id="gBar" style="width:0"></b></i></div>
+  </div>
+  <div id="prompt" class="glass hide"></div>
+  <canvas id="mini" class="glass" width="396" height="288"></canvas>
+  <div id="touch" class="hide">
+    <button id="tL">◀</button><button id="tR">▶</button>
+    <button id="tB">▼</button><button id="tG">▲</button>
+    <button id="tA">♻</button>
+  </div>
+</div>
+
+<div id="mapov" class="hide"><button id="mapclose">✕</button><canvas id="mapcv"></canvas></div>
+<div id="modal" class="hide"><div class="box" id="mbox"></div></div>
+<div id="toast"></div>
+
+<div id="start">
+  <div class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ AEGE</span></a></div>
+  <div class="in">
+    <div>
+      <h1>AE<span>GE</span></h1>
+      <p class="lead">Sei <b style="color:var(--ink)">Fratesi</b>, autista del compattatore bianco. Gira per le strade della città, svuota i bidoni a bordo strada e porta tutto al centro di raccolta fuori città. Ogni nome — città, vie, negozi, aziende — è un palindromo generato dal seme.</p>
+      <canvas id="truckprev" width="520" height="190"></canvas>
+      <table class="help" style="margin-top:10px">
+        <tr><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / frecce</td><td>guida (S = freno e retromarcia)</td></tr>
+        <tr><td><kbd>E</kbd> / <kbd>Spazio</kbd></td><td>tieni premuto: svuota i bidoni vicini al retro · scarica nel bunker</td></tr>
+        <tr><td><kbd>H</kbd> · <kbd>M</kbd> · <kbd>Esc</kbd></td><td>clacson · mappa · pausa</td></tr>
+        <tr><td>Rotellina</td><td>zoom</td></tr>
+      </table>
+    </div>
+    <div class="glass pn">
+      <label>Seme della città</label>
+      <div class="seedrow"><input id="seedIn" maxlength="12" autocomplete="off" spellcheck="false"><button id="dice" title="Nuovo seme">🎲</button></div>
+      <label>Scegli raccolta</label>
+      <div id="kinds"></div>
+      <div id="best"></div>
+      <button class="btn" id="go">Inizia il turno</button>
+    </div>
+  </div>
+</div>
+<script src="aege/gen.js"></script>
+<script src="aege/render.js"></script>
+<script src="aege/game.js"></script>
+</body>
+</html>
