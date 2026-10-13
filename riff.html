@@ -91,6 +91,7 @@ pre#tab .mk{color:#ffd166}
       <div class="row"><label>Aggressività <b id="vInt">70</b></label><input type="range" id="inten" min="0" max="100" value="70"></div>
       <div class="row"><label>Accordatura</label><select id="tun"></select></div>
       <div class="row"><label>Scala</label><select id="scl"></select></div>
+      <div class="row"><label>Suoni</label><select id="eng"><option value="sf">SoundFont (stile Guitar Pro)</option><option value="synth">Sintetizzati</option></select></div>
       <div class="row" style="margin-bottom:0"><label>Battute per sezione</label><select id="bars"><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option></select></div>
     </div>
     <div>
@@ -169,7 +170,7 @@ const TPL=['xxxx','xxx.','xx.x','x.xx','xx..','x.x.','x..x','.x.x','x...','..xx'
 const cnt=t=>{let n=0;for(const c of t)if(c==='x')n++;return n;};
 
 /* ============================================================ stato */
-const P={seed:'',bpm:170,tuning:'dropC',scale:'auto',inten:70,bars:4,secs:{intro:true,a:true,b:true,bd:true},reroll:{},mute:{g:false,b:false,l:false,d:false},loop:true};
+const P={seed:'',bpm:170,tuning:'dropC',scale:'auto',inten:70,bars:4,secs:{intro:true,a:true,b:true,bd:true},reroll:{},mute:{g:false,b:false,l:false,d:false},loop:true,engine:(()=>{try{return localStorage.getItem('riff.engine')==='synth'?'synth':'sf';}catch(e){return'sf';}})()};
 let song=null;
 
 function autoBpm(seed){const r=mulberry32(hashStr(seed+'|bpm'));return Math.round(112+r()*88);}
@@ -490,16 +491,84 @@ class Kit{
   }
 }
 
+/* ============================================================ SoundFont (WebAudioFont, strumenti GM) */
+const SF={
+  libs:['https://cdn.jsdelivr.net/npm/webaudiofont@3.0.4/npm/dist/WebAudioFontPlayer.js','https://unpkg.com/webaudiofont@3.0.4/npm/dist/WebAudioFontPlayer.js','https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'],
+  bases:['https://surikov.github.io/webaudiofontdata/sound/','https://cdn.jsdelivr.net/gh/surikov/webaudiofontdata/sound/'],
+  // programmi GM (a base 0): 30 Distortion Guitar, 28 Muted Guitar, 29 Overdriven Guitar, 34 Electric Bass (pick): gli stessi del file MIDI
+  melodic:{g:'0300_GeneralUserGS_sf2_file',gm:'0280_GeneralUserGS_sf2_file',b:'0340_GeneralUserGS_sf2_file',l:'0290_GeneralUserGS_sf2_file'},
+  drumNote:{kick:36,snare:38,hatC:42,hatO:46,crash:49,china:52,tomH:50,tomM:47,tomL:45},
+  loadScript(url){return new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error('timeout '+url)),20000);const el=document.createElement('script');el.src=url;el.onload=()=>{clearTimeout(t);res();};el.onerror=()=>{clearTimeout(t);el.remove();rej(new Error(url));};document.head.appendChild(el);});},
+  async lib(){
+    if(window.WebAudioFontPlayer)return;
+    for(const u of this.libs){try{await this.loadScript(u);if(window.WebAudioFontPlayer)return;}catch(e){}}
+    throw new Error('libreria non raggiungibile');
+  },
+  tone(file){return'_tone_'+file;},
+  drum(n){return'_drum_'+n+'_0_FluidR3_GM_sf2_file';},
+  async preset(ctx,file,varName,pl){
+    if(!window[varName]){
+      for(const b of this.bases){try{await this.loadScript(b+file+'.js');}catch(e){}if(window[varName])break;}
+      if(!window[varName])throw new Error('strumento non raggiungibile: '+file);
+    }
+    const pr=window[varName];pl.adjustPreset(ctx,pr);
+    const t0=performance.now();
+    while(!pr.zones.every(z=>z.buffer)){if(performance.now()-t0>25000)throw new Error('decodifica scaduta');await new Promise(r=>setTimeout(r,60));}
+  },
+  async load(ctx,progress){
+    await this.lib();
+    const pl=new WebAudioFontPlayer();
+    const jobs=[];
+    Object.values(this.melodic).forEach(f=>jobs.push([f+'.js',f,this.tone(f)]));
+    Object.values(this.drumNote).forEach(n=>{const f='128'+n+'_0_FluidR3_GM_sf2_file';jobs.push([f,f,this.drum(n)]);});
+    let done=0;
+    await Promise.all(jobs.map(j=>this.preset(ctx,j[1],j[2],pl).then(()=>{done++;if(progress)progress(Math.round(done/jobs.length*100));})));
+  }
+};
+class SfKit extends Kit{
+  constructor(ctx){
+    super(ctx);const c=ctx;
+    this.pl=new WebAudioFontPlayer();this.pl.resumeContext=()=>{};
+    const bus=(g,rv)=>{const n=c.createGain();n.gain.value=g;n.connect(this.master);if(rv){const s=c.createGain();s.gain.value=rv;n.connect(s);s.connect(this.revIn);}return n;};
+    this.sg=bus(.85,.16);this.sb=bus(.95,.03);this.sl=bus(.7,.22);this.sd=bus(1.0,.07);
+    const dg=c.createGain();dg.gain.value=.2;this.sl.connect(this.dly);this.dly.connect(dg);dg.connect(this.master);
+    this.vg=window[SF.tone(SF.melodic.g)];this.vgm=window[SF.tone(SF.melodic.gm)];this.vb=window[SF.tone(SF.melodic.b)];this.vl=window[SF.tone(SF.melodic.l)];
+  }
+  play(e,t,sps,hum){
+    const j=hum?(Math.random()*10-5):0,v=clamp(e.v+j,30,127)/127,pl=this.pl,c=this.c;
+    if(e.k==='d'){const n=SF.drumNote[e.i],pr=window[SF.drum(n)];if(pr)pl.queueWaveTable(c,this.sd,pr,t,n,e.i==='crash'||e.i==='china'?3:1.2,.95*v);}
+    else if(e.k==='g'){const pr=e.pm&&this.vgm?this.vgm:this.vg,d=e.pm?sps*.9:e.d*sps*.97;e.p.forEach(p=>pl.queueWaveTable(c,this.sg,pr,t,p,d,(e.pm?.7:.5)*v));}
+    else if(e.k==='b'){e.p.slice(0,1).forEach(p=>pl.queueWaveTable(c,this.sb,this.vb,t,p,e.pm?sps*1.1:e.d*sps*.97,.8*v));}
+    else if(e.k==='l'){pl.queueWaveTable(c,this.sl,this.vl,t,e.p[0],e.d*sps,.6*v);}
+  }
+}
+
 /* ============================================================ player */
 const Player={
-  ctx:null,kit:null,playing:false,t0:0,sps:0,idx:0,timer:0,kicks:[],
+  ctx:null,kit:null,kitType:null,playing:false,loading:false,t0:0,sps:0,idx:0,timer:0,kicks:[],
   ensure(){
     if(this.ctx)return;
     const AC=window.AudioContext||window.webkitAudioContext;
-    this.ctx=new AC();this.kit=new Kit(this.ctx);
+    this.ctx=new AC();
   },
-  start(fromStep){
+  async prepare(){
+    this.ensure();
+    if(this.kit&&this.kitType===P.engine)return true;
+    const b=$('#bPlay');
+    if(this.kit){try{this.kit.out.disconnect();}catch(e){}this.kit=null;}
+    if(P.engine==='sf'){
+      this.loading=true;b.disabled=true;b.textContent='Carico i suoni…';
+      try{await SF.load(this.ctx,p=>{b.textContent='Carico i suoni '+p+'%';});this.kit=new SfKit(this.ctx);this.kitType='sf';}
+      catch(err){console.warn(err);toast('SoundFont non raggiungibile: uso il suono sintetizzato');setEngine('synth');}
+      this.loading=false;b.disabled=false;b.textContent='▶ Suona';
+    }
+    if(!this.kit){this.kit=new Kit(this.ctx);this.kitType='synth';}
+    return true;
+  },
+  async start(fromStep){
+    if(this.loading)return;
     this.ensure();this.ctx.resume();
+    await this.prepare();
     clearInterval(this.timer);
     this.sps=60/P.bpm/4;this.kit.setTempo(P.bpm);
     this.idx=song.ev.findIndex(e=>e.t>=fromStep);if(this.idx<0)this.idx=0;
@@ -645,7 +714,10 @@ function buildTab(html){
 async function renderOffline(){
   const sps=60/P.bpm/4,secs=song.total*sps+2.6;
   const oc=new OfflineAudioContext(2,Math.ceil(secs*44100),44100);
-  const kit=new Kit(oc);kit.setTempo(P.bpm);
+  let kit;
+  if(P.engine==='sf'){Player.ensure();try{await SF.load(Player.ctx);kit=new SfKit(oc);}catch(e){kit=null;}}
+  if(!kit)kit=new Kit(oc);
+  kit.setTempo(P.bpm);
   const t0=.05;
   song.ev.forEach(e=>{if(!P.mute[e.k])kit.play(e,t0+e.t*sps,sps,false);});
   return oc.startRendering();
@@ -842,7 +914,17 @@ $('#secChecks').addEventListener('change',e=>{
 });
 document.querySelectorAll('.tg[data-m]').forEach(b=>b.onclick=()=>{const m=b.dataset.m;P.mute[m]=!P.mute[m];b.classList.toggle('mute',P.mute[m]);});
 $('#tgLoop').onclick=()=>{P.loop=!P.loop;$('#tgLoop').classList.toggle('mute',!P.loop);};
-$('#bPlay').onclick=()=>{if(Player.playing)Player.stop();else Player.start(0);};
+function setEngine(v){
+  P.engine=v;try{localStorage.setItem('riff.engine',v);}catch(e){}
+  const sel=$('#eng');if(sel)sel.value=v;
+}
+$('#eng').value=P.engine;
+$('#eng').onchange=e=>{
+  const was=Player.playing,st=was?Player.step():0;
+  setEngine(e.target.value);
+  if(was){Player.stop();playFrom(Math.floor(st/16)*16);}
+};
+$('#bPlay').onclick=()=>{if(Player.loading)return;if(Player.playing)Player.stop();else Player.start(0);};
 $('#bMidi').onclick=()=>{download(buildMidi(),`inventa-riff-${P.seed}-${P.bpm}bpm.mid`,'audio/midi');toast('MIDI scaricato · 4 tracce');};
 $('#bWav').onclick=async()=>{
   const b=$('#bWav');b.textContent='Render…';
