@@ -46,7 +46,7 @@ const dirOf=a=>({x:Math.cos(a),y:Math.sin(a)});
 function rearPt(){return{x:T.x-Math.cos(T.ang)*4.9,y:T.y-Math.sin(T.ang)*4.9};}
 function surf(x,y){
   if(x>M.center.x0-2&&x<M.center.x1&&y>M.center.y0&&y<M.center.y1)return 1;
-  if(Math.abs(y-M.hwy.y)<M.hwy.w/2&&x>M.hwy.b-6&&x<M.hwy.a+8)return 1;
+  if(Math.abs(y-M.hwy.y)<M.hwy.w/2&&x>M.hwy.a-6&&x<M.hwy.b+6)return 1;
   for(const rd of M.roads){if(rd.v){if(Math.abs(x-rd.c)<rd.w/2+.3&&y>rd.a&&y<rd.b)return 1;}else if(Math.abs(y-rd.c)<rd.w/2+.3&&x>rd.a&&x<rd.b)return 1;}
   return x>CITY_W+30?.72:.58;
 }

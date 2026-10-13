@@ -193,7 +193,7 @@ function drawScene(c,M,S,cam,W,H,t){
   for(let i=0;i<M.xs.length;i++){const x=M.xs[i];if(x+10<vx0||x-10>vx1)continue;for(let j=0;j<M.ys.length;j++){const y=M.ys[j];if(y+10<vy0||y-10>vy1)continue;c.fillStyle=PAL.asph;c.fillRect(x-M.wv[i]/2,y-M.wh[j]/2,M.wv[i],M.wh[j]);
     if(M.wv[i]>=14||M.wh[j]>=14){c.fillStyle='rgba(255,255,255,.55)';const hw=M.wv[i]/2,hh=M.wh[j]/2;for(let k=-hw+1;k<hw-.5;k+=1.4){c.fillRect(x+k,y-hh-2.4,.7,1.8);c.fillRect(x+k,y+hh+.6,.7,1.8);}for(let k=-hh+1;k<hh-.5;k+=1.4){c.fillRect(x-hw-2.4,y+k,1.8,.7);c.fillRect(x+hw+.6,y+k,1.8,.7);}}}}
   // autostrada
-  const hw=M.hwy;if(vis(hw.b,hw.y-hw.w/2,hw.a+4,hw.y+hw.w/2)){c.fillStyle=PAL.asph2;c.fillRect(hw.a,hw.y-hw.w/2,hw.b-hw.a,hw.w);c.strokeStyle='#e9e9e0';c.lineWidth=.25;c.beginPath();c.moveTo(hw.a,hw.y-hw.w/2+.5);c.lineTo(hw.b,hw.y-hw.w/2+.5);c.moveTo(hw.a,hw.y+hw.w/2-.5);c.lineTo(hw.b,hw.y+hw.w/2-.5);c.stroke();c.setLineDash([5,5]);c.beginPath();c.moveTo(hw.a,hw.y);c.lineTo(hw.b,hw.y);c.stroke();c.setLineDash([]);}
+  const hw=M.hwy;if(vis(hw.a-4,hw.y-hw.w/2,hw.b+4,hw.y+hw.w/2)){c.fillStyle=PAL.asph2;c.fillRect(hw.a,hw.y-hw.w/2,hw.b-hw.a,hw.w);c.strokeStyle='#e9e9e0';c.lineWidth=.25;c.beginPath();c.moveTo(hw.a,hw.y-hw.w/2+.5);c.lineTo(hw.b,hw.y-hw.w/2+.5);c.moveTo(hw.a,hw.y+hw.w/2-.5);c.lineTo(hw.b,hw.y+hw.w/2-.5);c.stroke();c.setLineDash([5,5]);c.beginPath();c.moveTo(hw.a,hw.y);c.lineTo(hw.b,hw.y);c.stroke();c.setLineDash([]);}
   // centro di raccolta
   const C=M.center;if(vis(C.x0-4,C.y0-4,C.x1+4,C.y1+4))drawCenter(c,M,t);
   // ombre e parcheggio
@@ -230,7 +230,7 @@ function drawScene(c,M,S,cam,W,H,t){
     for(const rd of M.roads){c.fillStyle=rd.main?'rgba(255,240,170,.9)':'rgba(255,255,255,.65)';
       if(rd.v){if(rd.c<vx0-4||rd.c>vx1+4)continue;for(let y=rd.a+60;y<rd.b-40;y+=180){if(y<vy0-8||y>vy1+8)continue;c.save();c.translate(rd.c,y);c.rotate(-Math.PI/2);c.fillText(rd.name,0,0);c.restore();}}
       else{if(rd.c<vy0-4||rd.c>vy1+4)continue;for(let x=rd.a+90;x<rd.b-40;x+=180){if(x<vx0-8||x>vx1+8)continue;c.fillText(rd.name,x,rd.c);}}}
-    if(vis(hw.b,hw.y-8,hw.a,hw.y+8)){c.fillStyle='rgba(255,255,255,.8)';for(let x=hw.b+40;x<hw.a;x+=140){if(x<vx0||x>vx1)continue;c.fillText(hw.name,x,hw.y+2.2);}}
+    if(vis(hw.a,hw.y-8,hw.b,hw.y+8)){c.fillStyle='rgba(255,255,255,.8)';for(let x=hw.a+40;x<hw.b-20;x+=70){if(x<vx0||x>vx1)continue;c.fillText(hw.name,x,hw.y+2.2);}}
     if(vis(C.x0,C.y0-8,C.x1,C.y0)){c.font='700 3.4px "Unbounded",sans-serif';c.fillStyle='#fff';c.strokeStyle='rgba(0,0,0,.6)';c.lineWidth=.5;c.strokeText('Centro '+C.name,(C.x0+C.x1)/2,C.y0-3.2);c.fillText('Centro '+C.name,(C.x0+C.x1)/2,C.y0-3.2);}
     if(vis(C.office.x0,C.office.y0,C.office.x1,C.office.y1)){c.font='600 1.6px "Space Grotesk",sans-serif';c.fillStyle='#14312c';c.fillText('Uffici '+C.office.name,(C.office.x0+C.office.x1)/2,C.office.y0+1.1);}
   }
