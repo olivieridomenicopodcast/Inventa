@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=71;
+const BUILD=72;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -299,12 +299,19 @@ function updateNPC(dt){
 }
 
 /* ============================================================ interazioni */
-const SMIN=e=>e.start,pad2=n=>String(n).padStart(2,'0'),hm=m=>pad2(Math.floor(m/60))+':'+pad2(m%60);
+const SMIN=e=>e.start,pad2=n=>String(n).padStart(2,'0'),hm=m=>pad2(Math.floor(m/60))+':'+pad2(Math.floor(m%60));
 function activeAt(rooms,day){
   const d=day==null?G.day:day;
   return PROGRAMMA.find(e=>e.d===d&&rooms.includes(e.room)&&e.kind!=='lounge'&&G.min>=e.start-5&&G.min<e.e)||null;
 }
 function nextAt(rooms){return PROGRAMMA.find(e=>e.d===G.day&&rooms.includes(e.room)&&e.kind!=='lounge'&&e.start>G.min)||null;}
+/* prossimo impegno della TUA agenda (prenotati, salvati, meeting); niente sessioni già seguite */
+function nextAgenda(){
+  const L=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e&&e.kind!=='lounge'&&!G.seen.has(e.id));
+  G.meets.forEach(m=>L.push({d:m.day,start:m.start,e:m.start+30,title:'Meeting con '+G.people.find(p=>p.id===m.pid).name,room:'Area networking'}));
+  const up=L.filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start);
+  return up[0]||null;
+}
 function nextEvent(){return PROGRAMMA.find(e=>e.d===G.day&&e.kind!=='lounge'&&e.start>G.min)||null;}
 function overlaps(a,b){return a.d===b.d&&a.start<b.e&&b.start<a.e;}
 function conflictWith(s){return [...G.booked].some(id=>id!==s.id&&overlaps(BYID[id],s))||G.meets.some(m=>overlaps({d:m.day,start:m.start,e:m.start+30},s));}
@@ -1118,8 +1125,8 @@ function drawGate(){
 function hud(){goal();{const u=G.flags.app?cmUnread(cmT()):0,bc=$('#bCommN');if(bc){const v=u?String(u):'';if(bc.textContent!==v)bc.textContent=v;bc.style.display=u?'':'none';}}if(G.flags.app)cmNotify();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr+(G.sandbox?' · SANDBOX':''));
-  const nx=nextEvent(),p=progress();
-  setT($('#ckS'),'cs',(nx?'Prossimo '+nx.t+': '+(nx.title.length>38?nx.title.slice(0,36)+'…':nx.title):'Giornata finita')+' · '+p.done+'/'+p.tot+' obiettivi');
+  const nx=nextAgenda(),p=progress();
+  setT($('#ckS'),'cs',(nx?(nx.d===G.day?(nx.start<=G.min?'Adesso: ':'Prossimo '+hm(nx.start)+': '):DAYNAMES[nx.d].slice(0,3)+' '+hm(nx.start)+': ')+(nx.title.length>34?nx.title.slice(0,32)+'…':nx.title):'Agenda vuota: scegli nel Programma')+' · '+p.done+'/'+p.tot+' obiettivi');
   if(MOB){const hide=!!(DL||G.watching||G.react);$('#pad').style.display=hide?'none':'';$('#act').style.display=hide?'none':'';}
   const n=DL||G.watching||G.react?null:nearest();const pr=$('#prompt');
   if(n){const h=`<kbd>${MOB?'●':'E'}</kbd>${esc(n.label)}`;if(cacheP!==h){cacheP=h;pr.innerHTML=h;}pr.classList.remove('hide');}else{pr.classList.add('hide');cacheP='';}
