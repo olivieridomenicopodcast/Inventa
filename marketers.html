@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060d">
+<title>Inventa · Rimini 3 giorni</title>
+<meta name="description" content="Simulatore del partecipante a un grande evento di marketing a Rimini: workshop del venerdì, speech del weekend, app di networking, incontri e collaborazioni. Progetto di fan non ufficiale.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2305060d'/%3E%3Cpath d='M10 44 L22 20 L32 36 L42 14 L54 44z' fill='%23ff6a3d'/%3E%3Crect x='8' y='46' width='48' height='6' rx='3' fill='%234dd0ff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Unbounded:wght@300;600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--ac:#ff6a3d;--ac2:#4dd0ff;--gl:rgba(14,18,36,.86);--ok:#4dff9a}
+html,body{min-height:100%;overscroll-behavior:none}
+body{background:radial-gradient(1100px 600px at 80% -10%,#3a1a2a 0,transparent 60%),radial-gradient(900px 600px at 0% 100%,#0d2a3c 0,transparent 60%),#05060d;background-attachment:fixed}
+.hide{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:74px 16px 40px}
+.glass{background:var(--gl);border:1px solid var(--line);border-radius:16px}
+h1,h2{font-family:var(--disp)}
+.btn{pointer-events:auto}
+.small{font-size:12px;color:var(--dim)}
+/* titolo */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+@media(max-width:860px){.hero{grid-template-columns:minmax(0,1fr)}}
+.hero h1{font-weight:900;font-size:clamp(34px,6.5vw,60px);line-height:1;letter-spacing:.02em}
+.hero h1 span{color:var(--ac)}
+.lead{color:var(--dim);line-height:1.65;margin:14px 0 18px;max-width:52ch}
+.pn{padding:18px 20px}
+.lbl{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);display:block;margin:12px 0 6px}
+.seedrow{display:flex;gap:8px}
+.seedrow input{flex:1;font-family:var(--disp);font-weight:600;font-size:18px;letter-spacing:.2em;text-transform:uppercase;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:10px 14px;color:var(--ink);min-width:0;outline:none;user-select:text}
+.seedrow button{width:46px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:18px}
+.tickets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tk{padding:11px 10px;border-radius:12px;border:2px solid var(--line);background:rgba(255,255,255,.04);text-align:left;font-size:12px;line-height:1.4}
+.tk b{display:block;font-family:var(--disp);font-size:13px;margin-bottom:3px}
+.tk.on{border-color:var(--ac);background:rgba(255,106,61,.12)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font-size:12px;padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.05)}
+.chips button.on{background:var(--ac);color:#1a0a04;border-color:var(--ac);font-weight:700}
+.chips.b button.on{background:var(--ac2);border-color:var(--ac2)}
+.disc{font-size:11px;color:var(--dim);margin-top:14px;line-height:1.5}
+/* barra di gioco */
+#bar{position:sticky;top:56px;z-index:12;padding:10px 12px;margin:0 -16px 14px;background:rgba(5,6,13,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+#bar .in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.when{font-family:var(--disp);font-weight:600;font-size:13px}
+.when small{display:block;font-family:var(--body);font-weight:400;color:var(--dim);font-size:11px;letter-spacing:.04em}
+.meter{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+.meter i{width:110px;height:7px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden;display:block}.meter i b{display:block;height:100%;background:var(--ok);transition:width .4s}
+.cnt{display:flex;gap:12px;margin-left:auto;font-size:12px}
+.cnt span{padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.07)}
+.cnt b{font-family:var(--disp);color:var(--ac)}
+/* tab */
+.tabs{display:flex;gap:6px;margin-bottom:14px;overflow:auto}
+.tabs button{padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:13px;white-space:nowrap}
+.tabs button.on{background:var(--ac);color:#1a0a04;border-color:var(--ac);font-weight:700}
+.day{margin-bottom:22px}
+.day h3{font-family:var(--disp);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac2);margin-bottom:8px}
+.slot{padding:12px 14px;margin-bottom:10px}
+.slot .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.slot .hd b{font-family:var(--disp);font-size:13px}
+.slot.cur{border-color:var(--ac);box-shadow:0 0 28px -10px var(--ac)}
+.slot.past{opacity:.5}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.card2{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:12.5px;line-height:1.4;text-align:left;display:block;width:100%}
+.card2 b{font-size:13.5px;display:block}
+.card2 .m{color:var(--dim);font-size:11.5px;margin-top:3px}
+.card2.sel{border-color:var(--ok);background:rgba(77,255,154,.09)}
+.card2.wl{border-color:#ffd24d;background:rgba(255,210,77,.08)}
+.tag{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid var(--line);margin-right:4px;color:var(--dim)}
+.tag.g{color:var(--ok);border-color:#4dff9a66}.tag.y{color:#ffd24d;border-color:#ffd24d66}.tag.r{color:#ff7a8a;border-color:#ff7a8a66}.tag.b{color:var(--ac2);border-color:#4dd0ff66}
+.ppl{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.pp{padding:12px;display:flex;gap:12px;align-items:flex-start}
+.ring{--p:50;width:52px;height:52px;border-radius:50%;flex:none;background:conic-gradient(var(--c,var(--ac)) calc(var(--p)*1%),rgba(255,255,255,.12) 0);display:grid;place-items:center;position:relative}
+.ring::before{content:'';position:absolute;inset:5px;background:#0c1020;border-radius:50%}
+.ring b{position:relative;font-family:var(--disp);font-size:12px}
+.pp .nm{font-weight:700;font-size:14px}.pp .rl{font-size:12px;color:var(--dim);line-height:1.4;margin:2px 0 6px}
+.pp .act{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.mb{font-family:var(--disp);font-weight:600;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;border-radius:99px;background:var(--ac);color:#1a0a04;white-space:nowrap}
+.mb.gh{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line)}
+.mb:disabled{opacity:.4;cursor:not-allowed}
+/* scena evento */
+.scene{padding:22px;position:relative;overflow:hidden;margin-bottom:14px}
+.scene .big{font-size:56px;line-height:1;margin-bottom:8px}
+.scene h2{font-size:clamp(18px,3.4vw,26px);margin-bottom:6px}
+.scene p{color:var(--dim);line-height:1.6;max-width:62ch}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:14px}
+.opt{padding:14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);text-align:left;line-height:1.4}
+.opt:hover{border-color:var(--ac);background:rgba(255,106,61,.09)}
+.opt b{display:block;font-size:14px;margin-bottom:3px}.opt span{font-size:12px;color:var(--dim)}
+.opt:disabled{opacity:.4;cursor:not-allowed}
+.log{padding:12px 14px;font-size:13px;line-height:1.55}
+.log li{margin:4px 0 4px 16px}
+/* modali */
+#modal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(2,4,10,.7);backdrop-filter:blur(4px);padding:14px}
+#modal .box{width:min(620px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px;background:rgba(12,16,32,.98);border:1px solid var(--line);border-radius:18px}
+#modal h2{font-size:20px;margin-bottom:6px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.kv div{padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.05);font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.kv b{display:block;font-family:var(--disp);font-size:18px;color:var(--ink);letter-spacing:0;margin-top:2px}
+.stars{font-size:30px;letter-spacing:6px;color:#ffd24d}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.sub{color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:8px}
+.nlist li{margin:6px 0 6px 18px;font-size:13.5px;line-height:1.5}
+.nlist em{color:var(--ac2);font-style:normal}
+select.sel{font:inherit;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+select.sel option{background:#0c1020}
+@media(max-width:640px){.top{display:none}#bar{top:0}.wrap{padding-top:16px}.cnt{margin-left:0}}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
+<div id="toast"></div>
+<div id="modal" class="hide"><div class="box" id="mbox"></div></div>
+<main class="wrap" id="root"></main>
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+function hashStr(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rngFor=(s,t)=>mulberry32(hashStr(s+'|'+t));
+const ri=(r,a,b)=>a+Math.floor(r()*(b-a+1)),pick=(r,a)=>a[Math.floor(r()*a.length)];
+function shuffle(r,a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const newSeed=()=>{let s='';const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';for(let i=0;i<5;i++)s+=a[Math.floor(Math.random()*a.length)];return s;};
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),ms||2200);}
+
+/* ============================================================ dati */
+const TOPICS=[
+ {id:'pod',n:'Podcast e audio',ic:'🎙️',role:'Podcaster',obj:'podcast che crescono'},
+ {id:'eco',n:'E-commerce',ic:'🛒',role:'E-commerce manager',obj:'negozi online'},
+ {id:'soc',n:'Social media',ic:'📱',role:'Social media manager',obj:'contenuti social'},
+ {id:'adv',n:'Advertising',ic:'🎯',role:'Media buyer',obj:'campagne a pagamento'},
+ {id:'cop',n:'Copywriting',ic:'✍️',role:'Copywriter',obj:'testi che vendono'},
+ {id:'seo',n:'SEO',ic:'🔎',role:'SEO specialist',obj:'posizionamento sui motori'},
+ {id:'brand',n:'Personal branding',ic:'🌟',role:'Personal brand coach',obj:'brand personale'},
+ {id:'vid',n:'Video e YouTube',ic:'🎬',role:'Videomaker',obj:'video che restano'},
+ {id:'ai',n:'AI e automazioni',ic:'🤖',role:'Consulente AI',obj:'automazioni con l’AI'},
+ {id:'sale',n:'Vendite e funnel',ic:'💶',role:'Funnel strategist',obj:'funnel di vendita'},
+ {id:'free',n:'Freelance e carriera',ic:'💼',role:'Freelance',obj:'lavoro da freelance'},
+ {id:'mind',n:'Mindset e produttività',ic:'🧠',role:'Coach',obj:'organizzazione e mindset'}
+];
+const T=Object.fromEntries(TOPICS.map(t=>[t.id,t]));
+const TIPS={
+ pod:['Registra un trailer di 40 secondi e mettilo nei primi 3 episodi.','Chiedi a ogni ospite una frase da usare come clip sociale.','Un episodio al giorno non serve: meglio un formato riconoscibile ogni settimana.','Riassumi ogni puntata in 3 capitoli, anche nelle note.','Collabora con un altro podcast con uno scambio di puntate.'],
+ eco:['Metti le recensioni sopra la fold nella pagina prodotto.','Una email di carrello abbandonato vale più di dieci post.','Testa un solo cambiamento alla volta nelle schede prodotto.','Offri una spedizione gratuita sopra una soglia ben calcolata.','Le foto in contesto vendono più delle foto su fondo bianco.'],
+ soc:['Il gancio dei primi 3 secondi decide tutto.','Pubblica meno ma rispondi ai commenti entro un’ora.','Riusa un contenuto in tre formati diversi.','Crea una rubrica fissa: il pubblico impara quando tornare.','Guarda i salvataggi, non solo i like.'],
+ adv:['Parti con un budget piccolo e crea tre varianti di creatività.','Il pubblico caldo converte, ma va riscaldato con contenuti.','Controlla il costo per lead, non solo i click.','Una landing coerente con l’annuncio dimezza i costi.','Cambia la creatività prima che il pubblico si stanchi.'],
+ cop:['Scrivi il titolo per ultimo, ma scrivine venti.','Parla un solo problema per pagina.','Leggi il testo ad alta voce: dove inciampi, taglia.','Usa le parole che usa il tuo cliente, non le tue.','Una prova concreta batte un aggettivo.'],
+ seo:['Parti dall’intento di ricerca, poi dalle parole chiave.','Aggiorna un vecchio articolo prima di scriverne uno nuovo.','Le pagine lente perdono posizioni e clienti.','Collega i contenuti tra loro con link interni utili.','Raccogli le domande dei clienti e rispondi una per una.'],
+ brand:['Racconta il percorso, non solo il risultato.','Scegli tre temi e ripetili per un anno.','Mostra le persone dietro il lavoro.','La coerenza vale più della perfezione.','Costruisci una lista email: la tua audience è tua.'],
+ vid:['Il suono conta più della risoluzione.','Taglia i primi 5 secondi di ogni video.','Una miniatura chiara vale una buona idea.','Pianifica tre video da una sola sessione di riprese.','Sottotitoli sempre, anche sui video lunghi.'],
+ ai:['Automatizza prima il compito che odi di più.','Scrivi bene la richiesta: contesto, esempio, formato.','Tieni sempre un controllo umano sull’output finale.','Documenta il processo prima di automatizzarlo.','Un assistente interno batte dieci strumenti sparsi.'],
+ sale:['Ogni funnel ha un solo obiettivo per passaggio.','Misura il tasso di conversione tra un passo e l’altro.','Una garanzia chiara riduce l’attrito.','Il follow-up fa metà del lavoro.','Offri un primo passo piccolo e facile da accettare.'],
+ free:['Ripeti con costanza la tua offerta in una frase sola.','Alza i prezzi prima di aumentare le ore.','Chiedi una testimonianza a ogni progetto concluso.','Dì no ai progetti che non vuoi ripetere.','Crea un pacchetto, non un listino.'],
+ mind:['Pianifica il giorno prima, non la mattina stessa.','Una priorità vera ogni giorno.','Il riposo fa parte del lavoro.','Misura ciò che migliora, non ciò che stanca.','Dividi i progetti in passi da 30 minuti.']
+};
+const NOVELTY=['una piattaforma per registrare in remoto con qualità da studio','un tool che trasforma una puntata in dieci clip','un gestionale per ordini e magazzino in un click','un editor di video guidato da modelli','un’app che organizza i contenuti per tutta la settimana','un software di email con segmenti automatici','uno strumento per trascrivere e riassumere le call','un pacchetto di template per le presentazioni','un servizio di pagamenti a rate per piccoli negozi','un plugin che velocizza il sito','un microfono da viaggio che sembra da studio','un generatore di sottotitoli animati'];
+const FIRST=['Giulia','Marco','Chiara','Luca','Sara','Matteo','Elena','Davide','Francesca','Andrea','Martina','Simone','Alessia','Federico','Valentina','Paolo','Silvia','Riccardo','Federica','Nicola','Ilaria','Stefano','Laura','Giacomo','Beatrice','Tommaso','Arianna','Lorenzo','Camilla','Emanuele','Roberta','Daniele','Alice','Michele','Serena','Fabio','Noemi','Gabriele','Monica','Enrico','Elisa','Claudio','Veronica','Massimo','Irene','Pietro','Cristina','Alberto','Sofia','Filippo'];
+const LAST=['Rossi','Ferrari','Esposito','Bianchi','Romano','Colombo','Ricci','Marino','Greco','Bruno','Gallo','Conti','De Luca','Mancini','Costa','Giordano','Rizzo','Lombardi','Moretti','Barbieri','Fontana','Santoro','Mariani','Rinaldi','Caruso','Ferraro','Gatti','Testa','Sala','Martini','Leone','Longo','Gentile','Villa','Parisi','Fabbri','Bernardi','Pellegrini','Orlando','Piras','Monti','Valentini','Vitale','Cattaneo','Basile','Morelli','Silvestri','Coppola','Neri','Sanna'];
+const CITIES=['Milano','Roma','Torino','Bologna','Napoli','Firenze','Bari','Padova','Verona','Pesaro','Cagliari','Palermo','Genova','Trento','Perugia','Brescia','Rimini','Udine','Catania','Lecce'];
+const B1=['Studio','Laboratorio','Officina','Agenzia','Atelier','Bottega','Fabbrica','Casa'];
+const B2=['Aurora','Pixel','Faro','Nuvola','Orbita','Mosaico','Tramonto','Scintilla','Bussola','Veliero','Prisma','Fornace','Eco','Delta','Origami','Zenit'];
+const ANG=['Da zero a','Il metodo per','Errori da evitare in','Casi reali di','Strategie avanzate di','Il laboratorio su'];
+const TK=['Come crescere con','Perché nessuno ti nota (e come cambiare)','La verità su','Costruire ogni giorno','Il futuro di','Storie vere di'];
+const TICKETS=[
+ {id:'std',n:'Standard',d:'Tre giorni, workshop e speech. Lista d’attesa normale.',fast:.35,lounge:0,rec:false},
+ {id:'pre',n:'Premium',d:'In più: registrazioni video, fast track in lista d’attesa.',fast:.7,lounge:0,rec:true},
+ {id:'exe',n:'Executive',d:'In più: area esclusiva, accesso garantito ai workshop, più incontri accettati.',fast:1,lounge:.12,rec:true}
+];
+const DAYS=[
+ {n:'Venerdì',k:'ws',slots:[['10:00','ws'],['11:30','ws'],['13:00','free'],['14:30','ws'],['16:00','ws'],['17:30','ws']]},
+ {n:'Sabato',k:'talk',slots:[['09:30','talk'],['11:00','talk'],['12:30','free'],['14:30','talk'],['16:00','talk'],['17:30','talk']]},
+ {n:'Domenica',k:'talk',slots:[['09:30','talk'],['11:00','talk'],['12:30','free'],['14:30','talk'],['16:00','talk'],['17:30','talk']]}
+];
+const SLOTS=[];DAYS.forEach((d,di)=>d.slots.forEach(s=>SLOTS.push({day:di,t:s[0],k:s[1]})));
+const PLACES=['Area networking','Bar del Palacongressi','Davanti al palco','Zona espositori'];
+const FAMILY=[['Dario Vignali','Fondatore di Marketers'],['Luca Cresi Ferrari','Co-fondatore, COO di Marketers'],['Emanuele Amodeo','Fondatore di Marketers Accelerator e Yoga Academy'],['Paolo Bacchi','Creative Director della Marketers Family'],['Vittorio Civinini','Insegnante nei corsi Marketers Pro'],['Luca Mastella','Growth hacker del team'],['Andrea Bottoni','Marketers Family Member'],['Elio Amato','Insegnante del corso Business Alchemy']];
+
+/* ============================================================ stato */
+let G=null; // partita
+let UI={tab:'prog',phase:'title'};
+const setup=lsGet('rimini.setup',{seed:newSeed(),ticket:'pre',main:'pod',seek:['sale','soc','ai'],offer:['pod','brand'],goal:'collab'});
+
+function gen(set){
+  const r=rngFor(set.seed,'ev'),seekSet=new Set(set.seek),offSet=new Set(set.offer);
+  const me={name:'Tu',main:set.main,seek:set.seek.slice(),offer:set.offer.slice(),biz:pick(r,B1)+' '+pick(r,B2)};
+  const used=new Set(),name=()=>{for(let i=0;i<50;i++){const n=pick(r,FIRST)+' '+pick(r,LAST);if(!used.has(n)){used.add(n);return n;}}return pick(r,FIRST)+' '+pick(r,LAST);};
+  const att=[];
+  for(let i=0;i<52;i++){
+    let topic=pick(r,TOPICS).id,seek=[],offer=[];
+    const pool=TOPICS.map(t=>t.id);
+    // quota di persone complementari al giocatore
+    const comp=r()<.5;
+    seek=shuffle(r,pool).slice(0,3);offer=shuffle(r,pool).slice(0,3);
+    if(comp){if(r()<.8)offer[0]=pick(r,set.seek);if(r()<.7)seek[0]=pick(r,set.offer);}
+    topic=offer[0];
+    const a={id:i,name:name(),topic,seek:[...new Set(seek)],offer:[...new Set(offer)],city:pick(r,CITIES),biz:pick(r,B1)+' '+pick(r,B2),busy:new Set(),met:false};
+    a.role=T[topic].role+' · '+a.biz+' ('+a.city+')';
+    for(let s=0;s<SLOTS.length;s++)if(r()<.27)a.busy.add(s);
+    // compatibilità
+    const x=a.offer.filter(t=>seekSet.has(t)).length,y=a.seek.filter(t=>offSet.has(t)).length,f=a.topic===set.main?1:0;
+    a.compat=Math.round(clamp((x/3*.5+y/3*.4+f*.1)*160+ri(r,-6,8),8,98));
+    att.push(a);
+  }
+  // workshop del venerdì
+  const ws=[],speakers=()=>name();
+  SLOTS.forEach((s,si)=>{if(s.k!=='ws')return;const topics=shuffle(r,TOPICS).slice(0,4);
+    topics.forEach((t,ri_)=>ws.push({id:ws.length,slot:si,room:'Sala '+'ABCD'[ri_],topic:t.id,title:pick(r,ANG)+' '+t.obj,speaker:speakers(),pop:+(.35+r()*.8).toFixed(2),q:+(.5+r()*.5).toFixed(2)}));});
+  // talk del weekend
+  const talks={};
+  SLOTS.forEach((s,si)=>{if(s.k!=='talk')return;const t=pick(r,TOPICS);talks[si]={slot:si,topic:t.id,title:pick(r,TK)+' '+t.obj,speaker:speakers(),q:+(.45+r()*.55).toFixed(2),keynote:(si===SLOTS.findIndex(x=>x.day===1&&x.k==='talk')||si===SLOTS.length-1)};});
+  return {set,me,att,ws,talks,ticket:TICKETS.find(t=>t.id===set.ticket),r:rngFor(set.seed,'run'),
+    book:{},wait:{},meet:{},slot:0,energy:100,notes:[],contacts:new Set(),collabs:[],novelties:[],log:[],stage:'prep',done:false,missed:[]};
+}
+
+/* ============================================================ logica */
+const ticket=()=>G.ticket;
+function eff(){return G.energy>=40?1:G.energy>=20?.7:.45;}
+function slotLabel(i){const s=SLOTS[i];return DAYS[s.day].n+' '+s.t;}
+function wsAt(slot){return G.ws.filter(w=>w.slot===slot);}
+function bookWs(w){
+  if(G.meet[w.slot]){toast('In quell’orario hai già un incontro. Annullalo prima.');return;}
+  const cur=G.book[w.slot];
+  if(cur===w.id){delete G.book[w.slot];delete G.wait[w.slot];render();return;}
+  G.book[w.slot]=w.id;
+  const crowded=w.pop>.85;
+  if(crowded)G.wait[w.slot]=true;else delete G.wait[w.slot];
+  toast(crowded?'Sala quasi piena: sei in lista d’attesa.':'Posto prenotato!');
+  render();
+}
+function proposeMeet(a){
+  const free=SLOTS.map((s,i)=>i).filter(i=>!G.book[i]&&!G.meet[i]);
+  const mt=Object.values(G.meet).length;
+  if(mt>=8){toast('Hai già 8 incontri in agenda.');return;}
+  if(!free.length){toast('Agenda piena.');return;}
+  const opts=free.filter(i=>i>=G.slot||G.stage==='prep');
+  openModal(`<h2>Proponi un incontro a ${esc(a.name)}</h2><div class="sub">${esc(a.role)}<br>Compatibilità <b>${a.compat}%</b>. Scegli quando e dove.</div>
+   <label class="lbl">Quando</label><select class="sel" id="mS">${opts.map(i=>`<option value="${i}" ${a.busy.has(i)?'':''}>${slotLabel(i)}</option>`).join('')}</select>
+   <label class="lbl">Dove</label><select class="sel" id="mP">${PLACES.map(p=>`<option>${p}</option>`).join('')}</select>
+   <div class="btns"><button class="mb" id="mGo">Invia richiesta</button><button class="mb gh" id="mNo">Annulla</button></div>`);
+  $('#mNo').onclick=closeModal;
+  $('#mGo').onclick=()=>{const si=+$('#mS').value,place=$('#mP').value;closeModal();sendReq(a,si,place);};
+}
+function sendReq(a,si,place){
+  const r=G.r;
+  if(a.busy.has(si)){toast(a.name+' ha già un impegno in quell’orario.');return;}
+  let p=clamp(a.compat/100*.85+.14+ticket().lounge+(place==='Area networking'?.05:0),.1,.96);
+  if(G.stage==='event')p*=.8;
+  if(r()<p){G.meet[si]={att:a.id,place,done:false};delete G.book[si];delete G.wait[si];toast(a.name+' ha accettato: '+slotLabel(si)+', '+place+'.',2800);}
+  else toast(a.name+' non può in quell’orario. Prova un’altra fascia.',2600);
+  render();
+}
+function startEvent(){
+  // risoluzione liste d’attesa
+  const msgs=[];
+  for(const s of Object.keys(G.wait)){const w=G.ws[G.book[s]];if(!w)continue;
+    if(G.r()<ticket().fast){msgs.push(`Lista d’attesa sciolta: hai un posto a «${w.title}».`);}
+    else{delete G.book[s];msgs.push(`Niente posto a «${w.title}»: la sala era piena.`);}
+    delete G.wait[s];}
+  G.stage='event';G.slot=0;UI.tab='scene';G.log.push('Ore 10:00: apre il Palacongressi di Rimini. Dario Vignali e Luca Cresi Ferrari, i fondatori, accolgono i partecipanti.');
+  if(msgs.length)openModal(`<h2>Prima dell’inizio</h2><ul class="nlist">${msgs.map(m=>'<li>'+esc(m)+'</li>').join('')}</ul><div class="btns"><button class="mb" id="mOk">Entra</button></div>`),$('#mOk').onclick=closeModal;
+  render();
+}
+function addNote(txt,src,topic){G.notes.push({txt,src,topic});}
+function tipFor(topic){const arr=TIPS[topic];return arr[Math.floor(G.r()*arr.length)];}
+function randContact(minC){
+  const pool=G.att.filter(a=>!G.contacts.has(a.id)&&a.compat>=(minC||0));
+  if(!pool.length)return null;const a=pool[Math.floor(G.r()*pool.length)];G.contacts.add(a.id);a.met=true;return a;
+}
+function advance(){
+  const day=SLOTS[G.slot].day;G.slot++;
+  if(G.slot>=SLOTS.length){endEvent();return;}
+  if(SLOTS[G.slot].day!==day){G.energy=clamp(G.energy+32,0,100);G.log.push(`Notte a Rimini: dormi e recuperi energie. Inizia ${DAYS[SLOTS[G.slot].day].n.toLowerCase()}.`);
+    if(SLOTS[G.slot].day===1)G.log.push('Sabato ore 9:30: Dario Vignali e Luca Cresi Ferrari aprono la giornata sul palco principale.');}
+  render();
+}
+function doAction(kind,arg){
+  const sl=SLOTS[G.slot],ef=eff(),r=G.r,lines=[];let eCost=0;
+  if(kind==='ws'){
+    const w=G.ws[arg],t=T[w.topic];const mine=G.set.seek.includes(w.topic);
+    const n=Math.max(1,Math.round((mine?3:2)*ef*(w.q>.8?1.2:1)));
+    for(let i=0;i<n;i++)addNote(tipFor(w.topic),`Workshop «${w.title}»`,w.topic);
+    lines.push(`Segui «${w.title}» con ${w.speaker}. Nella sala si lavora in coppie sull’esercizio.`);lines.push(`+${n} appunti ${t.ic}`);
+    const c=randContact(0);if(c)lines.push(`Fai coppia con ${c.name} (${T[c.topic].role}): nuovo contatto.`);
+    eCost=12;
+  }else if(kind==='talk'){
+    const tk=G.talks[G.slot],mine=G.set.seek.includes(tk.topic);
+    const n=Math.max(1,Math.round(((mine?2:1)+(tk.q>.75?1:0))*ef));
+    for(let i=0;i<n;i++)addNote(tipFor(tk.topic),`Speech «${tk.title}»`,tk.topic);
+    lines.push(`Dal palco principale: «${tk.title}», di ${tk.speaker}. ${tk.q>.75?'La sala si alza in piedi.':tk.q<.55?'Un po’ lungo, ma qualche spunto c’è.':'Buon ritmo e spunti pratici.'}`);lines.push(`+${n} appunti ${T[tk.topic].ic}`);
+    if(r()<.3){const c=randContact(0);if(c)lines.push(`Il vicino di posto è ${c.name}: scambiate i contatti.`);}
+    eCost=8;
+  }else if(kind==='expo'){
+    const n=r()<.45?2:1;for(let i=0;i<n;i++){const nv=NOVELTY[Math.floor(r()*NOVELTY.length)];if(!G.novelties.includes(nv)){G.novelties.push(nv);lines.push(`Scopri ${nv}.`);}else lines.push('Rivedi uno stand già visitato, ma trovi un dettaglio utile.');}
+    if(r()<.4){const c=randContact(0);if(c)lines.push(`Chiacchieri allo stand con ${c.name}: nuovo contatto.`);}
+    eCost=8;
+  }else if(kind==='rest'){
+    const gain=sl.k==='free'?34:22;G.energy=clamp(G.energy+gain,0,100);lines.push(sl.k==='free'?'Pranzo con calma sul lungomare: ti ricarichi.':'Un caffè e due minuti di pausa: riprendi fiato.');
+    if(r()<.4){const c=randContact(0);if(c)lines.push(`Al bar incontri ${c.name} (${T[c.topic].role}): nuovo contatto.`);}
+    lines.push('+'+gain+' energia');
+  }
+  if(kind==='rest'){}else G.energy=clamp(G.energy-eCost,0,100);
+  if(G.ticket.rec&&sl.k==='talk'&&kind!=='talk'){G.missed.push(G.slot);}
+  if(G.ticket.rec&&sl.k==='ws'&&kind!=='ws'){G.missed.push(G.slot);}
+  G.log.push(`${slotLabel(G.slot)} — ${lines[0]}`);
+  showOutcome(lines,()=>advance());
+}
+function showOutcome(lines,next){
+  openModal(`<h2>${esc(slotLabel(G.slot))}</h2><ul class="nlist">${lines.map(l=>'<li>'+esc(l)+'</li>').join('')}</ul><div class="btns"><button class="mb" id="mNx">Avanti</button></div>`);
+  $('#mNx').onclick=()=>{closeModal();next();};
+}
+function meetScene(a,fromBooked){
+  const ef=eff();const g=G;
+  openModal(`<h2>Incontro con ${esc(a.name)}</h2><div class="sub">${esc(a.role)}<br>Compatibilità ${a.compat}% · cerca: ${a.seek.map(t=>T[t].ic+' '+T[t].n).join(', ')} · offre: ${a.offer.map(t=>T[t].ic+' '+T[t].n).join(', ')}</div>
+   <div class="sub" style="color:var(--ink)">Come imposti la chiacchierata?</div>
+   <div class="opts" style="grid-template-columns:1fr">
+    <button class="opt" data-a="pres"><b>Presenta il tuo progetto</b><span>Racconti ${esc(g.me.biz)} e cosa puoi offrire.</span></button>
+    <button class="opt" data-a="adv"><b>Chiedi un consiglio</b><span>Porti un problema concreto e ascolti.</span></button>
+    <button class="opt" data-a="col"><b>Proponi una collaborazione</b><span>Rischiosa se non vi conoscete ancora, ma è l’occasione.</span></button>
+   </div>`);
+  document.querySelectorAll('#mbox .opt').forEach(b=>b.onclick=()=>{
+    const ap=b.dataset.a,r=g.r,lines=[];
+    const x=a.seek.filter(t=>g.me.offer.includes(t)),y=a.offer.filter(t=>g.me.seek.includes(t));
+    g.contacts.add(a.id);a.met=true;lines.push('Vi scambiate i contatti.');
+    if(ap==='pres'){if(x.length){lines.push(`${a.name.split(' ')[0]} cerca proprio ${T[x[0]].n.toLowerCase()}: è interessato a quello che fai.`);if(r()<.5*ef){const nv=`Riferimento: ${a.name} potrebbe presentarti due clienti nel suo giro.`;addNote(nv,'Incontro con '+a.name,x[0]);lines.push('+1 appunto: una possibile presentazione.');}}else lines.push('Annuisce con cortesia, ma non è il suo ambito.');}
+    else if(ap==='adv'){if(y.length){const n=Math.max(1,Math.round(2*ef));for(let i=0;i<n;i++)addNote(tipFor(y[0]),'Consiglio di '+a.name,y[0]);lines.push(`${a.name.split(' ')[0]} sa molto di ${T[y[0]].n.toLowerCase()}: +${n} appunti.`);}else{addNote(tipFor(a.topic),'Chiacchierata con '+a.name,a.topic);lines.push('Un consiglio generico, ma un buono spunto: +1 appunto.');}}
+    else{const p=clamp(a.compat/100*.55*ef+(x.length&&y.length?.12:0),.05,.85);
+      if(r()<p){const my=T[g.me.main],th=T[a.topic];const idea=pick(r,[`Puntata a due voci su ${th.obj}`,`Un workshop online insieme su ${th.obj} e ${my.obj}`,`Scambio di clienti: tu porti ${my.obj}, ${a.name.split(' ')[0]} porta ${th.obj}`,`Una mini-guida a quattro mani su ${th.obj}`]);
+        g.collabs.push({with:a.name,idea,biz:a.biz});lines.push(`Si accende qualcosa: «${idea}». Collaborazione in cantiere!`);}
+      else lines.push(`${a.name.split(' ')[0]} è prudente: «Sentiamoci dopo l’evento, ci penso». Non è un no.`);}
+    g.energy=clamp(g.energy-10,0,100);lines.push('−10 energia');
+    g.log.push(`${slotLabel(g.slot)} — incontro con ${a.name}.`);
+    if(fromBooked&&g.meet[g.slot])g.meet[g.slot].done=true;
+    closeModal();showOutcome(lines,()=>advance());
+  });
+}
+function openMeetNow(){
+  const sl=G.slot;
+  const cands=G.att.filter(a=>!a.busy.has(sl)).sort((a,b)=>b.compat-a.compat).slice(0,6);
+  const pick3=shuffle(G.r,cands).slice(0,3);
+  openModal(`<h2>Chi c’è in giro?</h2><div class="sub">Apri l’app e vedi chi è libero adesso. Proporre all’ultimo momento funziona un po’ meno.</div>
+   <div class="ppl" style="grid-template-columns:1fr">${pick3.map(a=>`<div class="pp glass"><div class="ring" style="--p:${a.compat}"><b>${a.compat}</b></div><div><div class="nm">${esc(a.name)}</div><div class="rl">${esc(a.role)}</div><div class="act"><button class="mb" data-id="${a.id}">Chiedi di vedervi</button></div></div></div>`).join('')}</div>
+   <div class="btns"><button class="mb gh" id="mNo">Chiudi</button></div>`);
+  $('#mNo').onclick=closeModal;
+  document.querySelectorAll('#mbox [data-id]').forEach(b=>b.onclick=()=>{const a=G.att[+b.dataset.id];closeModal();
+    const p=clamp(a.compat/100*.85+.1+ticket().lounge,.08,.9)*.85;
+    if(G.r()<p)meetScene(a,false);else{toast(a.name+' non è disponibile ora. Perdi qualche minuto.',2400);G.energy=clamp(G.energy-3,0,100);G.log.push(`${slotLabel(G.slot)} — cerchi un incontro senza fortuna.`);showOutcome(['Passi la fascia a cercare, ma nessuno è libero davvero. Peccato.'],()=>advance());}});
+}
+
+/* ============================================================ fine e punteggio */
+const GOALS={collab:{n:'Collaborazioni',ic:'🤝',tg:3},contact:{n:'Contatti',ic:'📇',tg:16},idea:{n:'Appunti',ic:'💡',tg:26},nov:{n:'Novità scoperte',ic:'✨',tg:7}};
+function progress(){
+  const c={collab:G.collabs.length,contact:G.contacts.size,idea:G.notes.length,nov:G.novelties.length};
+  return c;
+}
+function endEvent(){
+  G.stage='end';
+  // registrazioni: appunti extra per i talk saltati
+  let rec=0;if(G.ticket.rec){for(const s of G.missed){const tk=G.talks[s];if(tk&&G.set.seek.includes(tk.topic)){addNote(tipFor(tk.topic),'Registrazione di «'+tk.title+'»',tk.topic);rec++;}}}
+  const c=progress(),main=G.set.goal;let tot=0,w=0;
+  for(const k in GOALS){const wt=k===main?2:1;tot+=wt*clamp(c[k]/GOALS[k].tg,0,1);w+=wt;}
+  let score=Math.round(100*tot/w)+(G.energy>=40?4:0);score=clamp(score,0,100);
+  const title=score>=85?'Rockstar del networking':score>=65?'Networker esperto':score>=40?'Partecipante attivo':'Turista di lusso';
+  const stars=score>=85?3:score>=60?2:score>=35?1:0;
+  const key='rimini.best',best=lsGet(key,{});let nb=false;if(!best[G.ticket.id]||score>best[G.ticket.id]){best[G.ticket.id]=score;lsSet(key,best);nb=true;}
+  G.result={score,title,stars,rec};
+  render();
+  const share=`Rimini 3 giorni · ${title} (${score}/100): ${c.contact} contatti, ${c.collab} collaborazioni, ${c.idea} appunti, ${c.nov} novità. Seme ${G.set.seed}.`;
+  openModal(`<h2>Domenica sera, Rimini</h2><div class="sub">Il Palacongressi si svuota. Dario Vignali e Luca Cresi Ferrari chiudono i tre giorni sul palco.</div>
+   <div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><h2 style="margin:6px 0">${esc(title)} · ${score}/100</h2>
+   <div class="kv"><div>Contatti<b>${c.contact}</b></div><div>Collaborazioni<b>${c.collab}</b></div><div>Appunti<b>${c.idea}</b></div><div>Novità<b>${c.nov}</b></div><div>Energia<b>${G.energy}</b></div></div>
+   ${rec?`<div class="sub">Con le registrazioni del biglietto ${G.ticket.n} hai recuperato altri ${rec} appunti dai talk persi.</div>`:''}
+   ${nb?'<div class="sub" style="color:var(--ok)">Nuovo record per questo biglietto!</div>':''}
+   <div class="btns"><button class="mb" id="rCp">Copia risultato</button><button class="mb gh" id="rBk">Taccuino</button><button class="mb gh" id="rNw">Nuovo evento</button></div>`);
+  $('#rCp').onclick=()=>{try{navigator.clipboard.writeText(share);toast('Risultato copiato');}catch(e){toast(share,4000);}};
+  $('#rBk').onclick=()=>{closeModal();UI.tab='note';render();};
+  $('#rNw').onclick=()=>{closeModal();UI.phase='title';setup.seed=newSeed();G=null;render();};
+}
+
+/* ============================================================ interfaccia */
+function openModal(h){$('#mbox').innerHTML=h;$('#modal').classList.remove('hide');}
+function closeModal(){$('#modal').classList.add('hide');}
+function render(){const root=$('#root');
+  if(UI.phase==='title'||!G){root.innerHTML=titleHTML();bindTitle();return;}
+  root.innerHTML=barHTML()+tabsHTML()+bodyHTML();bindGame();
+}
+function titleHTML(){
+  const chips=(sel,mx)=>TOPICS.map(t=>`<button data-t="${t.id}" class="${sel.includes(t.id)?'on':''}">${t.ic} ${t.n}</button>`).join('');
+  const best=lsGet('rimini.best',{});
+  return `<div class="hero"><div>
+    <div class="small" style="letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px">Simulatore del partecipante · ispirato al Marketers World</div>
+    <h1>RIMINI,<br><span>3 GIORNI</span></h1>
+    <p class="lead">Hai comprato il biglietto per un grande evento di marketing al Palacongressi. Il venerdì scegli i workshop, il sabato e la domenica guardi gli speech dal palco. Nel frattempo l’app ti suggerisce persone compatibili con cui prendere un appuntamento: parlare del tuo business, trovare collaborazioni, scoprire novità. Hai poche ore e poca energia: come le usi?</p>
+    <div class="glass pn small"><b style="color:var(--ink)">Come si gioca.</b> Prima dell’inizio prenoti i workshop e mandi richieste di incontro. Poi vivi le 18 fasce dell’evento scegliendo ogni volta tra sala, incontro, stand o pausa. Alla fine il risultato dipende dai tuoi obiettivi.</div>
+    <p class="disc">Progetto di fan non ufficiale, senza alcun legame con l’organizzazione. Partecipanti, speaker e aziende sono inventati. Dario Vignali e Luca Cresi Ferrari compaiono solo come organizzatori, senza battute attribuite a loro. Chi è nello staff lo trovi nella scheda «Family».</p>
+  </div>
+  <div class="glass pn">
+    <label class="lbl" style="margin-top:0">Seme dell’evento</label>
+    <div class="seedrow"><input id="seed" maxlength="10" value="${esc(setup.seed)}" autocomplete="off" spellcheck="false"><button id="dice">🎲</button></div>
+    <label class="lbl">Biglietto</label>
+    <div class="tickets">${TICKETS.map(t=>`<button class="tk ${setup.ticket===t.id?'on':''}" data-k="${t.id}"><b>${t.n}</b>${t.d}</button>`).join('')}</div>
+    <label class="lbl">Di cosa ti occupi</label><div class="chips" id="cMain">${chips([setup.main])}</div>
+    <label class="lbl">Cosa cerchi (3)</label><div class="chips b" id="cSeek">${chips(setup.seek)}</div>
+    <label class="lbl">Cosa puoi offrire (fino a 3)</label><div class="chips" id="cOff">${chips(setup.offer)}</div>
+    <label class="lbl">Obiettivo principale</label><div class="chips" id="cGoal">${Object.entries(GOALS).map(([k,g])=>`<button data-g="${k}" class="${setup.goal===k?'on':''}">${g.ic} ${g.n}</button>`).join('')}</div>
+    <div class="small" style="margin:12px 0">${Object.keys(best).length?'Record: '+TICKETS.filter(t=>best[t.id]!=null).map(t=>t.n+' '+best[t.id]).join(' · '):'Nessun record ancora.'}</div>
+    <button class="btn" id="go" style="width:100%">Vai al Palacongressi</button>
+  </div></div>`;
+}
+function bindTitle(){
+  const save=()=>lsSet('rimini.setup',setup);
+  $('#seed').oninput=e=>{setup.seed=e.target.value.toUpperCase();save();};
+  $('#dice').onclick=()=>{setup.seed=newSeed();$('#seed').value=setup.seed;save();};
+  document.querySelectorAll('.tk').forEach(b=>b.onclick=()=>{setup.ticket=b.dataset.k;save();render();});
+  document.querySelectorAll('#cMain [data-t]').forEach(b=>b.onclick=()=>{setup.main=b.dataset.t;if(!setup.offer.includes(b.dataset.t))setup.offer=[b.dataset.t,...setup.offer].slice(0,3);save();render();});
+  const multi=(id,key,mx)=>document.querySelectorAll(id+' [data-t]').forEach(b=>b.onclick=()=>{const t=b.dataset.t,a=setup[key];const i=a.indexOf(t);if(i>=0){if(a.length>1)a.splice(i,1);}else{a.push(t);if(a.length>mx)a.shift();}save();render();});
+  multi('#cSeek','seek',3);multi('#cOff','offer',3);
+  document.querySelectorAll('#cGoal [data-g]').forEach(b=>b.onclick=()=>{setup.goal=b.dataset.g;save();render();});
+  $('#go').onclick=()=>{const s=(setup.seed||newSeed()).trim().toUpperCase()||newSeed();setup.seed=s;save();G=gen(setup);UI.phase='game';UI.tab='prog';render();scrollTo(0,0);
+    toast('Biglietto '+G.ticket.n+' attivato. Scarica l’app e prepara l’agenda!',3000);};
+}
+function barHTML(){
+  const s=G.stage==='event'||G.stage==='end'?Math.min(G.slot,SLOTS.length-1):0,sl=SLOTS[s];
+  const when=G.stage==='prep'?'Prima dell’evento':DAYS[sl.day].n+' · '+sl.t;
+  const c=progress();
+  return `<div id="bar"><div class="in"><div class="when">${when}<small>${esc(G.set.seed)} · biglietto ${G.ticket.n}</small></div>
+   <div class="meter">Energia<i><b style="width:${G.energy}%;${G.energy<30?'background:#ff7a8a':''}"></b></i><span>${G.energy}</span></div>
+   <div class="cnt"><span>📇 <b>${c.contact}</b></span><span>🤝 <b>${c.collab}</b></span><span>💡 <b>${c.idea}</b></span><span>✨ <b>${c.nov}</b></span></div></div></div>`;
+}
+function tabsHTML(){
+  const t=[['prog','Programma'],['rete','Rete'],['note','Taccuino'],['fam','Family']];
+  if(G.stage==='event')t.unshift(['scene','Adesso']);
+  return `<div class="tabs">${t.map(([k,n])=>`<button data-tab="${k}" class="${UI.tab===k?'on':''}">${n}</button>`).join('')}</div>`;
+}
+function bodyHTML(){return UI.tab==='scene'&&G.stage==='event'?sceneHTML():UI.tab==='rete'?reteHTML():UI.tab==='note'?noteHTML():UI.tab==='fam'?famHTML():progHTML();}
+
+function progHTML(){
+  let h='';
+  if(G.stage==='prep'){
+    h+=`<div class="glass pn" style="margin-bottom:16px"><b>Prepara l’agenda.</b> <span class="small">Il venerdì scegli un workshop per fascia (i più richiesti ti mettono in lista d’attesa). Nella scheda «Rete» proponi incontri alle persone più compatibili. Quando sei pronto, entra.</span><div class="btns" style="margin-top:10px"><button class="mb" id="enter">Entra al Palacongressi · Venerdì 10:00</button></div></div>`;
+  }
+  DAYS.forEach((d,di)=>{
+    h+=`<div class="day"><h3>${d.n}</h3>`;
+    SLOTS.forEach((s,i)=>{if(s.day!==di)return;
+      const cur=G.stage==='event'&&G.slot===i,past=G.stage!=='prep'&&(G.slot>i||G.stage==='end');
+      h+=`<div class="slot glass ${cur?'cur':''} ${past?'past':''}"><div class="hd"><b>${s.t}</b>${meetTag(i)}</div>`;
+      if(s.k==='ws'){
+        h+=`<div class="cards">${wsAt(i).map(w=>{const sel=G.book[i]===w.id,wl=sel&&G.wait[i];const t=T[w.topic];
+          return `<button class="card2 ${wl?'wl':sel?'sel':''}" data-ws="${w.id}" ${G.stage!=='prep'?'disabled':''}><b>${t.ic} ${esc(w.title)}</b><div class="m">${esc(w.speaker)} · ${w.room}</div><div class="m">${w.pop>.85?'<span class="tag y">Molto richiesto</span>':'<span class="tag g">Posti</span>'}${G.set.seek.includes(w.topic)?'<span class="tag b">Ti interessa</span>':''}${wl?'<span class="tag y">Lista d’attesa</span>':sel?'<span class="tag g">Prenotato</span>':''}</div></button>`;}).join('')}</div>`;
+      }else if(s.k==='talk'){const tk=G.talks[i];h+=`<div class="card2"><b>${T[tk.topic].ic} ${esc(tk.title)}</b><div class="m">${esc(tk.speaker)} · Sala principale${tk.keynote?' · <span class="tag r">Keynote</span>':''}${G.set.seek.includes(tk.topic)?'<span class="tag b">Ti interessa</span>':''}</div></div>`;}
+      else h+=`<div class="card2"><b>🍝 Pranzo e pausa lunga</b><div class="m">Tempo libero: ricarica le energie, giro tra gli stand o un incontro.</div></div>`;
+      h+='</div>';});
+    h+='</div>';});
+  return h;
+}
+function meetTag(i){const m=G.meet[i];if(!m)return'';const a=G.att[m.att];return `<span class="tag g">📇 ${esc(a.name)} · ${esc(m.place)}</span>`;}
+
+function reteHTML(){
+  const list=G.att.slice().sort((a,b)=>b.compat-a.compat);
+  return `<div class="sub">L’app ti mostra per primi i profili con più affinità. Proponi un incontro scegliendo orario e luogo (massimo 8). Chi ha già un impegno può rifiutare.</div><div class="ppl">${list.map(a=>{
+    const col=a.compat>=65?'var(--ok)':a.compat>=40?'var(--ac)':'#8f9bbd';const have=Object.entries(G.meet).find(([s,m])=>m.att===a.id);
+    return `<div class="pp glass"><div class="ring" style="--p:${a.compat};--c:${col}"><b>${a.compat}</b></div><div style="min-width:0"><div class="nm">${esc(a.name)}${G.contacts.has(a.id)?' ✔':''}</div><div class="rl">${esc(a.role)}</div>
+     <div><span class="tag">cerca: ${a.seek.map(t=>T[t].ic).join(' ')}</span><span class="tag">offre: ${a.offer.map(t=>T[t].ic).join(' ')}</span></div>
+     <div class="act">${have?`<span class="tag g">Incontro: ${slotLabel(+have[0])}</span>`:(G.stage==='end'?'':`<button class="mb" data-meet="${a.id}">Proponi incontro</button>`)}</div></div></div>`;}).join('')}</div>`;
+}
+function noteHTML(){
+  const grp=(t,items)=>items.length?`<h3 style="font-family:var(--disp);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac2);margin:16px 0 6px">${t}</h3><ul class="nlist">${items.join('')}</ul>`:'';
+  return `<div class="glass pn">${G.notes.length+G.collabs.length+G.novelties.length+G.contacts.size?'':'<div class="sub">Il taccuino è vuoto. Seguendo workshop, speech e incontri si riempie.</div>'}
+   ${grp('Collaborazioni',G.collabs.map(c=>`<li>🤝 <b>${esc(c.with)}</b> (${esc(c.biz)}): ${esc(c.idea)}</li>`))}
+   ${grp('Appunti',G.notes.map(n=>`<li>${T[n.topic].ic} ${esc(n.txt)} <em>— ${esc(n.src)}</em></li>`))}
+   ${grp('Novità scoperte',G.novelties.map(n=>`<li>✨ ${esc(n)}</li>`))}
+   ${grp('Contatti',[...G.contacts].map(id=>{const a=G.att[id];return `<li>📇 ${esc(a.name)} — ${esc(a.role)}</li>`;}))}
+   ${grp('Diario',G.log.map(l=>`<li>${esc(l)}</li>`))}</div>`;
+}
+function famHTML(){
+  return `<div class="glass pn"><h2 style="font-size:18px;margin-bottom:6px">La Family</h2>
+   <div class="sub">Dietro un evento così c’è un grande lavoro di squadra: oltre sessanta persone in remoto, che si incontrano di persona proprio a Rimini. Questi sono alcuni nomi pubblici legati a Marketers, citati con i ruoli riportati dalle fonti. L’elenco è parziale e potrebbe non essere aggiornato.</div>
+   <ul class="nlist">${FAMILY.map(([n,r])=>`<li><b>${esc(n)}</b> — ${esc(r)}</li>`).join('')}</ul>
+   <div class="disc">Il gioco è un progetto di fan non ufficiale e non è affiliato a Marketers. Nessuna di queste persone dice o fa nulla nel gioco: compaiono solo qui.</div></div>`;
+}
+function sceneHTML(){
+  const i=G.slot,sl=SLOTS[i],m=G.meet[i],ef=eff();
+  let icon='🏟️',title='',txt='',opts=[];
+  if(sl.k==='ws'){
+    const bk=G.book[i]!=null?G.ws[G.book[i]]:null;
+    icon='🧑‍🏫';title='Workshop';txt=bk?`Hai un posto a «${bk.title}» (${bk.room}).`:'Non hai prenotato niente in questa fascia. Puoi provare ad entrare in una sala con posti liberi.';
+    if(bk)opts.push({a:'ws',v:bk.id,t:`Vai a «${bk.title}»`,s:`${bk.speaker} · ${bk.room}`});
+    else wsAt(i).forEach(w=>{const ok=w.pop<=.85;opts.push({a:'ws',v:w.id,t:ok?`Entra a «${w.title}»`:`«${w.title}» (sala piena)`,s:`${w.speaker} · ${w.room}`,dis:!ok});});
+  }else if(sl.k==='talk'){
+    const tk=G.talks[i];icon='🎤';title=tk.keynote?'Keynote sul palco principale':'Palco principale';txt=`In sala va «${tk.title}» di ${tk.speaker}.`;
+    opts.push({a:'talk',t:'Guarda lo speech',s:`${T[tk.topic].n}${G.set.seek.includes(tk.topic)?' · ti interessa':''}`});
+  }else{icon='🍝';title='Pausa lunga';txt='Hai tempo: pranzo, stand, incontri.';}
+  if(m&&!m.done){const a=G.att[m.att];opts.push({a:'meet',t:`Incontro con ${a.name} (prenotato)`,s:`${m.place} · compatibilità ${a.compat}%`});}
+  else opts.push({a:'meetnow',t:'Cerca un incontro adesso',s:'Apri l’app e chiedi a chi è libero'});
+  opts.push({a:'expo',t:'Giro tra gli stand',s:'Scopri novità, forse un contatto'});
+  opts.push({a:'rest',t:sl.k==='free'?'Pranzo sul lungomare':'Caffè e pausa',s:sl.k==='free'?'+34 energia':'+22 energia'});
+  const warn=G.energy<40?`<div class="tag r" style="margin-top:8px">Sei stanco: rendi meno (${Math.round(ef*100)}%)</div>`:'';
+  return `<div class="scene glass"><div class="big">${icon}</div><h2>${title}</h2><p>${esc(txt)}</p>${warn}
+   <div class="opts">${opts.map((o,k)=>`<button class="opt" data-o="${k}" ${o.dis?'disabled':''}><b>${esc(o.t)}</b><span>${esc(o.s||'')}</span></button>`).join('')}</div></div>
+   <div class="glass log"><b>Diario</b><ul>${G.log.slice(-4).map(l=>'<li>'+esc(l)+'</li>').join('')}</ul></div>`;
+  }
+function bindGame(){
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{UI.tab=b.dataset.tab;render();scrollTo(0,0);});
+  const en=$('#enter');if(en)en.onclick=startEvent;
+  document.querySelectorAll('[data-ws]').forEach(b=>b.onclick=()=>bookWs(G.ws[+b.dataset.ws]));
+  document.querySelectorAll('[data-meet]').forEach(b=>b.onclick=()=>proposeMeet(G.att[+b.dataset.meet]));
+  if(UI.tab==='scene'&&G.stage==='event'){
+    const i=G.slot,sl=SLOTS[i],m=G.meet[i];
+    const opts=[];
+    if(sl.k==='ws'){const bk=G.book[i]!=null?G.ws[G.book[i]]:null;if(bk)opts.push(()=>doAction('ws',bk.id));else wsAt(i).forEach(w=>{opts.push(w.pop<=.85?()=>doAction('ws',w.id):null);});}
+    else if(sl.k==='talk')opts.push(()=>doAction('talk'));
+    if(m&&!m.done)opts.push(()=>meetScene(G.att[m.att],true));else opts.push(()=>openMeetNow());
+    opts.push(()=>doAction('expo'));opts.push(()=>doAction('rest'));
+    document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const f=opts[+b.dataset.o];if(f)f();});
+  }
+}
+$('#modal').addEventListener('pointerdown',e=>{if(e.target.id==='modal'&&G&&G.stage!=='end'){/* i modali di scelta non si chiudono toccando fuori */}});
+render();
+window.__rim={get G(){return G;},gen,setup,doAction,startEvent,advance,SLOTS,get UI(){return UI;}};
+})();
+</script>
+</body>
+</html>
