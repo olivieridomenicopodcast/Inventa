@@ -171,5 +171,9 @@ function villageTick(){
   if(G.flags.pjOn!==pj)G.flags.pjOn=pj;
   /* alle 22 chi è ancora al Palacongressi viene portato al Village: in ritardo */
   if(G.min>=22*60&&G.eveDay!==G.day&&!G.watching&&!G.react&&!DL&&!uiOpen()){if(G.day===0){if(G.f===2||G.f===3)G.eveDay=G.day;else goSunflower(true);}else if(G.f===2)G.eveDay=G.day;else if(G.f===3)eveningAtVillage(false);else eveningAtVillage(true);}
+  /* freccia per piantare lo stendardo: solo quando sei al Village, la domenica */
+  {const has=G.day===2&&G.items&&G.items.banner&&!G.flags.banner;
+   if(has&&G.f===2){if(!G.dest)G.dest={n:'Offworld (pianta lo stendardo)',f:2,x:k(1052),y:k(700),auto:1,ban:1};}
+   else if(G.dest&&G.dest.ban)G.dest=null;}
   if(G.day===2&&G.items&&G.items.banner&&!G.flags.banner&&G.min>=23*60&&!G.warnB){G.warnB=true;toast('🚩 La serata sta per finire: pianta lo stendardo al pigiama party!',4200);}
 }

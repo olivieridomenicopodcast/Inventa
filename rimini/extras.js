@@ -181,7 +181,7 @@ function pickItem(id){
   const it=ITEMS[id];G.items=G.items||{};G.items[id]=true;wearItem(id,true);G.flags.glasses=Object.keys(G.items).length;A.stamp();
   const d=itemDays()[id],n=itemFound(d);
   toast('Trovato: '+it.n+'! '+it.desc+(id==='banner'?'':' (lo indossi: cambia dal telefono, Home)'),4200);
-  if(id==='banner'&&!G.flags.banner){G.dest={n:'Offworld (pianta lo stendardo)',f:2,x:k(1052),y:k(700),auto:1};setTimeout(()=>toast('Portalo al Village: alle 22:00, davanti al palco Offworld, scegli «Pianta lo stendardo» nel menu del pigiama party.',5200),1800);}
+  if(id==='banner'&&!G.flags.banner){setTimeout(()=>toast('Portalo al Village: alle 22:00, davanti al palco Offworld, scegli «Pianta lo stendardo» nel menu del pigiama party.',5200),1800);}
   if(n>=2)setTimeout(()=>toast('Trovati tutti e due gli oggetti nascosti di '+DAYNAMES[d].toLowerCase()+'! ✨',3200),900);
 }
 function wearItem(id,on){
