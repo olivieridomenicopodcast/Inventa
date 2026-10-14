@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=50;
+const BUILD=51;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -952,8 +952,8 @@ function draw(){
   ctx.drawImage(L.cv,0,0);
   // luci della tenda
   for(const d of L.dyn){if(d.k==='lights'){for(let i=0;i<d.w;i+=8){ctx.fillStyle=((Math.floor(G.t*3)+i/8)%3)===0?'#ffd24d':((Math.floor(G.t*3)+i/8)%3)===1?'#ff6a3d':'#4dd0ff';ctx.fillRect(d.x+i+2,d.y+1,2,2);}}}
-  // varco
-  if(G.f===0){ctx.fillStyle=G.flags.accred?'#4dff9a':'#ff4d5a';ctx.fillRect(300,368,3,6);ctx.fillRect(337,368,3,6);if(!G.flags.accred){ctx.fillStyle='rgba(255,77,90,.5)';ctx.fillRect(303,370,34,2);}}
+  // varco: porte a vetri chiuse finché non hai il badge
+  if(G.f===0)drawGate();
   // entità ordinate per y
   const list=NPC.filter(n=>n.f===G.f).map(n=>({y:n.y,n}));list.push({y:G.p.y,me:true});list.sort((a,b)=>a.y-b.y);
   const near=nearest();
@@ -984,6 +984,25 @@ function goal(){const F=G.flags,el=$('#goal');let t='',key='';
   if(!t){el.classList.add('hide');return;}
   el.classList.remove('hide');const s='<b>OBIETTIVO</b>'+t;if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=s;}
   if(goalFor!==key){goalFor=key;const n=NPC.find(x=>x.id===(key==='app'?'info':'accred'));if(n&&(!G.dest||G.dest.auto))G.dest={n:n.name,f:0,x:n.x,y:n.y,auto:1};}
+}
+function drawGate(){
+  const x0=k(560),x1=k(705),y0=k(704),y1=k(722),w=x1-x0,h=y1-y0,ok=!!G.flags.accred,c=ctx;
+  const pw=Math.floor((w-12)/4);                      // 4 pannelli
+  c.fillStyle='#2a3358';c.fillRect(x0,y0-2,w,3);c.fillRect(x0,y1-1,w,3);   // telaio
+  c.fillStyle='#161c34';c.fillRect(x0,y0,6,h);c.fillRect(x1-6,y0,6,h);
+  for(let i=0;i<4;i++){
+    let px=x0+6+i*pw;
+    if(ok){px+=(i<2?-1:1)*(pw*.8);}                   // aperte: i pannelli scorrono ai lati
+    const gx=Math.max(x0+6,Math.min(x1-6-pw,px));
+    c.fillStyle='#5aa9c8';c.fillRect(gx,y0,pw,h);c.fillStyle='rgba(255,255,255,.18)';c.fillRect(gx+2,y0+1,3,h-2);c.fillRect(gx+7,y0+1,1,h-2);
+    c.fillStyle='#e9efff';c.fillRect(gx,y0,pw,1);c.fillRect(gx,y1-1,pw,1);c.fillRect(gx,y0,1,h);c.fillRect(gx+pw-1,y0,1,h);
+  }
+  if(!ok){                                            // chiuse: maniglie e barra di blocco rossa
+    c.fillStyle='#fff';c.fillRect(x0+6+2*pw-3,y0+5,2,h-10);c.fillRect(x0+6+2*pw+1,y0+5,2,h-10);
+    c.fillStyle='#ff4d5a';c.fillRect(x0+6,y0+Math.floor(h/2)-1,w-12,2);
+    const t=(Math.floor(G.t*2)%2)?'#ff4d5a':'#a02a35';c.fillStyle=t;c.fillRect(x0+w/2-2,y0-6,5,4);
+    c.fillStyle='#0c1124';c.fillRect(x0+w/2-34,y0-20,68,12);c.fillStyle='#ff4d5a';c.font='700 7px "Press Start 2P",monospace';c.textAlign='center';c.fillText('CHIUSO',x0+w/2,y0-11);
+  }else{c.fillStyle='#4dff9a';c.fillRect(x0+w/2-2,y0-6,5,4);}
 }
 function hud(){goal();
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
