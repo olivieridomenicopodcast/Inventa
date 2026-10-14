@@ -20,7 +20,7 @@ const FRIENDS=[
  {id:'andrea_d',name:'Andrea Deliu',job:'Copywriter',fam:'creator'},
  {id:'davide',name:'Davide Sorte',job:'Copywriter e storyteller',fam:'creator'},
  {id:'mattia',name:'Mattia',job:'Copywriter',fam:'creator'},
- {id:'erika',name:'Erika Dello Storto',job:'Copywriter e accessibilità',fam:'creator',nick:'Mandarino'},
+ {id:'erika',name:'Erika Dello Storto',job:'Copywriter e accessibilità',fam:'creator'},
  {id:'leonardo',name:'Leonardo Rapari',job:'Copywriter',fam:'creator'},
  {id:'hafedh',name:'Hafedh',job:'Copywriter',fam:'creator'},
  {id:'carlo',name:'Carlo',job:'Copywriter',fam:'creator'},
@@ -49,12 +49,12 @@ function extrasNPC(add,pk){
   });
   /* CatGPT: gatto grigio che gira ovunque. Alpachino: alpaca sul prato */
   add({id:'catgpt',kind:'pet',pet:'cat',name:'CatGPT',role:'Gatto grigio · modello felino',f:0,x:k(430),y:k(700),p:{shirt:'#8e939e',pants:'#6b707c',skin:'#8e939e',hair:'#6b707c',badge:'#6bd16b'},wander:{x0:k(330),y0:k(560),x1:k(860),y1:k(860)},dir:2,roam:0});
-  add({id:'alpachino',kind:'pet',pet:'alpaca',name:'Alpachino',role:'Alpaca del Marketers Village',f:VILLAGE_ON?2:0,x:k(1100),y:k(380),p:{shirt:'#eadcc0',pants:'#cdb98f',skin:'#f5ecd8',hair:'#cdb98f',badge:'#ffd24d'},wander:{x0:k(920),y0:k(300),x1:k(1200),y1:k(460)},dir:2,roam:0});
+  add({id:'alpachino',kind:'pet',pet:'alpaca',name:'Alpachino',role:'Alpaca del Marketers Village',f:VILLAGE_ON?2:0,x:k(760),y:k(640),p:{shirt:'#eadcc0',pants:'#cdb98f',skin:'#f5ecd8',hair:'#cdb98f',badge:'#ffd24d'},wander:{x0:k(330),y0:k(560),x1:k(1000),y1:k(700)},dir:2,roam:0});
 }
 /* i due animali cambiano zona ogni tanto (se non li vedi), così "girano per la mappa" */
 const PET_ZONES={
  catgpt:[[330,560,860,860,0],[420,200,860,236,0],[160,640,390,700,0],[960,560,1180,820,0],[420,560,830,680,1],[300,540,900,740,VILLAGE_ON?2:0],[420,780,860,860,0]],
- alpachino:[[920,300,1200,460,2],[100,300,380,460,2],[430,780,860,860,0],[960,720,1180,830,0],[300,540,900,740,2]]};
+ alpachino:[[330,560,1000,700,2],[920,300,1200,460,2],[100,300,380,460,2],[430,780,860,860,0],[960,720,1180,830,0],[300,540,900,740,2]]};
 function petRoam(dt){
   for(const n of NPC){if(n.kind!=='pet')continue;
     n.roam-=dt;if(n.roam>0)continue;n.roam=25+RNG()*35;
@@ -127,6 +127,7 @@ const AL_PET=['La lana di Alpachino è morbidissima. Hai appena scoperto cosa ma
 const AL_ADV=['Alpachino: «Fai come l’alpaca: rumina un’idea tre volte prima di pubblicarla.»','Alpachino: «Un buon brand è come la lana: caldo, morbido e difficile da lavare via.»','Alpachino: «Non sputare mai su un cliente. Al massimo, dietro le quinte.»','Alpachino: «Alpaccino macchiato, grazie. Anzi, Alpachino.»','Alpachino: «Più che alpaca, mi sento un influencer della lana.»'];
 function petNote(n){const F=G.flags;F.petKinds=F.petKinds||{};if(!F.petKinds[n.pet]){F.petKinds[n.pet]=1;F.pets=Object.keys(F.petKinds).length;A.stamp();if(F.pets>=2)toast('Hai salutato CatGPT e Alpachino!',2600);}}
 function petTalk(n){
+  if(n.pet==='alpaca'){alpaGuide(n);return;}
   const cat=n.pet==='cat',greet=exPick(cat?CG_GREET:AL_GREET);
   const again=(kind)=>{const pool=kind==='pet'?(cat?CG_PURR:AL_PET):kind==='adv'?(cat?CG_ADV:AL_ADV):CG_COPY;
     return{t:exPick(pool),c:[{t:kind==='pet'?'Continua a coccolare':'Chiedi ancora',n:()=>again(kind),act:()=>{if(kind==='pet')(cat?A.purr():A.hum());}},{t:'Ok, a dopo!',n:null}]};};
@@ -138,16 +139,25 @@ function petTalk(n){
     {t:'Vai per la tua strada',n:null}]});
 }
 /* ---------- occhiali raccoglibili ---------- */
-const ITEMS={cyclops:{n:'Occhiali da ciclope',f:1,x:520,y:430,desc:'Visiera futuristica: ti senti un X-Man del marketing.'},pixel:{n:'Occhiali in pixel art',f:VILLAGE_ON?2:0,x:1000,y:640,desc:'Otto bit di puro stile. Thug life.'}};
-function itemPos(id){const it=ITEMS[id];if(!G.itemPos)G.itemPos={};if(!G.itemPos[id]){const [x,y]=FL[it.f]?freeSpot(it.f,k(it.x),k(it.y)):[k(it.x),k(it.y)];G.itemPos[id]={x,y};}return G.itemPos[id];}
-function itemSpots(f,I){
-  for(const id in ITEMS){const it=ITEMS[id];if(it.f!==f||(G.items&&G.items[id]))continue;const p=itemPos(id);
-    out_i(I,p,id,it);}
+const ITEMS={cyclops:{n:'Occhiali da ciclope',desc:'Visiera futuristica: ti senti un X-Man del marketing.'},pixel:{n:'Occhiali in pixel art',desc:'Otto bit di puro stile. Thug life.'}};
+/* posizioni casuali (dal seme) in due zone diverse del Palacongressi, mai al Marketers Village */
+const EX_ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0]];
+function itemPos(id){
+  if(!G.itemPos)G.itemPos={};
+  if(!G.itemPos[id]){
+    const r=mulberry32(hashStr(G.seed+'|item|'+id)),ids=Object.keys(ITEMS),other=G.itemPos[ids.find(x=>x!==id)];
+    let z,g=0;do{z=EX_ZONES[Math.floor(r()*EX_ZONES.length)];}while(other&&other.z===z&&g++<20);
+    const x=k(z[0])+r()*(k(z[2])-k(z[0])),y=k(z[1])+r()*(k(z[3])-k(z[1])),f=z[4],[fx,fy]=FL[f]?freeSpot(f,x,y):[x,y];
+    G.itemPos[id]={f,x:fx,y:fy,z};
+  }
+  return G.itemPos[id];
 }
-function out_i(I,p,id,it){I(p.x/K,p.y/K,16,'Raccogli: '+it.n,()=>pickItem(id));}
+function itemSpots(f,I){
+  for(const id in ITEMS){if(G.items&&G.items[id])continue;const p=itemPos(id);if(p.f!==f)continue;I(p.x/K,p.y/K,16,'Raccogli: '+ITEMS[id].n,()=>pickItem(id));}
+}
 function pickItem(id){const it=ITEMS[id];G.items=G.items||{};G.items[id]=true;G.worn=id;G.flags.glasses=Object.keys(G.items).length;A.stamp();toast('Trovato: '+it.n+'! '+it.desc+' (li indossi: cambiali dal telefono, Home)',4200);}
 function drawItems(c){
-  for(const id in ITEMS){const it=ITEMS[id];if(it.f!==G.f||(G.items&&G.items[id]))continue;const p=itemPos(id),b=Math.round(Math.sin(G.t*3+p.x)*1.5),x=Math.round(p.x),y=Math.round(p.y)+b;
+  for(const id in ITEMS){if(G.items&&G.items[id])continue;const p=itemPos(id);if(p.f!==G.f)continue;const b=Math.round(Math.sin(G.t*3+p.x)*1.5),x=Math.round(p.x),y=Math.round(p.y)+b;
     c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x-6,y+4,12,2);
     if(id==='cyclops'){c.fillStyle='#14141c';c.fillRect(x-7,y-4,14,6);c.fillStyle='#2a6fff';c.fillRect(x-6,y-3,12,3);c.fillStyle='#8fd4ff';c.fillRect(x-5,y-3,5,1);c.fillStyle='#14141c';c.fillRect(x+7,y-3,3,2);c.fillRect(x-10,y-3,3,2);}
     else{c.fillStyle='#0b0b10';c.fillRect(x-8,y-4,7,5);c.fillRect(x+1,y-4,7,5);c.fillRect(x-1,y-4,2,2);c.fillStyle='#fff';c.fillRect(x-7,y-3,1,1);c.fillRect(x-6,y-2,1,1);c.fillRect(x-5,y-1,1,1);c.fillRect(x+2,y-3,1,1);c.fillRect(x+3,y-2,1,1);c.fillRect(x+4,y-1,1,1);}
@@ -176,7 +186,6 @@ function friendTalk(n){
   }
   if(G.met[n.id])return say(n,{t:chPick(r,['Ehi, siamo già amici! Come procede?','Di nuovo tu! Ti ho scritto su Marketers Pro.','Ciao! Sempre un piacere trovarti qui.','Eccoti. Dai, facciamoci un selfie dopo!']),c:[{t:'Ciao!',n:null}]});
   let g=exPick(FR_SPECIAL[F.id]||FR_GREET[F.job]||FR_GREET.Copywriter).replace('{first}',first);
-  if(F.nick)g='Ciao! Per gli amici sono '+F.nick+' 🍊 (anche se sul badge c’è scritto '+first+'). '+exPick(FR_GREET[F.job]);
   const tp=chTopics(n,1)[0];
   say(n,{t:g,c:[
     ...(F.id==='gabriele'?[{t:'Stasera ci sto!',n:{t:'Ecco, così si fa! Baldoria sia. 🍻',c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'A stasera!',n:null,act:onMet}]}}]:[]),
@@ -239,4 +248,51 @@ function extrasFeed(T){
   [[0,18*60+40],[1,18*60+30],[2,17*60+50]].forEach(([d,m],i)=>out.push(mk('Gabriele Lucesole','exg'+i,d*1440+m,'Stasera facciamo baldoria? 🍻 #MW26')));
   [[0,10*60+20],[1,13*60],[2,9*60+30]].forEach(([d,m],i)=>out.push(mk('Domenico Olivieri','exd'+i,d*1440+m,['Voglio lasciare la fabbrica! (ma prima il caffè) #MW26','Voglio lasciare la fabbrica! Intanto mi alleno: oggi microfono e due chiacchiere.','Voglio lasciare la fabbrica, ve lo dico qui così sono costretto a farlo. #MW26'][i])));
   return out.filter(x=>x.at<=T);
+}
+
+/* ---------- Alpachino: nella realtà è il bot di assistenza clienti, qui è la guida del gioco (Q&A) ---------- */
+function goalText(){const F=G.flags;
+  if(VILLAGE_ON&&!F.bus)return{t:'Sei al Marketers Village: vai alla fermata in basso e sali sulla navetta per il Marketers World.',dest:{n:'Fermata della navetta',f:2,x:k(VG.bus.x),y:k(VG.bus.y)}};
+  if(!F.app){const n=NPC.find(x=>x.id==='info');return{t:'Vai all’Assistenza app, fuori dall’Ingresso A, e attiva l’app dell’evento (nel gioco).',dest:{n:'Assistenza app',f:0,x:n.x,y:n.y}};}
+  if(!F.accred){const n=NPC.find(x=>x.id==='accred');return{t:'Hai l’app: vai dallo Staff accrediti, mostra il QR e ritira il badge.',dest:{n:'Staff accrediti',f:0,x:n.x,y:n.y}};}
+  const nx=nextEvent();
+  return{t:nx?'Sei dentro! Prossima sessione: «'+nx.title+'» alle '+nx.t+' ('+nx.room+'). Apri il telefono 📱 per prenotare i workshop del venerdì.':'Per oggi le sessioni sono finite: fai networking, passa dall’Offworld o torna al Village dalla navetta.'};
+}
+function alpaGuide(n){
+  A.hum();petNote(n);
+  const me=ME();
+  const go=(d)=>({t:'Portami lì',n:null,act:()=>{G.dest=Object.assign({auto:0},d);toast('Destinazione: '+d.n,2000);}});
+  const menu=(t,items)=>({t,c:items});
+  const place=(name,txt,f,x,y)=>({t:name,n:()=>menu(txt,[go({n:name,f,x:k(x),y:k(y)}),{t:'Altri luoghi',n:()=>luoghi()},{t:'Indietro al menu',n:()=>main()}])});
+  const luoghi=()=>menu('Dimmi dove vuoi andare.',[
+    place('Palco principale','Il Main Stage è in Sala della Piazza, al piano terra, in mezzo al Palacongressi: speech e sessioni grandi.',0,651,470),
+    place('Silent Stage','Le Silent Stage sono quattro zone con cuffie, sul lato ovest vicino al Main Stage: sessioni “silenziose”.',0,442,415),
+    {t:'Altro luogo…',n:()=>altro()},
+    {t:'Indietro',n:()=>main()}]);
+  const altro=()=>menu('Quali servizi cerchi?',[
+    place('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Rete). Ricorda l’orario del meeting.',0,225,694),
+    place('Accrediti','Fuori dall’Ingresso A, a sinistra: ritiro badge. Serve prima l’app attivata.',0,520,805),
+    place('Assistenza app','Fuori dall’Ingresso A, a destra: attivazione dell’app dell’evento.',0,745,805),
+    {t:'Indietro',n:()=>luoghi()}]);
+  const gioco=()=>menu('Che dubbio hai sul gioco?',[
+    {t:'Cosa devo fare adesso?',n:()=>{const g=goalText();return menu(g.t,[...(g.dest?[go(g.dest)]:[]),{t:'Indietro al menu',n:()=>main()}]);}},
+    {t:'Come prenoto i workshop?',n:()=>menu('Apri il telefono 📱 (o P), scheda Programma, giorno di venerdì: tocca “Prenota”. Se due workshop si sovrappongono, il secondo non si prenota. I workshop sono al primo piano.',[{t:'Indietro al menu',n:()=>main()}])},
+    {t:'Come scorre il tempo?',n:()=>menu(G.sandbox?'Sei in Sandbox: il tempo è fermo e puoi entrare in qualsiasi sessione. ⏩ salta un’ora, toccando l’orologio cambi giorno.':'Un minuto di gioco ogni quattro secondi, dalle 8:15 alle 23:30. Si ferma quando apri telefono, mappa o parli. ⏩ salta quindici minuti. Dalle 17:00 puoi chiudere la giornata con la navetta.',[{t:'Indietro al menu',n:()=>main()}])},
+    {t:'Indietro',n:()=>main()}]);
+  const prog=()=>menu('Cosa vuoi sapere sul programma?',[
+    {t:'Cosa c’è adesso?',n:()=>{const nx=nextEvent();return menu(nx?'La prossima sessione è «'+nx.title+'» alle '+nx.t+', in '+nx.room+'. Per vedere tutto: telefono, scheda Programma.':'Per oggi non ci sono altre sessioni. Domani si riparte!',[{t:'Indietro al menu',n:()=>main()}]);}},
+    {t:'Una sessione per me',n:()=>{const e=PROGRAMMA.find(x=>x.kind!=='lounge'&&x.start>G.min&&x.d===G.day&&forMe(x));return menu(e?'Per te ('+me.job+'): «'+e.title+'» alle '+hm(e.start)+', in '+e.room+'. La trovi con “★ Per te” nel Programma.':'Per oggi non vedo altre sessioni adatte a te: prova domani, o filtra “★ Per te” nel Programma.',[{t:'Indietro al menu',n:()=>main()}]);}},
+    {t:'Come funziona Marketers Pro?',n:()=>menu('È la community dell’evento: scrivi post brevi, metti like e commenta. Chi hai incontrato dal vivo ti riconosce. Il pulsante 🌐 Marketers Pro è sempre sullo schermo.',[{t:'Indietro al menu',n:()=>main()}])},
+    {t:'Indietro',n:()=>main()}]);
+  const altroMenu=()=>menu('Qui il bot lascia spazio all’alpaca.',[
+    {t:'Accarezza Alpachino',n:()=>menu(exPick(AL_PET),[{t:'Ancora!',n:()=>altroMenu(),act:()=>A.hum()},{t:'Indietro al menu',n:()=>main()}]),act:()=>A.hum()},
+    {t:'Fai un selfie insieme',n:null,act:()=>{G.flags.selfie=true;A.stamp();toast('Selfie con Alpachino! Sembra che sorrida (o stia ruminando).',3000);}},
+    {t:'Chi sei davvero?',n:()=>menu('Nella realtà sono il bot di assistenza clienti di Marketers: rispondo a domande e smisto problemi. Qui sono la guida del gioco, solo con più pelo e meno ticket. '+exPick(AL_ADV),[{t:'Indietro al menu',n:()=>main()}])},
+    {t:'Indietro',n:()=>main()}]);
+  const main=()=>menu(exPick(AL_GREET)+' Sono Alpachino, assistenza clienti del Marketers World (tecnicamente un bot, praticamente un alpaca). Come posso aiutarti?',[
+    {t:'Il gioco: dubbi e consigli',n:()=>gioco()},
+    {t:'Dove devo andare?',n:()=>luoghi()},
+    {t:'Programma e sessioni',n:()=>prog()},
+    {t:'Altro…',n:()=>altroMenu()}]);
+  say(n,main());
 }
