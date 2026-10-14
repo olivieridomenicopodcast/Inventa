@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=93;
+const BUILD=94;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -239,7 +239,7 @@ function buildFirst(){
 /* ============================================================ stato */
 let FL=[null,null,null],G=null,NPC=[],mode='title';
 const keys={};let touch={x:0,y:0};
-const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,fin:false,pets:0,glasses:0,friends:0,pjOn:false,pjp:false,banner:false,kn:0,ks:0,pjg:0};
+const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,fin:false,pets:0,glasses:0,friends:0,pjOn:false,pjp:false,banner:false,kn:0,ks:0,pjg:0,qa:0,fav:0};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 const RNG=()=>(G&&G.rng)?G.rng():Math.random();
@@ -358,6 +358,7 @@ function interactables(){
   }
   if(f===2&&VILLAGE_ON)villageSpots(I);
   if(typeof itemSpots==='function')itemSpots(f,I);
+  if(typeof sqSpots==='function')sqSpots(f,I);
   for(const n of NPC)if(n.f===f)out.push({x:n.x,y:n.y,r:22,npc:n,label:'Parla con '+n.name,fn:()=>talkTo(n)});
   return out;
 }
@@ -401,6 +402,7 @@ function personFor(c){
 }
 function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({fam:n.fam||null,at:cmT(),place:(typeof albumPlace==='function'?albumPlace():''),name:n.name,role:n.role,kind:n.kind,p:n.p?Object.assign({},n.p):null,gender:n.gender||null});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
 function talkTo(n){
+  if(typeof sqTalk==='function'&&sqTalk(n))return;
   if(n.kind==='pet'&&typeof petTalk==='function'){petTalk(n);return;}
   if(n.friend&&typeof friendTalk==='function'){friendTalk(n);return;}
   if(n.kind==='family'){
@@ -531,6 +533,7 @@ function enterSession(e){
   if(!G.flags.accred){info('Varco','Serve il badge per entrare in sala.');return;}
   if(e.kind==='ws'){
     if(!G.booked.has(e.id)){
+      if(e.sold&&!G.sandbox&&typeof queueRoom==='function'){queueRoom(e);return;}
       toast('Non l’avevi prenotato, ma entri lo stesso.',2200);
     }
   }
@@ -542,7 +545,7 @@ function partySilent(e){
 /* ----- teatro: si guarda davvero lo speech ----- */
 const stg=$('#stg');let stCv=null;
 function startTheatre(e){
-  const c=makeContent(e),where=e.kind==='talk'?'main':'work';
+  const c=typeof qaAdd==='function'?qaAdd(makeContent(e),e):makeContent(e),where=e.kind==='talk'?'main':'work';
   G.watching={c,e,where,label:e.room,i:0,typed:0,idle:0,taken:{},ex:null,good:0,applause:0,t:0,notes:0,done:false};
   closeDlg();stg.classList.remove('hide');renderSlide();A.blip();
 }
@@ -560,7 +563,7 @@ function renderSlide(){
   add('Esci dalla sala',()=>leaveTheatre(false));
   setT($('#sT'),'st','');
 }
-function pickEx(k){const w=G.watching,sl=slideOf();w.ex.picked=k;w.typed=0;const c=sl.c[k];if(c.good){w.good++;addTip(c.r,w.c.title);w.notes++;A.stamp();}else A.blip();w.typed=0;renderSlide();}
+function pickEx(k){const w=G.watching,sl=slideOf();w.ex.picked=k;w.typed=0;const c=sl.c[k];if(c.good){w.good++;addTip(c.r,w.c.title);w.notes++;if(sl.qa)G.flags.qa=(G.flags.qa||0)+1;A.stamp();}else A.blip();w.typed=0;renderSlide();}
 function takeNote(){const w=G.watching,sl=slideOf();if(!Array.isArray(sl)||w.taken[w.i])return;w.taken[w.i]=1;addTip(sl[3],w.c.title);w.notes++;A.stamp();toast('Appunto segnato: «'+sl[3]+'». Lo rivedi in 📱 Rete › I miei appunti',3200);renderSlide();}
 function advance(){
   const w=G.watching;if(!w)return;
@@ -628,7 +631,7 @@ function drawTheatre(){
   const pad=8*zs;
   if(Array.isArray(sl)){let y=wrap(sl[0],'400 '+Math.round(zs*4.8)+'px "Press Start 2P",monospace',lw-2*pad,zs*7.4,lx+pad,ly+pad,'#fff');y+=zs*3;for(const b of sl[1])y=wrap('▸ '+b,'500 '+Math.round(zs*5)+'px "Space Grotesk",sans-serif',lw-2*pad,zs*7,lx+pad,y,'#ffd9a8');
     ctx.font='400 '+Math.round(zs*3.4)+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.45)';ctx.textAlign='right';ctx.fillText((w.i+1)+'/'+w.c.slides.length,lx+lw-pad,ly+lh-pad-zs*3);}
-  else{ctx.font='400 '+Math.round(zs*3.6)+'px "Press Start 2P",monospace';ctx.fillStyle='#ffd24d';ctx.fillText('ESERCIZIO',lx+pad,ly+pad);wrap(sl.q,'700 '+Math.round(zs*5.6)+'px "Space Grotesk",sans-serif',lw-2*pad,zs*8,lx+pad,ly+pad+zs*9,'#fff');}
+  else{ctx.font='400 '+Math.round(zs*3.6)+'px "Press Start 2P",monospace';ctx.fillStyle='#ffd24d';ctx.fillText(sl.qa?'DOMANDE DAL PUBBLICO':'ESERCIZIO',lx+pad,ly+pad);wrap(sl.q,'700 '+Math.round(zs*5.6)+'px "Space Grotesk",sans-serif',lw-2*pad,zs*8,lx+pad,ly+pad+zs*9,'#fff');}
   ctx.restore();
   ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(w.label.toUpperCase(),x0+8,y0+8);
 }
@@ -732,6 +735,7 @@ function quests(){
     ...(typeof extrasNPC==='function'?[
       {t:(F.pets||0)>=2?'Saluta CatGPT e Alpachino':'???? ?????? ?? ?????????',s:(F.pets||0)>=2?'Il gatto grigio e l’alpaca girano per la mappa':'Obiettivo segreto',ok:(F.pets||0)>=2},
       ...(typeof itemQuests==='function'?itemQuests():[]),
+      ...(typeof sqQuests==='function'?sqQuests():[]),
       {t:(F.friends||0)>=5?'Incontra gli amici del gruppo':'?????? ?? ?????? ???????',s:(F.friends||0)>=5?'Persone sparse tra Palacongressi e Village':'Obiettivo segreto',ok:(F.friends||0)>=5}]:[]),
     {t:'Scambia 5 contatti',s:'Parla con le persone ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
@@ -761,7 +765,7 @@ function sessCard(e){
   const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
   let btn='';
   if(G.seen.has(e.id))btn='<button class="pb ok" disabled>Concluso ✓ · seguito</button>';
-  else if(e.kind==='ws'){btn=booked&&past(e)?'<button class="pb occ" disabled>Concluso</button>':booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
+  else if(e.kind==='ws'){btn=booked&&past(e)?'<button class="pb occ" disabled>Concluso</button>':booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':e.sold&&!G.sandbox?`<button class="pb ghost" data-wl="${e.id}">${G.wait&&G.wait.has(e.id)?'✓ In lista d’attesa':'Esaurito · lista d’attesa'}</button>`:`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
   else if(e.kind==='lounge'){btn='';}
   else if(past(e))btn='<button class="pb occ" disabled>Concluso</button>';
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
@@ -797,6 +801,7 @@ function renderPhone(){
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
     B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.sandbox&&!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}keepPhone();});
+    B.querySelectorAll('[data-wl]').forEach(b=>b.onclick=()=>{const id=+b.dataset.wl;G.wait=G.wait||new Set();if(G.wait.has(id)){G.wait.delete(id);toast('Tolto dalla lista d’attesa.',1600);}else{G.wait.add(id);toast('In lista d’attesa: presentati davanti alla sala in anticipo.',2800);A.blip();}keepPhone();});
     B.querySelectorAll('[data-dst]').forEach(b=>b.onclick=()=>{const n=b.dataset.dst,r=roomPos(n);if(!r)return;G.dest={n,f:r.f,x:k(r.x),y:k(r.y)};closePhone();toast('Destinazione: '+n,2200);});
     B.querySelectorAll('[data-gw]').forEach(b=>b.onclick=()=>{toggleWear(b.dataset.gw);renderPhone();});
     B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);keepPhone();});
@@ -807,7 +812,7 @@ function renderPhone(){
     const nw=[...G.booked].filter(id=>BYID[id].kind==='ws'&&!G.seen.has(id)&&(BYID[id].d>G.day||(BYID[id].d===G.day&&BYID[id].e>G.min))).length,p=progress();
     const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
     B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2><small style="opacity:.85">${esc(ME().job)}</small></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
-     ${typeof scoreCard==='function'?scoreCard():''}
+     ${typeof scoreCard==='function'?scoreCard():''}${typeof sqCard==='function'?sqCard():''}
      <div class="bn" data-go="prog:0">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
      <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="notes">📝<b>Appunti (${G.tips.length})</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
@@ -1005,10 +1010,10 @@ function putSaves(a){
     try{localStorage.setItem(SKEY,JSON.stringify(b));if(typeof toast==='function')toast('Spazio del browser quasi pieno: le foto restano solo nel salvataggio più recente.',3600);return true;}
     catch(e2){if(typeof toast==='function')toast('Impossibile salvare: spazio del browser pieno. Elimina qualche vecchio salvataggio.',4000);return false;}}
 }
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   G.xpeople=(st.xpeople||[]).map(p=>Object.assign({},p));G.people.push(...G.xpeople.filter(p=>!G.people.some(q=>q.id===p.id)));
   G.qd=null;
   if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
@@ -1025,9 +1030,10 @@ function toMenu(){autoSave();SEED=G.seed||SEED;G.watching=null;G.react=null;['#s
 function openSaves(from,msg,flashId){
   const inGame=from!=='title'&&G&&mode==='play';
   const box=$('#saveB'),a=getSaves();
-  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(msg?`<div class="svok" role="status">${esc(msg)}</div>`:'')+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv${e.id===flashId?' flash':''}" data-sid="${e.id}"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svnext">'+(G.day>=2?'🏁 Concludi il weekend':'🌙 Passa a '+['Sabato','Domenica'][G.day])+'</button><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
+  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(msg?`<div class="svok" role="status">${esc(msg)}</div>`:'')+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv${e.id===flashId?' flash':''}" data-sid="${e.id}"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svnext">'+(G.day>=2?'🏁 Concludi il weekend':'🌙 Passa a '+['Sabato','Domenica'][G.day])+'</button><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svexp">⬇ Esporta in un file</button><button class="btn ghost" id="svimp">⬆ Importa da file</button><input type="file" id="svfile" accept=".json,application/json" style="display:none"></div><div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
   $('#savem').classList.remove('hide');
   $('#svx').onclick=()=>{$('#savem').classList.add('hide');last=performance.now();};
+  {const ex=$('#svexp'),im=$('#svimp'),fi=$('#svfile');if(ex)ex.onclick=()=>{const n=exportSaves();toast('Esportati '+n+' salvataggi in un file.',2400);};if(im)im.onclick=()=>fi.click();if(fi)fi.onchange=()=>{const f=fi.files[0];if(!f)return;importSavesFile(f,r=>{if(r.ok){refreshLoadBtn();openSaves(from,'✔ '+r.msg);}else toast(r.msg,3200);});};}
   const nd=$('#svnext');if(nd)nd.onclick=()=>{$('#savem').classList.add('hide');last=performance.now();askNextDay();};
   const rs=$('#svrs');if(rs)rs.onclick=()=>{if(!confirm('Ricominciare da capo con lo stesso seme? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;autoSave();SEED=G.seed;$('#savem').classList.add('hide');closePhone();startGame();};
   const mn=$('#svmenu');if(mn)mn.onclick=()=>{if(!confirm('Tornare al menu principale? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;toMenu();};
@@ -1063,7 +1069,7 @@ function photo(){
 function endGame(){
   if(G.done)return;G.done=true;if(G.flags)G.flags.pjOn=false;if(typeof villageCrowd==='function')villageCrowd(false);const p=progress(),F=G.flags;
   const title=p.done>=p.tot?'Partecipante leggendario':p.done>=8?'Networker del Palacongressi':p.done>=5?'Partecipante attivo':'Turista di Rimini';
-  $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini come <b style="color:var(--ink)">${esc(ME().job)}</b>: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div>${typeof scoreEndHtml==='function'?scoreEndHtml():''}<div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:8px">${F.offer?'<b style="color:var(--ink)">Hai ricevuto una proposta di collaborazione.</b> ':''}${esc(JOBFAM[ME().fam].epi)}</div>
+  $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini come <b style="color:var(--ink)">${esc(ME().job)}</b>: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div>${typeof scoreEndHtml==='function'?scoreEndHtml():''}${typeof epilogueHtml==='function'?epilogueHtml():''}<div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:8px">${F.offer?'<b style="color:var(--ink)">Hai ricevuto una proposta di collaborazione.</b> ':''}${esc(JOBFAM[ME().fam].epi)}</div>
    <div class="kv"><div>Contatti<b>${G.contacts.length}</b></div><div>Workshop<b>${F.ws}</b></div><div>Speech<b>${F.talk}</b></div><div>Stand<b>${Object.keys(F.stands).length}</b></div><div>Spunti<b>${G.tips.length}</b></div><div>Offworld<b>${F.off}</b></div></div>
    <div class="row2"><button class="btn" id="eAgain">Rigioca</button><button class="btn ghost" id="eBack">Torna al gioco</button><button class="btn ghost" id="eMenu">Menu principale</button></div>
    <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Realizzato da Olivieri Domenico usando Claude Code. Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers. Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
@@ -1114,6 +1120,7 @@ function draw(){
   // varco: porte a vetri chiuse finché non hai il badge
   if(G.f===0)drawGate();
   if(typeof drawItems==='function')drawItems(ctx);
+  if(typeof sqDrawWorld==='function')sqDrawWorld(ctx);
   // entità ordinate per y
   const list=NPC.filter(n=>n.f===G.f).map(n=>({y:n.y,n}));list.push({y:G.p.y,me:true});list.sort((a,b)=>a.y-b.y);
   const near=nearest();
@@ -1131,6 +1138,7 @@ function draw(){
   // UI
   ctx.setTransform(DPR,0,0,DPR,0,0);
   if(G.dest)drawDest();
+  if(typeof sqDraw==='function')sqDraw();
   if(G.fade>0){ctx.fillStyle='rgba(5,6,13,'+G.fade+')';ctx.fillRect(0,0,W,H);}
 }
 const HOW=[["L’obiettivo", "<p>La partita comincia al <b>Marketers Village</b>: sali sulla <b>navetta</b> dalla fermata in basso per arrivare al Palacongressi. A fine giornata (dalle 17:00) puoi tornare al Village dalla fermata «Navetta» fuori dall’Ingresso A: la sera al Village c’è l’<b>Offworld</b> (karaoke e party dalle 22:00), poi si va a dormire e il giorno dopo si riparte da lì.</p><div class=\"stp\"><i>1</i><div><b>Attiva l’app dell’evento</b><span>È una finta app, <b>dentro il gioco</b>: non devi scaricare né installare nulla. Fuori dall’Ingresso A vai dall’<b>Assistenza app</b> (a destra): il personaggio fa l’accesso e così ottiene il QR del biglietto.</span></div></div><div class=\"stp\"><i>2</i><div><b>Mostra il QR</b><span>Dallo <b>Staff accrediti</b> (a sinistra) mostri il QR e ritiri il badge: solo così si apre il varco.</span></div></div><div class=\"stp\"><i>3</i><div><b>Entra e vivi l’evento</b><span>Workshop del venerdì, speech di sabato e domenica, stand, networking, party e karaoke. Gli obiettivi stanno nel telefono (scheda Obiettivi).</span></div></div><p>Il riquadro <b>OBIETTIVO</b> in alto a sinistra e la freccia arancione ti guidano nei primi passi.</p><p>Tutto ciò che fai dà <b>punti</b> (speech seguiti, persone conosciute, meeting, oggetti, minigiochi…): a fine partita vedi il tuo punteggio e il <b>record personale</b>. Non c’è un massimo: rigioca per battere te stesso.</p>"], ["Muoversi e interagire", "<h3>COMPUTER</h3><div class=\"kb\"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o frecce</span><span>muoverti</span><span><kbd>E</kbd> o <kbd>Spazio</kbd></span><span>parlare, entrare, usare ciò che hai davanti</span><span><kbd>E</kbd> / <kbd>1</kbd>…<kbd>4</kbd></span><span>andare avanti nei dialoghi / scegliere la risposta con quel numero</span><span><kbd>Esc</kbd></span><span>chiudere menu e finestre</span></div><h3>SMARTPHONE</h3><div class=\"kb\"><span>Stick a sinistra</span><span>muoverti</span><span>Pulsante <kbd>E</kbd></span><span>interagire</span><span>Tocco su risposte</span><span>scegliere nei dialoghi</span></div><p>Quando vicino a qualcuno o qualcosa compare un suggerimento: premi <b>E</b> (o il pulsante) per usarlo.</p>"], ["Tempo, zoom e pulsanti", "<p>Il tempo scorre da solo: <b>1 minuto di gioco ogni 4 secondi</b>, dalle 8:45 alle 23:30. Si ferma quando apri telefono, mappa, salvataggi o stai parlando.</p><div class=\"kb\"><span><kbd>T</kbd> o ⏩</span><span>salta 15 minuti</span><span><kbd>+</kbd> <kbd>−</kbd> o rotellina</span><span>zoom del gioco (anche i pulsanti ± in alto a destra)</span><span><kbd>M</kbd> o 🗺</span><span>mappa</span><span><kbd>P</kbd> o 📱</span><span>telefono / app</span><span><kbd>G</kbd> o 💾</span><span>salva e carica</span><span><kbd>F</kbd> o 📷</span><span>foto ricordo</span><span>🔊</span><span>audio on/off</span></div><p>Sullo smartphone i pulsanti sono in alto a destra. Il riquadro in alto a sinistra mostra giorno, ora e la prossima sessione.</p>"], ["Il telefono (app)", "<p>Si apre con 📱 o <b>P</b>, ma solo dopo aver fatto l’accesso all’Assistenza. In basso trovi le schede (<b>Marketers Pro</b> è la community dell’evento: scrivi post brevi, metti like e commenta; chi hai incontrato davvero nel gioco ti riconosce. Nell’<b>Album</b> trovi le foto e i selfie di questa partita. Il pulsante <b>🌐 Marketers Pro</b> sullo schermo (o il tasto <b>C</b>) la apre subito, anche senza l’app):</p><div class=\"kb\"><span><b>Home</b></span><span>riassunto, agenda e persone da conoscere; da qui anche Speaker, Annunci, Aziende, Offworld, Obiettivi</span><span><b>Programma</b></span><span>tutte le sessioni per giorno (Ven/Sab/Dom); “I miei” filtra le tue</span><span><b>Agenda</b></span><span>prenotazioni, sessioni salvate e meeting</span><span><b>Rete (Networking)</b></span><span>persone consigliate: proponi un meeting e scegli l’orario</span><span><b>▣ (centro)</b></span><span>il tuo QR del biglietto</span></div><p>Nel Programma tocca <b>Prenota</b> per i workshop (non si prenota se l’orario è passato o si sovrappone a un altro), <b>Salva in agenda</b> per il resto, e <b>★ Portami qui</b> per far comparire la freccia verso la sala.</p>"], ["La mappa", "<p>Con 🗺 o <b>M</b>. Si cambia piano con i due pulsanti in alto; <b>Tu sei qui</b> è il punto arancione.</p><div class=\"kb\"><span>Pizzico / rotellina / doppio tocco</span><span>zoom</span><span>Trascina</span><span>sposta la mappa</span><span><kbd>+</kbd> <kbd>−</kbd> <kbd>◎</kbd></span><span>zoom e “centra su di me”</span><span>Tocca un punto o una voce dell’elenco</span><span>scheda del luogo con descrizione e programma della sala (per giorno)</span></div><p>Nella scheda usa <b>★ Portami qui</b>: una freccia arancione sul gioco indica la strada, anche tra i due piani (passa dalle scale mobili).</p>"], ["Sale, workshop e speech", "<p>Avvicinati a una sala e premi <b>E</b>: si apre una finestra con la sessione in corso, la prossima e il programma di oggi. Scegli tu se <b>Entrare ora</b>.</p><p>Dentro vedi gli speech come slide: <b>E / Spazio / tocco</b> per avanzare, <b>N</b> per prendere appunti, <b>1 2 3</b> (o tocco) per rispondere all’esercizio, <b>Esc</b> per uscire.</p><p>Le sessioni iniziano all’ora indicata: puoi arrivare cinque minuti prima. I workshop del venerdì vanno prenotati dall’app. Le Silent Stage (cuffie) stanno a sinistra, vicino al Main Stage.</p>"], ["Persone e minigiochi", "<p>Il <b>mestiere</b> che scegli nel menu iniziale cambia le tue risposte nei dialoghi, la compatibilità con le persone nel Networking, le sessioni segnate “★ Per te” e la trama: dal sabato una <b>talent scout</b> vicino all’Area networking ti fa una proposta, se hai fatto rete con persone affini.</p><p>Parla con chi incontri: ogni persona può finire nei tuoi contatti. Dall’app proponi un <b>meeting</b> e presentati all’<b>Area networking</b> all’ora scelta.</p><p><b>Riattivazione</b> (micro yoga sul Main Stage): minigioco di ritmo, premi <b>A S D</b> quando il respiro arriva al cerchio; sullo smartphone tocca le tre corsie.</p><p>Poi: firmacopie allo stand Hoepli, Game Quiz, Silent Party e karaoke al Village la sera. Qualche sorpresa è nascosta nel programma.</p>"], ["Salvataggi e partita", "<p>Con 💾 o <b>G</b> salvi in uno dei tuoi slot (fino a 15) e puoi caricare o cancellare le partite. C’è anche un salvataggio automatico ogni due minuti.</p><p>Nel menu iniziale puoi <b>salvare il profilo</b> (nome, aspetto e mansione) e ricaricarlo in un attimo, o copiare un <b>codice</b> per usarlo su un altro dispositivo.</p><p>Il <b>seme</b> nel menu iniziale decide chi incontri: stesso seme, stesse persone; con il dado 🎲 ne generi uno nuovo.</p><p>Titoli, speaker, sale e orari delle sessioni vengono dal programma dell’app (venerdì, sabato e domenica). Sono inventati i contenuti delle slide, le persone che incontri e i titoli ancora “in arrivo”. Buon divertimento!</p>"]];

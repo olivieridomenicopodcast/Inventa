@@ -31,6 +31,8 @@ function scoreRun(){
   add('Livello su Marketers Pro',lv.l-1,20,'Livello '+lv.l);
   add('Foto e selfie',(G.album||[]).length,8);
   add('Obiettivi completati',progress().done,25);
+  add('Domande al relatore',F.qa||0,15);
+  add('Favori ai partecipanti',F.fav||0,35);
   add('Meeting saltati',-(C.noshow||[]).length,30);
   add('Arrivi in ritardo alla serata',-lateDays,25);
   const total=Math.max(0,rows.reduce((s,r)=>s+r.pts,0));
