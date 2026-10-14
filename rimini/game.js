@@ -33,6 +33,7 @@ function person(c,x,y,dir,step,p){
   const l1=moving?(f?1:0):0,l2=moving?(f?0:1):0;
   c.fillRect(x-4,y-7,4,7-l1);c.fillRect(x,y-7,4,7-l2);
   c.fillStyle=shoe;c.fillRect(x-4,y-1-l1,4,1);c.fillRect(x,y-1-l2,4,1);
+  if(p.skirt){c.fillStyle=pants;c.fillRect(x-5,y-8,10,4);}
   // busto
   c.fillStyle=p.shirt;c.fillRect(x-5,y-14-bob,10,8);
   c.fillStyle='rgba(255,255,255,.14)';c.fillRect(x-5,y-14-bob,10,1);
@@ -57,7 +58,13 @@ function person(c,x,y,dir,step,p){
   if(p.phones){c.fillStyle='#1b1d28';c.fillRect(x-5,y-24-bob,10,1);c.fillRect(x-5,y-23-bob,1,5);c.fillRect(x+4,y-23-bob,1,5);c.fillStyle=p.badge||'#ff6a3d';c.fillRect(x-6,y-20-bob,2,4);c.fillRect(x+4,y-20-bob,2,4);}
   if(p.cap){c.fillStyle=p.cap;c.fillRect(x-5,y-24-bob,10,3);if(dir===0)c.fillRect(x-5,y-22-bob,10,1);}
 }
-const NIKY={shirt:'#ff7a3d',pants:'#26304f',skin:'#e8b98a',hair:'#3a2a1c',phones:true,badge:'#4dd0ff',shoe:'#fff'};
+const SHIRTS=['#ff7a3d','#3da5d9','#6bc46d','#b57bff','#e86a8a','#ffd24d'],HAIRC=['#2a1d14','#6a4a2a','#c9a24a','#1a1a20','#8a3a2a','#d9d2c4'],SKINC=['#f0c8a0','#e8b98a','#c98e62','#a8734c'];
+let PLAYER=Object.assign({name:'Ospite',gender:'m',si:0,hi:0,ki:1},lsGet('rimini.player',{}));
+function playerLook(){const f=PLAYER.gender==='f';return{shirt:SHIRTS[PLAYER.si%6],pants:f?'#3a3f66':'#26304f',skin:SKINC[PLAYER.ki%4],hair:HAIRC[PLAYER.hi%6],long:f,skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff'};}
+const NIKY=new Proxy({},{get:(_,k)=>playerLook()[k]});
+const pname=()=>(PLAYER.name||'Ospite').trim()||'Ospite';
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function portrait(canvas,p){const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,28,28);c.fillStyle='#1b2240';c.fillRect(0,0,28,28);c.fillStyle='#2a3566';c.fillRect(0,18,28,10);person(c,14,37,0,0,p);}
 
 /* ============================================================ costruzione dei piani */
@@ -225,7 +232,7 @@ const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 function pickFrom(a){return a[Math.floor(Math.random()*a.length)];}
 
 function newGame(){
-  G={day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(PROGRAMMA.filter(e=>e.mine).map(e=>e.id)),saved:new Set(),meets:[],people:genPeople(),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
+  G={day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),meets:[],people:genPeople(),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
   FL[0]=buildGround();FL[1]=buildFirst();buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
@@ -358,7 +365,7 @@ function nodeAccred(){
   const F=G.flags;
   if(F.accred)return{t:'Hai già il badge: entra pure al Palacongressi dal varco principale. Buon evento!',c:[{t:'Grazie!',n:null}]};
   if(!F.app)return{t:'Benvenuto! Per ritirare il badge serve il QR del biglietto, che sta nell’app: l’accesso avviene con l’email del biglietto e un codice a 6 cifre. Passa dall’assistenza app qui accanto, poi torna da me.',c:[{t:'Vado all’assistenza app',n:null},{t:'Ho già l’app!',n:{t:'Bene, ma devi fare l’accesso: parla con l’assistenza app qui vicino.',c:[{t:'Ok',n:null}]}}]};
-  return{t:'Perfetto, vedo il QR. Ecco il tuo badge: «Niky · Podcast coach». Il varco si apre!',c:[{t:'Grazie!',n:null,act:()=>{F.accred=true;A.stamp();toast('Accredito ritirato! Il varco è aperto.',3000);}}]};
+  return{t:'Perfetto, vedo il QR. Ecco il tuo badge: «'+pname()+'». Il varco si apre!',c:[{t:'Grazie!',n:null,act:()=>{F.accred=true;A.stamp();toast('Accredito ritirato! Il varco è aperto.',3000);}}]};
 }
 function nodeInfo(){
   const F=G.flags;
@@ -373,7 +380,7 @@ function attendee(n){
   if(met)return say(n,{t:'Ci siamo già presentati! Ci sentiamo dopo l’evento, ok?',c:[{t:'Certo!',n:null}]});
   const tip=pickFrom(TIPS[pickFrom(TIPKEYS)]);
   say(n,{t:'Ciao! Sono '+first+', '+n.role.replace(' · ',' di ')+'. Tu?',c:[
-    {t:'Sono Niky, faccio il podcast coach',n:{t:'Che bello! Io sto cercando proprio di capire come migliorare la mia comunicazione. Scambiamoci i contatti?',c:[{t:'Volentieri',n:null,act:()=>{G.met[n.id]=1;addContact(n);}},{t:'Dopo',n:null}]}},
+    {t:'Sono '+pname()+', piacere!',n:{t:'Piacere! Io sto cercando proprio di capire come migliorare la mia comunicazione. Scambiamoci i contatti?',c:[{t:'Volentieri',n:null,act:()=>{G.met[n.id]=1;addContact(n);}},{t:'Dopo',n:null}]}},
     {t:'Che workshop consigli?',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{G.met[n.id]=1;addContact(n);addTip(tip,'consiglio di '+first);}}]}},
     {t:'Ciao, devo scappare!',n:null}
   ]});
@@ -389,7 +396,7 @@ function firmacopie(e){
   const dario=e&&/Vignali/.test(e.sp||'');
   const d=dario?NPC.find(n=>n.id==='dario'):{name:(e&&e.sp)||'Autore',role:'Firmacopie · Stand Urlico Hoepli',p:{shirt:'#3a4a8a',pants:'#232a44',skin:'#dfae80',hair:'#2a2420',badge:'#ffd24d'}};
   const book=e?e.title.replace(/^.*? - /,''):'«Il tao del business. L’arte di ribellarsi all’ordinario»';
-  say(d,{t:'Ciao! Vuoi che ti firmi il libro? '+book,c:[{t:'Sì, grazie! Per Niky',n:{t:'Fatto! Un abbraccio e buon Marketers World.',c:[{t:'Grazie!',n:null,act:()=>{G.flags.sign=true;if(dario){G.flags.dario=true;addContact(d);}A.stamp();toast('Libro firmato!');}}]}},{t:'Passo dopo',n:null}]});
+  say(d,{t:'Ciao! Vuoi che ti firmi il libro? '+book,c:[{t:'Sì, grazie! Per '+pname(),n:{t:'Fatto! Un abbraccio e buon Marketers World.',c:[{t:'Grazie!',n:null,act:()=>{G.flags.sign=true;if(dario){G.flags.dario=true;addContact(d);}A.stamp();toast('Libro firmato!');}}]}},{t:'Passo dopo',n:null}]});
 }
 function quiz(e){
   const qs=[
@@ -497,8 +504,8 @@ function drawTheatre(){
       c.fillStyle=SH[(i*5+r)%SH.length];c.fillRect(x-3*sz,y-1+bob,7*sz,7*sz);c.fillStyle='rgba(0,0,0,.2)';c.fillRect(x-3*sz,y+4*sz+bob,7*sz,1);
       if(hv<.07&&Math.sin(t*3+i)>0){c.fillStyle='#d8f0ff';c.fillRect(x+3*sz,y-6+bob,3,4);}
       if(w.applause>0&&hv>.8){c.fillStyle='#fff';c.fillRect(x-1,y-5+bob+Math.round(Math.sin(t*20+i)),2,2);}}}
-  // Niky di spalle in prima fila
-  const nx=34,ny=171;c.fillStyle='#ff7a3d';c.fillRect(nx-6,ny+4,12,8);c.fillStyle='#3a2a1c';c.fillRect(nx-4,ny-2,9,8);c.fillStyle='#1b1d28';c.fillRect(nx-5,ny-3,11,1);c.fillStyle='#4dd0ff';c.fillRect(nx-6,ny,2,4);c.fillRect(nx+5,ny,2,4);c.fillStyle='#fff';c.fillRect(nx+8,ny+5,6,5);c.fillStyle='#ccd';c.fillRect(nx+9,ny+6,4,1);
+  // giocatore di spalle in prima fila
+  const nx=34,ny=171;const PL=playerLook();c.fillStyle=PL.shirt;c.fillRect(nx-6,ny+4,12,8);c.fillStyle=PL.hair;c.fillRect(nx-4,ny-2,9,PL.long?12:8);c.fillStyle='#1b1d28';c.fillRect(nx-5,ny-3,11,1);c.fillStyle='#4dd0ff';c.fillRect(nx-6,ny,2,4);c.fillRect(nx+5,ny,2,4);c.fillStyle='#fff';c.fillRect(nx+8,ny+5,6,5);c.fillStyle='#ccd';c.fillRect(nx+9,ny+6,4,1);
   c.fillStyle='rgba(0,0,0,.25)';c.fillRect(0,172,320,8);
   // composizione
   const barH=MOB?Math.max(250,H*.36):210;
@@ -527,8 +534,8 @@ function kDone(){G.flags.kara=true;G.flags.off++;G.min+=50;A.stamp();toast('Kara
 function meetNow(m){
   const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att'};
   const tip=pickFrom(TIPS[pickFrom(TIPKEYS)]);
-  say(n,{t:'Ciao Niky! Che bello incontrarti di persona. Allora, di cosa ti occupi?',c:[
-    {t:'Podcast coach, editor e sound designer',n:{t:'Wow! Io faccio '+pe.job+'. Penso che potremmo collaborare: sentiamoci dopo l’evento.',c:[{t:'Volentieri!',n:null,act:()=>doneMeet(m,n)}]}},
+  say(n,{t:'Ciao '+pname()+'! Che bello incontrarti di persona. Allora, di cosa ti occupi?',c:[
+    {t:'Ti racconto cosa faccio',n:{t:'Wow! Io faccio '+pe.job+'. Penso che potremmo collaborare: sentiamoci dopo l’evento.',c:[{t:'Volentieri!',n:null,act:()=>doneMeet(m,n)}]}},
     {t:'Parliamo di come cresce un business',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{addTip(tip,'meeting con '+pe.name);doneMeet(m,n);}}]}},
     {t:'Scusa, devo scappare',n:null}]});
 }
@@ -658,7 +665,7 @@ function renderPhone(){
   if(phoneTab==='home'){
     const nw=[...G.booked].filter(id=>BYID[id].kind==='ws').length,p=progress();
     const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
-    B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>Bentornato,<br><em>Niky.</em></h2></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
+    B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
      <div class="bn" data-go="prog:0">🎟 Hai prenotato <b>${nw}</b> workshop. Scegli altri nel programma di venerdì →</div>
      <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
@@ -706,7 +713,7 @@ function showQR(){
   const B=$('#phB'),n=21;let g='';const r=mulberry32(hashStr('niky-badge'));
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){const f=(x<7&&y<7)||(x>=n-7&&y<7)||(x<7&&y>=n-7);let on=r()<.5;if(f){const lx=x%(n-7)>=0?x:x,ex=(x<7?x:x-(n-7)),ey=(y<7?y:y-(n-7));on=(ex===0||ex===6||ey===0||ey===6||(ex>=2&&ex<=4&&ey>=2&&ey<=4));}
     if(on)g+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;}
-  B.innerHTML=`<div class="back" id="bk">‹ Indietro</div><div class="qrc"><svg viewBox="0 0 ${n} ${n}" width="200" height="200" shape-rendering="crispEdges" fill="#111"><rect width="${n}" height="${n}" fill="#fff"/>${g}</svg><b>Niky</b><span>Biglietto · Marketers World 2026</span><small>QR decorativo del gioco, non valido.</small></div>`;
+  B.innerHTML=`<div class="back" id="bk">‹ Indietro</div><div class="qrc"><svg viewBox="0 0 ${n} ${n}" width="200" height="200" shape-rendering="crispEdges" fill="#111"><rect width="${n}" height="${n}" fill="#fff"/>${g}</svg><b>${esc(pname())}</b><span>Biglietto · Marketers World 2026</span><small>QR decorativo del gioco, non valido.</small></div>`;
   $('#bk').onclick=renderPhone;
 }
 function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#0a0d18';c.fillRect(0,0,cvm.width,cvm.height);c.drawImage(FL[f].cv,0,0,WW,WH,0,0,cvm.width,cvm.width*WH/WW);
@@ -719,7 +726,7 @@ $('#bSnd').onclick=()=>{A.on=!A.on;$('#bSnd').textContent=A.on?'🔊':'🔇';};
 function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),ms||2400);}
 function photo(){
   const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;const g=c.getContext('2d');g.drawImage(cv,0,0);
-  g.fillStyle='rgba(8,10,20,.8)';const bh=Math.round(c.height*.09);g.fillRect(0,c.height-bh,c.width,bh);g.fillStyle='#fff';g.font='700 '+Math.round(bh*.38)+'px "Space Grotesk",sans-serif';g.textAlign='left';g.fillText('Niky · Rimini '+DAYNAMES[G.day]+' ottobre 2026',Math.round(bh*.4),c.height-bh*.4);
+  g.fillStyle='rgba(8,10,20,.8)';const bh=Math.round(c.height*.09);g.fillRect(0,c.height-bh,c.width,bh);g.fillStyle='#fff';g.font='700 '+Math.round(bh*.38)+'px "Space Grotesk",sans-serif';g.textAlign='left';g.fillText(pname()+' · Rimini '+DAYNAMES[G.day]+' ottobre 2026',Math.round(bh*.4),c.height-bh*.4);
   g.textAlign='right';g.fillStyle='#ff6a3d';g.fillText('Realizzato da Olivieri Domenico con Claude Code · Inventa',c.width-bh*.4,c.height-bh*.4);
   c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rimini-foto-ricordo.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);});
   if(!G.flags.selfie){G.flags.selfie=true;A.stamp();}toast('Foto ricordo scattata!');
@@ -839,7 +846,15 @@ const padEnd=e=>{if(e.pointerId===padId){padId=null;touch.x=touch.y=0;padi.style
 pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
 cv.addEventListener('pointerdown',e=>{if(G&&G.react){reactHit(Math.min(2,Math.floor(e.clientX/(W/3))));}});
 $('#act').addEventListener('pointerdown',e=>{e.preventDefault();act();});
-$('#go').onclick=startGame;
+function buildCreator(){
+  const nm=$('#pname');nm.value=PLAYER.name==='Ospite'?'':PLAYER.name;
+  nm.oninput=()=>{PLAYER.name=nm.value;lsSet('rimini.player',PLAYER);};
+  const sw=(id,arr,key)=>{const el=$(id);el.innerHTML='';arr.forEach((c,i)=>{const b=document.createElement('button');b.style.background=c;b.className=PLAYER[key]%arr.length===i?'on':'';b.onclick=()=>{PLAYER[key]=i;lsSet('rimini.player',PLAYER);buildCreator();};el.appendChild(b);});};
+  sw('#cs',SHIRTS,'si');sw('#ch',HAIRC,'hi');sw('#cskin',SKINC,'ki');
+  document.querySelectorAll('#cg button').forEach(b=>{b.className=b.dataset.g===PLAYER.gender?'on':'';b.onclick=()=>{PLAYER.gender=b.dataset.g;lsSet('rimini.player',PLAYER);buildCreator();};});
+}
+buildCreator();
+$('#go').onclick=()=>{PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
 $('#how').onclick=()=>toast('Obiettivi: app → accredito → workshop (ven) → speech (sab/dom) → contatti → stand → Offworld.',5000);
 
 /* ============================================================ titolo */
