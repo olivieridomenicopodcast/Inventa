@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=77;
+const BUILD=78;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -1009,16 +1009,16 @@ let autoT=0;
 function toMenu(){autoSave();SEED=G.seed||SEED;G.watching=null;G.react=null;['#stg','#dlg','#prompt','#goal'].forEach(s=>{const e=$(s);if(e)e.classList.add('hide');});
   ['#savem','#roomm','#phone','#mapov','#end'].forEach(s=>$(s).classList.add('hide'));cancelAnimationFrame(mapRaf);DL=null;
   mode='title';$('#hud').classList.add('hide');$('#title').classList.remove('hide');$('#sd').value=SEED;refreshLoadBtn();window.scrollTo(0,0);}
-function openSaves(from){
+function openSaves(from,msg,flashId){
   const inGame=from!=='title'&&G&&mode==='play';
   const box=$('#saveB'),a=getSaves();
-  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
+  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(msg?`<div class="svok" role="status">${esc(msg)}</div>`:'')+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv${e.id===flashId?' flash':''}" data-sid="${e.id}"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
   $('#savem').classList.remove('hide');
   $('#svx').onclick=()=>{$('#savem').classList.add('hide');last=performance.now();};
   const rs=$('#svrs');if(rs)rs.onclick=()=>{if(!confirm('Ricominciare da capo con lo stesso seme? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;autoSave();SEED=G.seed;$('#savem').classList.add('hide');closePhone();startGame();};
   const mn=$('#svmenu');if(mn)mn.onclick=()=>{if(!confirm('Tornare al menu principale? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;toMenu();};
-  const n=$('#svnew');if(n)n.onclick=()=>{const e=saveTo(null,$('#svname').value.trim());toast('Salvato: '+e.name,1800);openSaves(from);};
-  box.querySelectorAll('[data-ow]').forEach(b=>b.onclick=()=>{saveTo(b.dataset.ow);toast('Salvataggio aggiornato.',1500);openSaves(from);});
+  const n=$('#svnew');if(n)n.onclick=()=>{const e=saveTo(null,$('#svname').value.trim());A.stamp();openSaves(from,'✔ Partita salvata come «'+e.name+'» ('+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+')',e.id);};
+  box.querySelectorAll('[data-ow]').forEach(b=>b.onclick=()=>{const e=saveTo(b.dataset.ow);A.stamp();openSaves(from,'✔ Salvataggio «'+e.name+'» sovrascritto ('+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+')',e.id);});
   box.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{putSaves(getSaves().filter(x=>x.id!==b.dataset.dl));openSaves(from);});
   box.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{const e=getSaves().find(x=>x.id===b.dataset.ld);if(!e)return;$('#savem').classList.add('hide');closePhone();$('#end').classList.add('hide');startGame(e.st);});
 }
