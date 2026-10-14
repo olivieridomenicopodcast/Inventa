@@ -646,6 +646,9 @@ function openPhone(tab){if(!G.flags.app){toast('Prima serve l’app: vai all’a
 function closePhone(){$('#phone').classList.add('hide');}
 const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
 const tagH=t=>`<span class="tg"><i style="background:${TAGC[t]||'#888'}"></i>${esc(t)}</span>`;
+const EXTRAROOM={'Area networking':{f:0,x:225,y:694}};
+function roomPos(r){return (typeof ROOMS!=='undefined'&&ROOMS[r])||EXTRAROOM[r]||null;}
+function goBtn(room){const r=roomPos(room);return r?`<button class="pb ghost" data-dst="${esc(room)}">★ Portami qui</button>`:'';}
 function sessCard(e){
   const past=x=>x.d<G.day||(x.d===G.day&&x.e<=G.min);
   const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
@@ -654,7 +657,7 @@ function sessCard(e){
   else if(e.kind==='lounge'){btn='';}
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
   const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
-  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small></div>`:''}<div class="tags">${(e.tags||[]).map(tagH).join('')}</div>${btn}</div>`;
+  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small></div>`:''}<div class="tags">${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
 }
 function meetOptions(){
   const out=[];
@@ -683,6 +686,7 @@ function renderPhone(){
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
     B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
+    B.querySelectorAll('[data-dst]').forEach(b=>b.onclick=()=>{const n=b.dataset.dst,r=roomPos(n);if(!r)return;G.dest={n,f:r.f,x:k(r.x),y:k(r.y)};closePhone();toast('Destinazione: '+n,2200);});
     B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);renderPhone();});
     B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
     B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
@@ -710,7 +714,7 @@ function renderPhone(){
     const items=[...G.booked,...G.saved].map(id=>BYID[id]);
     const ms=G.meets.map(m=>({d:m.day,start:m.start,e:m.start+30,title:'Meeting con '+G.people.find(p=>p.id===m.pid).name,room:'Area networking',kind:'meet',tags:[],sp:'',role:''}));
     const all=[...items,...ms].sort((a,b)=>a.d-b.d||a.start-b.start);
-    B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div></div>`:`<div class="sc ${G.booked.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div></div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';
+    B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`:`<div class="sc ${G.booked.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';bind();
   }else if(phoneTab==='net'){
     B.innerHTML=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base a cosa fai e cosa cerchi. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('')+(G.contacts.length?`<div class="sec">// I TUOI CONTATTI</div>`+G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'');
     bind();
