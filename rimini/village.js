@@ -215,4 +215,4 @@ function goSunflower(late){
   G.fade=1;A.blip();setTimeout(()=>{G.f=3;G.p.x=k(SUN.door.x);G.p.y=k(SUN.door.y-60);[G.p.x,G.p.y]=freeSpot(3,G.p.x,G.p.y);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.eveDay=G.day;G.min=late?G.min:Math.max(G.min+10,20*60);G.flags.sun=true;A.stamp();
     if(late){toast('Sono le 22:00: la navetta ti porta al Sunflower… sei arrivato in ritardo!',4200);if(typeof cmLate==='function')cmLate(G.day);}else toast('Benvenuto al Marketers Meetup al Sunflower! Bar, tavoli e tante persone con cui parlare.',3800);},250);
 }
-function sunQuest(){return[{t:'Marketers Meetup al Sunflower',s:'Venerdì sera, 20:00-22:00: navetta dal Palacongressi',ok:!!(G.flags&&G.flags.sun)}];}
+function sunQuest(){return[{t:'Marketers Meetup al Sunflower',s:'Venerdì sera, 20:00-23:30: navetta dal Palacongressi',ok:!!(G.flags&&G.flags.sun)}];}
