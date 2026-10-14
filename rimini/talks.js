@@ -209,6 +209,7 @@ function tkTopics(s){
 }
 function makeContent(s){
   if(s.c)return s.c;
+  if(typeof extrasTalk==='function'){const x=extrasTalk(s);if(x)return s.c=x;}
   if(s.egg)return s.c=eggContent(s);
   const r=mulberry32(hashStr('talk|'+s.title+'|'+(s.sp||''))),tp=tkTopics(s);
   const shuf=a=>a.map(x=>[r(),x]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
@@ -227,5 +228,6 @@ function makeContent(s){
    ...pts.slice(2,4).map(p=>[p[0],[p[1],p[2]],p[3],p[4]]),
    ['Per concludere',['Una cosa da portare a casa','Una da fare entro domani'],outro,'Scegli un’azione da questa sessione e falla entro domani.']];
   s.c={title:s.title,speaker:s.sp,role:s.role,pal:{shirt:['#3a4a8a','#8a3a4a','#3a7a5a','#6a4a8a','#aa7a3a','#3a6a8a'][s.title.length%6],skin:['#e8b98a','#dfae80','#c98e62','#f0c8a0'][(s.sp||'').length%4],hair:['#2a1d14','#4a3322','#1a1a20','#8a3a2a'][s.title.length%4],long:s.title.length%3===0},slides:sl};
+  if(typeof extrasContent==='function')extrasContent(s,s.c);
   return s.c;
 }
