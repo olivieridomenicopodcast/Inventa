@@ -211,12 +211,18 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 .cc{margin-top:8px;border-top:1px solid #2a3566;padding-top:8px}.cm{display:flex;gap:8px;margin-bottom:8px;font-size:13px;color:#cfd8ee}.cm .cav{width:26px;height:26px;font-size:10px}.cm b{color:#fff;font-size:12px;margin-right:6px}.cm.me b{color:#ff6a3d}.cin{display:flex;gap:6px;margin-top:6px}.cin input{flex:1;background:#0c1124;color:#e9efff;border:1px solid #2a3566;border-radius:8px;padding:7px;font-size:13px}
 .chips3b.on{background:#ff6a3d!important;color:#1a0a04!important;border-color:#ff6a3d!important;font-weight:700}
 #clock{cursor:default}
+#bComm{right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 52px);padding:8px 14px;border-radius:12px;font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;position:fixed;z-index:6}
+#bComm .bdg{min-width:18px;height:18px;border-radius:9px;background:#ff4d5a;color:#fff;font:700 11px/18px sans-serif;text-align:center;font-style:normal;padding:0 5px}
+.mob #bComm{top:calc(max(10px,env(safe-area-inset-top)) + 112px)}
+.mob #goal{top:calc(max(10px,env(safe-area-inset-top)) + 158px)!important}
+#phone .tabs button{white-space:normal;line-height:1.1;text-align:center}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 <div id="hud" class="hide">
   <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small></div>
+  <button class="glass" id="bComm" title="Marketers Pro (C)">🌐 Marketers Pro<i id="bCommN" class="bdg" style="display:none"></i></button>
   <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bMap" title="Mappa (M)">🗺</button><button class="glass" id="bSave" title="Salva / Carica (G)">💾</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bSnd" title="Audio">🔊</button></div>
   <div id="goal" class="glass hide"></div>
   <div id="prompt" class="glass hide"></div>
@@ -224,7 +230,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
   <div id="dlg" class="glass hide"><canvas id="por" width="28" height="28"></canvas><div><div class="nm" id="dN"></div><div class="rl" id="dR"></div><div class="tx" id="dT"></div><div class="ch" id="dC"></div></div></div>
   <div id="pad"><i id="padi"></i></div><div id="act">E</div>
 </div>
-<div id="phone" class="hide"><div class="box"><div class="hd"><span>MW26 · APP</span><button id="phX">✕</button></div><div class="tabs" id="phT"></div><div class="body" id="phB"></div></div></div>
+<div id="phone" class="hide"><div class="box"><div class="hd"><span id="phH">MW26 · APP</span><button id="phX">✕</button></div><div class="tabs" id="phT"></div><div class="body" id="phB"></div></div></div>
 <div id="mapov" class="hide"><div class="mbox"><div class="mh"><b>Mappa del Palacongressi</b><div class="mfl" style="flex:1"><button id="mfl0">Piano terra</button><button id="mfl1">Primo piano</button></div><div class="mfl"><button id="mzout">−</button><button id="mzin">+</button><button id="mzc" title="Centra su di me">◎</button></div><button id="mapX" class="mx">✕</button></div><div class="mbody"><canvas id="mapcv2"></canvas><div id="plist"></div></div></div></div>
 <div id="howm" class="hide"><div class="box"><div class="hh"><h2 id="howT">Come si gioca</h2><span id="howN"></span></div><div id="howB"></div><div class="hn"><button class="btn ghost" id="howP">‹ Indietro</button><div id="howD"></div><button class="btn" id="howNx">Avanti ›</button></div></div></div>
 <div id="roomm" class="hide"><div class="box" id="roomB"></div></div>
@@ -232,7 +238,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="56">build</div>
+<div id="bld" data-b="57">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>
