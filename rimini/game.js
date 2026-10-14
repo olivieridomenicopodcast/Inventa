@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=81;
+const BUILD=82;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -565,7 +565,7 @@ function renderSlide(){
   setT($('#sT'),'st','');
 }
 function pickEx(k){const w=G.watching,sl=slideOf();w.ex.picked=k;w.typed=0;const c=sl.c[k];if(c.good){w.good++;addTip(c.r,w.c.title);w.notes++;A.stamp();}else A.blip();w.typed=0;renderSlide();}
-function takeNote(){const w=G.watching,sl=slideOf();if(!Array.isArray(sl)||w.taken[w.i])return;w.taken[w.i]=1;addTip(sl[3],w.c.title);w.notes++;A.stamp();toast('Appunto segnato: «'+sl[3]+'»',2200);renderSlide();}
+function takeNote(){const w=G.watching,sl=slideOf();if(!Array.isArray(sl)||w.taken[w.i])return;w.taken[w.i]=1;addTip(sl[3],w.c.title);w.notes++;A.stamp();toast('Appunto segnato: «'+sl[3]+'». Lo rivedi in 📱 Rete › I miei appunti',3200);renderSlide();}
 function advance(){
   const w=G.watching;if(!w)return;
   const full=sayText();
@@ -824,14 +824,14 @@ function renderPhone(){
     B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`:`<div class="sc ${G.booked.has(e.id)&&!G.seen.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}${G.seen.has(e.id)?' <span class="kt">CONCLUSO ✓</span>':''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';bind();
   }else if(phoneTab==='net'){
     const nc=G.contacts.length,nt=G.tips.length;
-    const tabs=`<div class="cfil"><button data-nv="rec" class="${netTab==='rec'?'on':''}">Consigliati</button><button data-nv="con" class="${netTab==='con'?'on':''}">👥 I miei contatti (${nc})</button><button data-nv="tips" class="${netTab==='tips'?'on':''}">💡 I miei spunti (${nt})</button></div>`;
+    const tabs=`<div class="cfil"><button data-nv="rec" class="${netTab==='rec'?'on':''}">Consigliati</button><button data-nv="con" class="${netTab==='con'?'on':''}">👥 I miei contatti (${nc})</button><button data-nv="tips" class="${netTab==='tips'?'on':''}">📝 I miei appunti (${nt})</button></div>`;
     const when=at=>at==null?'—':DAYNAMES[Math.min(2,Math.floor(at/1440))]+' '+hm(((at%1440)+1440)%1440);
     let body='';
     if(netTab==='rec')body=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.filter(pe=>!(G.xpeople||[]).includes(pe)).map(pe=>personCard(pe,true)).join('');
     else if(netTab==='con')body=nc?`<div class="note" style="margin:0 0 10px">Le persone con cui hai scambiato i contatti in questa partita. Tocca un contatto per i dettagli.</div>`+G.contacts.map((c,i)=>({c,i})).reverse().map(({c,i})=>{
       const at=c.at!=null?c.at:(G.comm&&G.comm.metT&&G.comm.metT[c.name]),open=netOpen===i,pe=G.people.find(x=>x.name===c.name);
       return `<div class="pcard ct ${open?'open':''}"><button class="ctb" data-ct="${i}">${faceImg(c.p||facePal(c.name,c.gender||genderOf(c.name)),'avi2')}<div class="pi"><b>${esc(c.name)}</b><small>${esc(c.role||'')}</small><em>Incontrat${(c.gender||genderOf(c.name))==='f'?'a':'o'}: ${when(at)}${c.place?' · '+esc(c.place):''}</em></div></button>`+(open?`<div class="ctd"><div class="note" style="margin:6px 0">${esc(c.name)} ti ha lasciato il contatto${c.place?' vicino a «'+esc(c.place)+'»':''}. Su Marketers Pro puoi vedere se ha commentato i tuoi post.</div><div class="crow2"><button class="pb" data-mtc="${i}">Proponi un meeting</button><button class="pb ghost" data-cgo="${i}">Vedi su Marketers Pro</button></div></div>`:'')+'</div>';}).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri e scegli “Scambiamoci i contatti”.</div>';
-    else body=nt?`<div class="note" style="margin:0 0 10px">I consigli e gli appunti che hai raccolto in questa partita.</div>`+G.tips.slice().reverse().map(t=>`<div class="pg"><b>«${esc(t.t)}»</b><br><small style="color:var(--dim)">${esc(t.src||'')}${t.at!=null?' · '+when(t.at):''}</small></div>`).join(''):'<div class="note">Ancora nessuno spunto. Prendi appunti durante gli speech (“Segna l’appunto”) o chiedi consigli a chi incontri.</div>';
+    else body=nt?`<div class="note" style="margin:0 0 10px">I consigli e gli appunti che hai raccolto in questa partita.</div>`+G.tips.slice().reverse().map(t=>`<div class="pg"><b>«${esc(t.t)}»</b><br><small style="color:var(--dim)">${esc(t.src||'')}${t.at!=null?' · '+when(t.at):''}</small></div>`).join(''):'<div class="note">Ancora nessun appunto. Prendi appunti durante gli speech (“Segna l’appunto”) o chiedi consigli a chi incontri.</div>';
     B.innerHTML=tabs+body;
     B.querySelectorAll('[data-nv]').forEach(b=>b.onclick=()=>{netTab=b.dataset.nv;netOpen=null;renderPhone();});
     B.querySelectorAll('[data-mtc]').forEach(b=>b.onclick=()=>askMeeting(personFor(G.contacts[+b.dataset.mtc]).id));
