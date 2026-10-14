@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=82;
+const BUILD=83;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -757,9 +757,10 @@ function sessCard(e){
   if(G.seen.has(e.id))btn='<button class="pb ok" disabled>Concluso ✓ · seguito</button>';
   else if(e.kind==='ws'){btn=booked&&past(e)?'<button class="pb occ" disabled>Concluso</button>':booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
   else if(e.kind==='lounge'){btn='';}
+  else if(past(e))btn='<button class="pb occ" disabled>Concluso</button>';
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
   const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
-  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small>${typeof spkNote==='function'?spkNote(e.sp):''}</div>`:''}<div class="tags">${forMe(e)?'<span class="tg me">★ Per te</span>':''}${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
+  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${e.kind==='sign'?'Firmacopie con '+esc(e.sp):esc(e.title)}</div>${e.kind==='sign'?'<div class="rm">📖 '+esc(e.title.replace(/^.*? - /,''))+'</div>':''}<div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small>${typeof spkNote==='function'?spkNote(e.sp):''}</div>`:''}<div class="tags">${forMe(e)?'<span class="tg me">★ Per te</span>':''}${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
 }
 function meetOptions(){
   const out=[];
@@ -780,6 +781,7 @@ function askMeeting(pid){
     G.meets.push({pid,day:o.d,start:o.t});toast(pe.name+' ha accettato: '+DAYNAMES[o.d]+' '+hm(o.t)+', Area networking.',3200);A.stamp();phoneTab='agenda';renderPhone();});
 }
 function personCard(pe,big){return `<div class="pcard ${big?'':'sm'}"><div class="av">${faceImg(pe.pal,'avi')}</div><div class="pi"><b>${esc(pe.name)}</b><small>${esc(pe.job)} · ${esc(pe.city)}</small><em>${esc(pe.tag)}</em><span class="tm2">${pe.compat}% compatibile</span></div><button class="pb" data-mt="${pe.id}">Meeting</button></div>`;}
+function keepPhone(){const y=$('#phB').scrollTop;renderPhone();$('#phB').scrollTop=y;}
 function renderPhone(){
   phClock();
   const T=[['home','Home','⌂'],['prog','Programma','▦'],['agenda','Agenda','✓'],['net','Rete','☺'],['comm','Marketers Pro','🌐']];
@@ -788,19 +790,19 @@ function renderPhone(){
   $('#qrb').onclick=()=>showQR();
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
-    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.sandbox&&!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
+    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.sandbox&&!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}keepPhone();});
     B.querySelectorAll('[data-dst]').forEach(b=>b.onclick=()=>{const n=b.dataset.dst,r=roomPos(n);if(!r)return;G.dest={n,f:r.f,x:k(r.x),y:k(r.y)};closePhone();toast('Destinazione: '+n,2200);});
     B.querySelectorAll('[data-gw]').forEach(b=>b.onclick=()=>{G.worn=b.dataset.gw||null;renderPhone();});
-    B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);renderPhone();});
+    B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);keepPhone();});
     B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
-    B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
+    B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');if(t==='notes'){phoneTab='net';netTab='tips';netOpen=null;renderPhone();return;}phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
   };
   if(phoneTab==='home'){
     const nw=[...G.booked].filter(id=>BYID[id].kind==='ws'&&!G.seen.has(id)&&(BYID[id].d>G.day||(BYID[id].d===G.day&&BYID[id].e>G.min))).length,p=progress();
     const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
     B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2><small style="opacity:.85">${esc(ME().job)}</small></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
      <div class="bn" data-go="prog:0">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
-     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
+     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="notes">📝<b>Appunti (${G.tips.length})</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
      <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
      ${typeof glassesRow==='function'?glassesRow():''}
