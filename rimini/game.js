@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=70;
+const BUILD=71;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -264,13 +264,13 @@ function buildNPC(){
   SPEAKERS.forEach(s=>add({id:'sp_'+s.name,kind:'speaker',name:s.name,role:'Speaker annunciata/o (da verificare col programma)',f:s.where.f,x:k(s.where.x),y:k(s.where.y),p:randPal(),dir:2}));
   add({id:'accred',kind:'staff',name:'Staff accrediti',role:'Ritiro badge',f:0,x:k(520),y:k(805)+2,p:{shirt:'#ff6a3d',pants:'#232a44',skin:'#e8b98a',hair:'#3a2a1c',badge:'#fff'},dir:0});
   add({id:'info',kind:'staff',name:'Assistenza app',role:'Info point',f:0,x:k(745),y:k(805)+2,p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'},dir:0});
-  add({id:'scout',kind:'staff',name:pickFrom(ATT_FIRST)+' '+pickFrom(ATT_LAST),role:'Talent scout',f:-1,x:k(262),y:k(668),p:{shirt:'#1ea0e8',pants:'#232a44',skin:'#e8b98a',hair:'#2a1f18',badge:'#ffd24d',long:RNG()<.5},dir:0});
+  {const sc0=add({id:'scout',kind:'staff',name:pickFrom(ATT_FIRST)+' '+pickFrom(ATT_LAST),role:'Talent scout',f:-1,x:k(262),y:k(668),p:{shirt:'#1ea0e8',pants:'#232a44',skin:'#e8b98a',hair:'#2a1f18',badge:'#ffd24d'},dir:0});sc0.gender=genderOf(sc0.name);sc0.p.long=sc0.gender==='f';}
   add({id:'yoga',kind:'staff',name:'Insegnante di yoga',role:'Sessione sul prato',f:0,x:k(810),y:k(780),p:{shirt:'#7ad37a',pants:'#e8e8f0',skin:'#e0b085',hair:'#4a3322',badge:'#7ad37a',long:true},dir:0});
   add({id:'dj',kind:'staff',name:'Host Offworld',role:'Karaoke e DJ set',f:0,x:k(985)+75,y:k(600)+96,p:{shirt:'#161226',pants:'#232a44',skin:'#e8b98a',hair:'#c9a24a',badge:'#ff6a3d',cap:'#ff6a3d'},dir:0});
   // partecipanti inventati che girano: numero, aspetto e zone cambiano a ogni seme
   const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0],[420,780,860,860,0],[740,640,830,705,0],[960,560,1180,820,0],[330,300,470,720,0],[300,280,420,620,1],[860,300,1000,560,1],[420,560,830,680,1]];
   const nAtt=46+Math.floor(RNG()*16),usedN=new Set();
-  const mkAtt=(i,zones)=>{const r=pickFrom(zones);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}};
+  const mkAtt=(i,zones)=>{const r=pickFrom(zones);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.gender=genderOf(fn);q.p.long=q.gender==='f';q.p.skirt=q.gender==='f'&&RNG()<.4;q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}};
   for(let i=0;i<nAtt;i++)mkAtt(i,ZONES);
   if(VILLAGE_ON){
     add({id:'recep',kind:'staff',name:'Reception del Village',role:'Marketers Village',f:2,x:k(650),y:k(284),p:{shirt:'#1f2a50',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#ffd24d'},dir:0});
@@ -315,8 +315,8 @@ function genPeople(seed){
     const jb=JOBS[Math.floor(r()*JOBS.length)],a=aff(me.fam,jb[1]),tr=jobTraits(jb[0]),ov=tr.filter(t=>me.traits.includes(t)).length;
     const compat=Math.max(48,Math.min(98,Math.round(44+46*a+ov*3+r()*7)));
     raw.push({name:nm,job:jb[0],fam:jb[1],city:ATT_CITY[Math.floor(r()*ATT_CITY.length)],compat,tr,a,tag:pickBy(r,a>=.75?tagHi:a>=.62?tagMid:tagLo)});}
-  raw.sort((x,y)=>y.compat-x.compat);
-  return raw.map((o,i)=>Object.assign(o,{id:'p'+i,pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5'][i%6],pants:'#2b3350',skin:SKINS[i%SKINS.length],hair:HAIRS[i%HAIRS.length],long:i%3===0,badge:'#ff6a3d'}}));
+  raw.forEach(o=>{o.gender=genderOf(o.name);});raw.sort((x,y)=>y.compat-x.compat);
+  return raw.map((o,i)=>Object.assign(o,{id:'p'+i,pal:{skirt:o.gender==='f'&&i%2===0,shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5'][i%6],pants:'#2b3350',skin:SKINS[i%SKINS.length],hair:HAIRS[i%HAIRS.length],long:o.gender==='f',badge:'#ff6a3d'}}));
 }
 function pickBy(r,a){return a[Math.floor(r()*a.length)];}
 function interactables(){
@@ -371,7 +371,7 @@ function say(npc,node){
   }
   DL={npc,node};showDlg();}
 function showDlg(){
-  const {npc,node}=DL;dlg.classList.remove('hide');
+  const {npc,node}=DL;dlg.classList.remove('hide');dlg.style.pointerEvents='none';clearTimeout(showDlg.t);showDlg.t=setTimeout(()=>{dlg.style.pointerEvents='';},380);
   $('#dN').textContent=npc.name;$('#dR').textContent=npc.role||'';$('#dT').textContent=typeof node.t==='function'?node.t():node.t;
   portrait($('#por'),npc.p||NIKY);
   const ch=$('#dC');ch.innerHTML='';
@@ -437,8 +437,8 @@ function jobChoices(n,onMet,withTrait){
 }
 function topicChoice(n,t,onMet){
   const first=n.name.split(' ')[0],tip=t.tip?tipFor(n.fam||'strat'):'',txt=chAnswer(n,t,tip);
-  if(t.tip)return{t:t.q,n:{t:txt,c:[{t:'Lo segno!',n:null,act:()=>{onMet();addTip(tip,'consiglio di '+first);}}]}};
-  return{t:t.q,n:{t:txt,c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'Grazie, interessante!',n:null}]}};
+  if(t.tip)return{t:gxf(t.q,PLAYER.gender,PLAYER.gender),n:{t:txt,c:[{t:'Lo segno!',n:null,act:()=>{onMet();addTip(tip,'consiglio di '+first);}}]}};
+  return{t:gxf(t.q,PLAYER.gender,PLAYER.gender),n:{t:txt,c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'Grazie, interessante!',n:null}]}};
 }
 function attendee(n){
   const met=G.met[n.id];
@@ -626,7 +626,7 @@ function karaoke(e){
 }
 function kDone(){G.flags.kara=true;G.flags.off++;G.min+=50;A.stamp();toast('Karaoke al Village vissuto!');}
 function meetNow(m){
-  const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att',job:pe.job,fam:pe.fam};
+  const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att',job:pe.job,fam:pe.fam,gender:pe.gender};
   const tip=tipFor(pe.fam),tp=chTopics(n,1)[0],r=chRng(n,'mn');
   say(n,{t:chPick(r,['Ciao '+pname()+'! Che bello incontrarti di persona. Allora, di cosa ti occupi?','Eccoti, '+pname()+'! Puntualissimo. Sediamoci un attimo: raccontami di te.','Piacere di vederti dal vivo! Parliamo un po’ di lavoro?','Ciao '+pname()+'! Ho aspettato questo incontro da quando ci siamo scritti.']),c:[
     ...jobChoices(n,()=>doneMeet(m,n),true),
@@ -1170,6 +1170,7 @@ const padEnd=e=>{if(e.pointerId===padId){padId=null;touch.x=touch.y=0;padi.style
 pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
 cv.addEventListener('pointerdown',e=>{if(G&&G.react){reactHit(Math.min(2,Math.floor(e.clientX/(W/3))));}});
 $('#act').addEventListener('pointerdown',e=>{e.preventDefault();act();});
+$('#prompt').addEventListener('pointerdown',e=>{e.preventDefault();act();});
 const getProfiles=()=>lsGet('rimini.profiles',[]);
 let jobAll=false;
 function jobUI(){

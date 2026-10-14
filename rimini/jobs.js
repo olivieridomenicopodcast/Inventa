@@ -45,7 +45,7 @@ const JOBFAM={
     w:{ambizioso:3,diretto:2,pratico:3,curioso:1,ironico:1},
     pitch:'Metto in piedi e faccio girare attività: prodotti, clienti, vendite e conti che tornano.',
     cerca:'clienti, soci e collaboratori che abbiano voglia di fare',
-    scout:'Sto cercando un socio o un collaboratore che condivida questo spirito. Tu sembri uno che non si ferma: ne parliamo?',
+    scout:'Sto cercando un socio o un collaboratore che condivida questo spirito. Tu sembri una persona che non si ferma: ne parliamo?',
     epi:'Torni con contatti pronti a diventare clienti o soci, e una lista di cose da fare lunedì.'},
   edu:{n:'Formazione, coaching e crescita',lato:'della formazione',tags:['Mindset & Lifestyle','Business'],tip:['mind','pod','brand'],
     w:{empatico:3,curioso:2,ironico:1,pratico:1,ambizioso:1},

@@ -44,6 +44,7 @@ function extrasNPC(add,pk){
   FRIENDS.forEach((f,i)=>{
     const r=pk(zones),x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);
     const q=add({id:'fr_'+f.id,kind:'att',friend:f.id,name:f.name,role:f.job,f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:f.name.split(' ')[0],job:f.job,fam:f.fam});
+    q.gender=genderOf(f.name);q.p.long=q.gender==='f';q.p.skirt=q.gender==='f'&&RNG()<.35;
     if(f.self){q.p=Object.assign(q.p,{phones:true,shirt:'#2a5a8a',hair:'#1a1a20',badge:'#ffd24d'});}
     if(FL[q.f])[q.x,q.y]=freeSpot(q.f,q.x,q.y);
   });
@@ -185,7 +186,7 @@ function friendTalk(n){
       {t:'Ciao!',n:null}].slice(0,4)});
   }
   if(G.met[n.id])return say(n,{t:chPick(r,['Ehi, siamo già amici! Come procede?','Di nuovo tu! Ti ho scritto su Marketers Pro.','Ciao! Sempre un piacere trovarti qui.','Eccoti. Dai, facciamoci un selfie dopo!']),c:[{t:'Ciao!',n:null}]});
-  let g=exPick(FR_SPECIAL[F.id]||FR_GREET[F.job]||FR_GREET.Copywriter).replace('{first}',first);
+  let g=gxf(exPick(FR_SPECIAL[F.id]||FR_GREET[F.job]||FR_GREET.Copywriter),npcGender(n)).replace('{first}',first);
   const tp=chTopics(n,1)[0];
   say(n,{t:g,c:[
     ...(F.id==='gabriele'?[{t:'Stasera ci sto!',n:{t:'Ecco, così si fa! Baldoria sia. 🍻',c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'A stasera!',n:null,act:onMet}]}}]:[]),
@@ -196,7 +197,7 @@ function friendTalk(n){
 }
 /* ---------- riferimenti: argomenti di conversazione e post ---------- */
 CH_TOPIC.push(
- {q:'Sei mai stato al Kalemana Festival?',a:['Sì! Yoga sulla spiaggia, workshop creativi e la sera DJ set: è il Kalemana, il festival più rilassato del mondo Marketers.','Il Kalemana Festival? A Punta Marina, a due passi dal mare: ci vado per ricaricarmi tra una fiera e l’altra.','Il Kalemana è dedicato alle anime libere, ai ribelli e ai sognatori. Ci si sente a casa.','Yoga all’alba in spiaggia e poi tutti a parlare di business scalzi. Il Kalemana è questo.']},
+ {q:'Sei mai stat{O|A} al Kalemana Festival?',a:['Sì! Yoga sulla spiaggia, workshop creativi e la sera DJ set: è il Kalemana, il festival più rilassato del mondo Marketers.','Il Kalemana Festival? A Punta Marina, a due passi dal mare: ci vado per ricaricarmi tra una fiera e l’altra.','Il Kalemana è dedicato alle anime libere, ai ribelli e ai sognatori. Ci si sente a casa.','Yoga all’alba in spiaggia e poi tutti a parlare di business scalzi. Il Kalemana è questo.']},
  {q:'Hai fatto la Copy Week?',a:['Sì! Una settimana intera a vivere di titoli e call to action: ne esci con la testa piena di parole giuste.','La Copy Week? Cinque giorni in cui scrivi più di quanto abbia mai scritto in un mese. Ma ne vale la pena.','Ho fatto la Copy Week quando ancora scrivevo “soluzioni innovative”. Poi ho capito.','La Copy Week mi ha insegnato una cosa: il cliente non legge, scorre. Scrivi per chi scorre.']},
  {q:'Fai parte del Mastermind?',a:['Il Mastermind? Un gruppo dove ci si dice le cose in faccia, con affetto. Il posto più utile in cui io sia mai stato.','Al Mastermind ho imparato che i problemi dei miei clienti sono quasi uguali ai tuoi. Ci si consola a vicenda.','Il Mastermind è quel posto dove porti un problema e torni con tre soluzioni e un nuovo amico.']},
  {q:'Conosci Business Genetics?',a:['Business Genetics è il corso di Marketers con cui ho cominciato a mettere ordine nella mia attività. E il workbook è anche bellissimo.','Business Genetics? Sì! Mi ha dato una struttura: prima non sapevo da dove partire.','Ho letto tutto Business Genetics con la matita in mano. Il workbook è finito pieno di appunti.']},

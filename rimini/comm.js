@@ -18,7 +18,7 @@ const CM_ABSENT=[
  'Quest’anno ho dovuto rinunciare al #MW26. Mi consolo con i vostri aggiornamenti.',
  'Seguo il tag #MW26 da stamattina. Mi sembra di essere lì, ma senza il caffè.',
  'Un saluto a tutti i presenti da chi è rimasto a casa. Fate networking anche per me!',
- 'Il vero dolore di non essere a Rimini: scoprire dopo cosa mi sono perso.',
+ 'Il vero dolore di non essere a Rimini: scoprire dopo cosa mi sono pers{o|a}.',
  'Se vi capita di incontrare qualcuno che lavora con me, salutatelo da parte mia. #MW26',
  'Il prossimo anno non mi frega nessuno: biglietto preso prima che escano. Intanto, beati voi!'];
 const CM_PRE=[
@@ -28,7 +28,7 @@ const CM_PRE=[
  'Viaggio verso Rimini: playlist, caffè e un taccuino ancora vuoto.',
  'Quest’anno porto con me biglietti da visita veri. Sì, esistono ancora.',
  'Primo anno al Marketers World: ansia e curiosità in parti uguali. #MW26',
- 'Scarpe comode: pronto. Powerbank: pronto. Coraggio per parlare con sconosciuti: quasi.',
+ 'Scarpe comode: pront{o|a}. Powerbank: pront{o|a}. Coraggio per parlare con sconosciuti: quasi.',
  'Ho scaricato l’app dell’evento. Mi aspetto di perdermi tra le sale entro un’ora.',
  'Check-in all’hotel: sembra di essere in gita scolastica, ma per adulti. #MW26',
  'Mi sono segnato due workshop imperdibili e uno “vediamo”. Voi?',
@@ -57,7 +57,7 @@ const CM_EVENT=[
  'Batteria del telefono al 9%: tra foto, mappa e app, è la risorsa più preziosa dell’evento.',
  'Ho messo un like a metà dei post di #MW26. L’altra metà li metto domani.',
  'Qualcuno sa dove si trova la sala dopo «{title}»? Ho solo la mappa e tanta speranza.',
- 'Mi hanno consigliato un workshop che non avevo segnato: ora sono contento di aver cambiato idea.',
+ 'Mi hanno consigliato un workshop che non avevo segnato: ora sono content{o|a} di aver cambiato idea.',
  'Non pensavo che una sessione sulla «noia» mi desse tanta energia. #MW26',
  'Sala piena, aria condizionata che non ce la fa, ma nessuno se ne va. Questo dice tutto.',
  'L’app dice che sono in sala, il mio stomaco dice che è ora di pranzo. Vince lo stomaco.',
@@ -71,11 +71,11 @@ const CM_EVENT=[
 const CM_MORNING=['Ore 9: già in coda per entrare. Che bella energia, non pensavo.','Colazione veloce e via, la prima sessione inizia presto. #MW26','Buongiorno Rimini! Il Palacongressi si sveglia e noi con lui.'];
 const CM_AFTER=['Il pomeriggio è il momento in cui l’attenzione cala. Io resisto con il caffè.','Terza sessione di fila: la testa è piena, il taccuino anche.','Pausa pomeridiana: due chiacchiere e una cioccolata dal distributore.'];
 const CM_EVE0=['Stasera Offworld al Village: karaoke e zero vergogna. #MW26','Giornata piena, serata ancora più piena. Ci vediamo al Village! #Offworld','Dopo una giornata così, la serata è tutta da ballare. #MW26','Chi viene stasera all’Offworld? Prometto di non cantare. (Non è vero.)'];
-const CM_LAST=['Ultimo giorno: nostalgia già prima di salutarci. #MW26','Ultimi saluti, ultimi contatti scambiati. Grazie a chi ha reso questi giorni speciali.','Tornerò a casa con la testa piena di idee e il telefono pieno di nuovi contatti.','Il Marketers World finisce, ma le idee restano: adesso tocca metterle in pratica.','Tre giorni dopo: stanco morto e felicissimo. #MW26','Grazie a tutti quelli che ho incontrato: mi avete regalato un sacco di spunti.'];
+const CM_LAST=['Ultimo giorno: nostalgia già prima di salutarci. #MW26','Ultimi saluti, ultimi contatti scambiati. Grazie a chi ha reso questi giorni speciali.','Tornerò a casa con la testa piena di idee e il telefono pieno di nuovi contatti.','Il Marketers World finisce, ma le idee restano: adesso tocca metterle in pratica.','Tre giorni dopo: stanc{o|a} mort{o|a} e felicissim{o|a}. #MW26','Grazie a tutti quelli che ho incontrato: mi avete regalato un sacco di spunti.'];
 const CM_Q=[
  'Che strumento AI usate ogni giorno nel lavoro? Io sto provando a ridurre i passaggi manuali.',
  'Freelance o agenzia nel 2026? Voi come la vedete?',
- 'Quante volte a settimana postate su LinkedIn? Io sono fermo a una e mi sento in colpa.',
+ 'Quante volte a settimana postate su LinkedIn? Io sono ferm{o|a} a una e mi sento in colpa.',
  'Podcast in video o solo audio? Mi serve un parere onesto.',
  'Qual è la cosa più utile che avete imparato quest’anno? Io: documentare tutto.',
  'Newsletter o social: se dovete scegliere un canale solo, quale?',
@@ -110,9 +110,9 @@ const CM_FAM={
  perf:['Prima di tutto: i numeri. Poi le opinioni.','Se non lo misuri non esiste. È un mantra ma funziona.','Test piccolo, decisione veloce.','Io guardo sempre il costo per risultato.','Un’ipotesi chiara vale più di tre dashboard.'],
  tech:['Sul fronte tecnico: automatizzare solo ciò che già funziona a mano.','Prima capire il processo, poi costruire lo strumento.','Un prototipo brutto batte un progetto perfetto mai realizzato.','Con l’AI il collo di bottiglia siamo sempre noi, e va bene così.','Documentate tutto: il futuro voi ringrazierà.'],
  strat:['Visione d’insieme: senza strategia è solo attività.','Chiedetevi sempre “e quindi?”. Cambia tutto.','Priorità, priorità, priorità.','Una buona strategia dice anche cosa non fare.','Pochi obiettivi, ben chiari.'],
- biz:['Da imprenditore: fate le cose, poi perfezionate.','I clienti sono il miglior consulente che avrete mai.','Un’attività vive di relazioni e di cassa.','Vendere è un servizio, non un favore.','Partite piccoli, ma partite.'],
- edu:['Da formatore: nessuno impara guardando. Si impara facendo.','Una domanda ben posta vale una lezione.','Ogni errore è materiale didattico.','Crescere è un mestiere che si fa in due.','Il feedback onesto è un regalo.']};
-const CM_WARM=['Che bello averti incontrato al #MW26, {me}!','Mi ha fatto davvero piacere conoscerti di persona.','Ci siamo conosciuti oggi: bella chiacchierata, ci sentiamo!','È stato un piacere incontrarti, {me}!','Ricordo bene la chiacchierata di oggi: teniamoci in contatto 🙌','{me}! Ci siamo visti proprio oggi. Grazie ancora per il confronto.','Mi ha fatto piacere incontrarti al #MW26. Scrivimi quando vuoi.','Piacere di averti conosciuto, {me}: hai un modo di ragionare che mi ha dato spunti.','Mi sei rimasto in mente dopo la chiacchierata, {me}. Facciamo qualcosa insieme?','Grazie per il tempo di oggi, {me}: è stato un incontro che non mi aspettavo.','Ti ho visto qui sopra e mi sono ricordato subito di te. Bella conoscenza!','Quando ci vediamo la prossima volta il caffè lo offro io, {me}.','Sei una delle belle sorprese di questo #MW26.','Se vuoi continuare la conversazione di oggi, io ci sono.'];
+ biz:['Dal punto di vista di chi fa impresa: fate le cose, poi perfezionate.','I clienti sono il miglior consulente che avrete mai.','Un’attività vive di relazioni e di cassa.','Vendere è un servizio, non un favore.','Partite piccoli, ma partite.'],
+ edu:['Dal punto di vista di chi forma: nessuno impara guardando. Si impara facendo.','Una domanda ben posta vale una lezione.','Ogni errore è materiale didattico.','Crescere è un mestiere che si fa in due.','Il feedback onesto è un regalo.']};
+const CM_WARM=['Che bello averti incontrato al #MW26, {me}!','Mi ha fatto davvero piacere conoscerti di persona.','Ci siamo conosciuti oggi: bella chiacchierata, ci sentiamo!','È stato un piacere incontrarti, {me}!','Ricordo bene la chiacchierata di oggi: teniamoci in contatto 🙌','{me}! Ci siamo visti proprio oggi. Grazie ancora per il confronto.','Mi ha fatto piacere incontrarti al #MW26. Scrivimi quando vuoi.','Piacere di averti conosciuto, {me}: hai un modo di ragionare che mi ha dato spunti.','Mi sei rimast{O|A} in mente dopo la chiacchierata, {me}. Facciamo qualcosa insieme?','Grazie per il tempo di oggi, {me}: è stato un incontro che non mi aspettavo.','Ti ho visto qui sopra e mi sono ricordato subito di te. Bella conoscenza!','Quando ci vediamo la prossima volta il caffè lo offro io, {me}.','Sei una delle belle sorprese di questo #MW26.','Se vuoi continuare la conversazione di oggi, io ci sono.'];
 const CM_REPLY=['Grazie del commento, {me}!','Esatto, hai colto il punto.','Ci ragiono e ti rispondo meglio più tardi.','Bella domanda, {me}: dipende da molte cose.','Concordo, ma proverei anche l’altra strada.','Mi fa piacere che ti sia utile!','Ci vediamo in giro e ne parliamo.','Hai ragione, non ci avevo pensato.','Grazie! Se vuoi ne parliamo in privato.','Capisco il tuo punto di vista.','Sì, anch’io la penso così.','Ottimo, fammi sapere come va.'];
 const CM_METPOST=['Oggi ho conosciuto {me} al #MW26, {job}: bellissima chiacchierata. Ne riparliamo presto!','Tra le persone più interessanti incontrate oggi: {me}. Segnatevi il nome. #MW26','Una chiacchierata con {me} ({job}) mi ha dato idee nuove. Il Marketers World serve a questo.','Ho incontrato {me}, {job}, e abbiamo parlato di tutto tranne che del tempo. Che bella gente.','Mi era venuta una domanda: l’ho fatta a {me} ({job}). Risposta migliore del previsto. #MW26','Se cercate un confronto onesto sul lavoro, parlate con {me}. Ve lo dice chi l’ha appena fatto.'];
 const CM_COMPOSE=['Sono a Rimini per il #MW26: chi c’è?','Che energia al Palacongressi! #MW26','Primo workshop fatto: spunti a pioggia.','Consiglio del giorno: scrivete tutto nel taccuino.','Cerco qualcuno con cui parlare di {job} all’Area networking.','Silent Stage provata: strana ma bellissima.','Sto cercando di capire come si arriva al primo piano. Consigli?','Una sola cosa da portare a casa oggi: scelgo quella che segno per ultima.'];
@@ -129,7 +129,7 @@ function cmMembers(){
   if(G._cmM&&G._cmM.k===G.seed)return G._cmM.v;
   const r=mulberry32(hashStr(G.seed+'|members')),used=new Set(),out=[];
   for(let i=0;i<90;i++){let nm;do{nm=cmPick(r,ATT_FIRST)+' '+cmPick(r,ATT_LAST);}while(used.has(nm));used.add(nm);
-    const jb=cmPick(r,JOBS);out.push({id:'m'+i,name:nm,job:jb[0],fam:jb[1],city:cmPick(r,ATT_CITY),absent:r()<.3,pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5','#ff6a3d'][i%7]}});}
+    const jb=cmPick(r,JOBS);out.push({id:'m'+i,name:nm,job:jb[0],fam:jb[1],city:cmPick(r,ATT_CITY),absent:r()<.3,gender:genderOf(nm),pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5','#ff6a3d'][i%7]}});}
   G._cmM={k:G.seed,v:out};return out;
 }
 /* post programmati nei tre giorni (e il giorno prima) */
@@ -164,7 +164,7 @@ function cmPool(){
 /* persone incontrate davvero nel gioco (kind att) come "membri" riconoscibili */
 function cmMetPeople(){
   const C=cmEnsure();return G.contacts.filter(c=>c.kind==='att'&&C.metT[c.name]!=null).map(c=>{const [job,city]=(c.role||'').split(' · '),jb=jobFind(job);
-    return{id:'k'+hashStr(c.name),name:c.name,job:job||'Partecipante',fam:jb?jb[1]:'strat',city:city||'',met:true,at:C.metT[c.name],pal:{shirt:['#3da5d9','#6bc46d','#b57bff','#e86a8a','#c9a24a'][hashStr(c.name)%5]}};});
+    return{id:'k'+hashStr(c.name),name:c.name,job:job||'Partecipante',fam:jb?jb[1]:'strat',city:city||'',met:true,at:C.metT[c.name],gender:genderOf(c.name),pal:{shirt:['#3da5d9','#6bc46d','#b57bff','#e86a8a','#c9a24a'][hashStr(c.name)%5]}};});
 }
 const cmFill=(s,extra)=>s.replace('{me}',pname()).replace('{job}',(extra&&extra.job)||ME().job);
 /* commenti di un post (del pool o mio): deterministici, ordinati nel tempo */
@@ -228,7 +228,7 @@ function cmNotify(){
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
 let cmOpen={},cmMine=false,cmAlbum=false;
-function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}));}
+function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>gxf(cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}),PLAYER.gender,PLAYER.gender));}
 function renderComm(B){
   const C=cmEnsure(),T=cmT();C.seenT=T;
   const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length,nAlb=(G.album||[]).length;
@@ -240,8 +240,8 @@ function renderComm(B){
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+
    fil+
    (feed.length?feed.map(p=>{const v=cmView(p,T),open=!!cmOpen[p.id],liked=!!C.liked[p.id];
-     return `<div class="cp ${p.mine?'mine':''}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(p.text)}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
-      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(c.text)}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
+     return `<div class="cp ${p.mine?'mine':''}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(gxf(p.text,p.m.gender||'m'))}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
+      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(gxf(c.text,(c.who&&c.who.gender)||'m'))}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
   const ta=$('#cmT');ta.oninput=()=>{$('#cmN').textContent=ta.value.length+'/160';};
   bindFil();
   B.querySelectorAll('[data-sg]').forEach(b=>b.onclick=()=>{ta.value=sug[+b.dataset.sg];ta.oninput();});
