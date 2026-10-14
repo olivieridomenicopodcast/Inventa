@@ -200,7 +200,7 @@ function cmFeed(T,onlyMine){
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
   const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:{shirt:'#ff6a3d'},me:true};
-  for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,kind:'mine',mine:true});
+  for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,img:p.img||null,kind:'mine',mine:true});
   if(typeof extrasFeed==='function'&&!onlyMine)items.push(...extrasFeed(T));
   return items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at).slice(0,onlyMine?200:40);
 }
@@ -227,23 +227,54 @@ function cmNotify(){
   if(n&&phoneTab!=='comm')toast('Marketers Pro: '+n+(n>1?' nuove interazioni':' nuova interazione')+' con i tuoi contenuti',2800);
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
-let cmOpen={},cmMine=false;
+let cmOpen={},cmMine=false,cmAlbum=false;
 function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}));}
 function renderComm(B){
   const C=cmEnsure(),T=cmT();C.seenT=T;
-  const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length;
+  const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length,nAlb=(G.album||[]).length;
+  const fil=`<div class="cfil"><button data-f="all" class="${cmMine||cmAlbum?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine&&!cmAlbum?'on':''}">✎ I miei post (${nMine})</button><button data-f="album" class="${cmAlbum?'on':''}">📷 Album (${nAlb})</button></div>`;
+  const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmMine=b.dataset.f==='mine';renderPhone();});
   const av=(m)=>`<div class="cav" style="background:${m.pal.shirt}">${esc(m.name.split(' ').map(x=>x[0]).join('').slice(0,2))}</div>`;
+  if(cmAlbum){albumRender(B,fil);bindFil();return;}
   B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+
-   `<div class="cfil"><button data-f="all" class="${cmMine?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine?'on':''}">✎ I miei post (${nMine})</button></div>`+
+   fil+
    (feed.length?feed.map(p=>{const v=cmView(p,T),open=!!cmOpen[p.id],liked=!!C.liked[p.id];
-     return `<div class="cp ${p.mine?'mine':''}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(p.text)}</div><div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
+     return `<div class="cp ${p.mine?'mine':''}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(p.text)}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
       (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(c.text)}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
   const ta=$('#cmT');ta.oninput=()=>{$('#cmN').textContent=ta.value.length+'/160';};
-  B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmMine=b.dataset.f==='mine';renderPhone();});
+  bindFil();
   B.querySelectorAll('[data-sg]').forEach(b=>b.onclick=()=>{ta.value=sug[+b.dataset.sg];ta.oninput();});
   $('#cmP').onclick=()=>{const t=ta.value.trim();if(!t){toast('Scrivi qualcosa prima di pubblicare.',1800);return;}C.posts.push({id:'u'+(++C.pid),text:t.slice(0,160),at:cmT()});toast('Post pubblicato su Marketers Pro.',1800);A.stamp();renderPhone();};
   B.querySelectorAll('[data-lk]').forEach(b=>b.onclick=()=>{const id=b.dataset.lk;C.liked[id]=!C.liked[id];A.blip();const y=B.scrollTop;renderPhone();B.scrollTop=y;});
   B.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{const id=b.dataset.op;cmOpen[id]=!cmOpen[id];const y=B.scrollTop;renderPhone();B.scrollTop=y;});
   B.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{const id=b.dataset.cs,inp=B.querySelector('[data-ci="'+id+'"]'),t=inp.value.trim();if(!t)return;(C.cm[id]=C.cm[id]||[]).push({id:'x'+(++C.pid),text:t,at:cmT()});toast('Commento pubblicato.',1400);const y=B.scrollTop;renderPhone();B.scrollTop=y;});
+}
+
+/* ---------- album di Marketers Pro: foto e selfie di questa partita ---------- */
+const albumGet=id=>(G.album||[]).find(x=>x.id===id)||null;
+function albumPlace(){let best=null,bd=1e9;for(const p of mapPlaces()){if(p.f!==G.f)continue;const d=Math.hypot(k(p.x)-G.p.x,k(p.y)-G.p.y);if(d<bd){bd=d;best=p;}}return best&&bd<k(150)?best.n:FLN[G.f];}
+function albumAdd(src,cap){
+  if(!G.album)G.album=[];
+  const w=360,h=Math.round(src.height*w/src.width),t=document.createElement('canvas');t.width=w;t.height=h;const g=t.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(src,0,0,w,h);
+  const e={id:'a'+Date.now().toString(36)+Math.floor(Math.random()*99),d:G.day,m:Math.floor(G.min),place:albumPlace(),cap,img:t.toDataURL('image/jpeg',.62)};
+  G.album.push(e);if(G.album.length>12)G.album.shift();return e;
+}
+function albumRender(B,fil){
+  const L=(G.album||[]).slice().reverse();
+  B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Album</b> · le foto e i selfie di questa partita (massimo 12). Tocca una foto per aprirla, pubblicarla su Marketers Pro o scaricarla.</div>`+fil+
+   (L.length?`<div class="agrid">${L.map(e=>`<button data-al="${e.id}"><img src="${e.img}"><small><b>${esc(e.cap)}</b><br>${DAYNAMES[e.d]} ${hm(e.m)} · ${esc(e.place)}</small></button>`).join('')}</div>`:'<div class="note">Ancora nessuna foto. Scatta con il pulsante 📷 (o il tasto F), oppure chiedi un selfie a chi incontri.</div>');
+  B.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>albumView(b.dataset.al));
+}
+function albumView(id){
+  const e=albumGet(id);if(!e)return;let v=document.getElementById('albv');
+  if(!v){v=document.createElement('div');v.id='albv';document.body.appendChild(v);}
+  const pub=(G.comm&&G.comm.posts||[]).some(p=>p.img===id);
+  v.innerHTML=`<div class="box"><img src="${e.img}"><div class="cap"><b>${esc(e.cap)}</b><br><small>${DAYNAMES[e.d]} ${hm(e.m)} · ${esc(e.place)}</small></div><div class="row"><button class="btn" id="alPub" ${pub?'disabled':''}>${pub?'Già pubblicata':'Pubblica su Marketers Pro'}</button><button class="btn ghost" id="alDl">Scarica</button><button class="btn ghost" id="alDel">Elimina</button><button class="btn ghost" id="alX">Chiudi</button></div></div>`;
+  v.classList.remove('hide');
+  const close=()=>v.classList.add('hide');
+  $('#alX').onclick=close;
+  $('#alDl').onclick=()=>{const a=document.createElement('a');a.href=e.img;a.download='rimini-album-'+new Date().toISOString().replace(/[-:T]/g,'').slice(0,14)+'.jpg';document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),300);};
+  $('#alDel').onclick=()=>{G.album=G.album.filter(x=>x.id!==id);close();toast('Foto eliminata dall’album.',1600);renderPhone();};
+  $('#alPub').onclick=()=>{const C=cmEnsure();C.posts.push({id:'u'+(++C.pid),text:e.cap+' · '+e.place+' #MW26',at:cmT(),img:id});toast('Foto pubblicata su Marketers Pro.',2000);A.stamp();close();cmAlbum=false;cmMine=true;renderPhone();};
 }

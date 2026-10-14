@@ -217,6 +217,11 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 .cfil{display:flex;gap:6px;margin:0 0 10px}.cfil button{padding:7px 12px;border-radius:99px;background:#151c3a;border:1px solid #2a3566;color:#fff;font-size:12px}.cfil button.on{background:#ff6a3d;color:#1a0a04;border-color:#ff6a3d;font-weight:700}
 #btns #bComm{position:relative}#btns #bComm .bdg{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#ff4d5a;color:#fff;font:700 10px/16px sans-serif;text-align:center;font-style:normal;padding:0 4px}
 #bSnd{left:max(12px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));width:42px;height:42px;border-radius:12px;font-size:18px;display:grid;place-items:center}.mob #bSnd{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 142px);width:38px;height:38px;font-size:15px}
+#albv{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:rgba(2,4,10,.88);padding:10px}#albv.hide{display:none}
+#albv .box{width:min(520px,100%);max-height:calc(100dvh - 20px);overflow:auto;background:#0c1124;border:2px solid #2a3566;border-radius:14px;padding:12px;touch-action:pan-y}#albv img{width:100%;display:block;border-radius:8px;image-rendering:auto}
+#albv .cap{margin:8px 0;font-size:13px;color:#e9efff}#albv .cap small{color:#8f9bbd}#albv .row{display:flex;flex-wrap:wrap;gap:8px}#albv .btn{padding:9px 12px;font-size:12px;letter-spacing:0}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}.agrid button{padding:0;border-radius:10px;overflow:hidden;border:1px solid #2a3566;background:#121936;text-align:left;color:#cfd8ee}.agrid img{width:100%;display:block}.agrid small{display:block;padding:6px 8px;font-size:11px;line-height:1.3}.agrid small b{color:#fff}
+.cimg{width:100%;border-radius:8px;margin:0 0 8px;display:block}
 </style>
 </head>
 <body>
@@ -239,7 +244,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="68">build</div>
+<div id="bld" data-b="69">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>

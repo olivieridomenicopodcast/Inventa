@@ -135,7 +135,7 @@ function petTalk(n){
   say(n,{t:greet,c:[
     {t:cat?'Accarezza CatGPT':'Accarezza Alpachino',n:()=>again('pet'),act:()=>{cat?A.purr():A.hum();}},
     {t:'Chiedi un consiglio',n:()=>again('adv')},
-    cat?{t:'Fatti scrivere un copy',n:()=>again('copy')}:{t:'Fai un selfie insieme',n:null,act:()=>{G.flags.selfie=true;A.stamp();toast('Selfie con Alpachino! Sembra che sorrida (o stia ruminando).',3000);}},
+    cat?{t:'Fatti scrivere un copy',n:()=>again('copy')}:{t:'Fai un selfie insieme',n:null,act:()=>selfie(n)},
     {t:'Vai per la tua strada',n:null}]});
 }
 /* ---------- occhiali raccoglibili ---------- */
@@ -191,7 +191,7 @@ function friendTalk(n){
     ...(F.id==='gabriele'?[{t:'Stasera ci sto!',n:{t:'Ecco, così si fa! Baldoria sia. 🍻',c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'A stasera!',n:null,act:onMet}]}}]:[]),
     ...jobChoices(n,onMet,false),
     topicChoice(n,tp,onMet),
-    {t:'Facciamo un selfie?',n:null,act:()=>{G.flags.selfie=true;onMet();toast('Selfie con '+first+'!',2200);A.stamp();}},
+    {t:'Facciamo un selfie?',n:null,act:()=>{onMet();selfie(n);}},
     {t:exPick(FR_BYE),n:null}].slice(0,4)});
 }
 /* ---------- riferimenti: argomenti di conversazione e post ---------- */
