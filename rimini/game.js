@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=78;
+const BUILD=79;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -780,6 +780,7 @@ function askMeeting(pid){
 }
 function personCard(pe,big){return `<div class="pcard ${big?'':'sm'}"><div class="av">${faceImg(pe.pal,'avi')}</div><div class="pi"><b>${esc(pe.name)}</b><small>${esc(pe.job)} · ${esc(pe.city)}</small><em>${esc(pe.tag)}</em><span class="tm2">${pe.compat}% compatibile</span></div><button class="pb" data-mt="${pe.id}">Meeting</button></div>`;}
 function renderPhone(){
+  phClock();
   const T=[['home','Home','⌂'],['prog','Programma','▦'],['agenda','Agenda','✓'],['net','Rete','☺'],['comm','Marketers Pro','🌐']];
   const tb=([k,n,i])=>`<button data-k="${k}" class="${phoneTab===k?'on':''}"><span>${i}</span>${n}</button>`;$('#phT').innerHTML=T.slice(0,2).map(tb).join('')+'<button class="qrb" id="qrb">▣</button>'+T.slice(2).map(tb).join('');{const u=cmUnread(cmT()),cb=document.querySelector('#phT [data-k=comm]');if(cb&&u&&phoneTab!=='comm')cb.insertAdjacentHTML('beforeend','<i class="bdg">'+u+'</i>');}
   document.querySelectorAll('#phT [data-k]').forEach(b=>b.onclick=()=>{phoneTab=b.dataset.k;if(typeof cmPerson!=='undefined'&&b.dataset.k==='comm')cmPerson=null;renderPhone();});
@@ -1157,7 +1158,8 @@ function questWatch(){
   const t=$('#toast');
   if(G.qq&&G.qq.length&&!t.classList.contains('show')&&!DL&&!G.watching&&!G.react){const n=G.qq.shift();A.stamp();toast('🎯 Obiettivo completato: '+n,3600);}
 }
-function hud(){goal();if(G.flags&&mode==='play')questWatch();{const u=G.flags.app?cmUnread(cmT()):0,bc=$('#bCommN');if(bc){const v=u?String(u):'';if(bc.textContent!==v)bc.textContent=v;bc.style.display=u?'':'none';}}if(G.flags.app)cmNotify();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
+function phClock(){document.body.classList.toggle('phone-open',!$('#phone').classList.contains('hide'));const el=$('#phClk');if(el&&G)setT(el,'pk',['VEN','SAB','DOM'][G.day]+' '+hm(Math.floor(G.min))+(G.sandbox?' · SBX':''));}
+function hud(){phClock();goal();if(G.flags&&mode==='play')questWatch();{const u=G.flags.app?cmUnread(cmT()):0,bc=$('#bCommN');if(bc){const v=u?String(u):'';if(bc.textContent!==v)bc.textContent=v;bc.style.display=u?'':'none';}}if(G.flags.app)cmNotify();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr+(G.sandbox?' · SANDBOX':''));
   const nx=nextAgenda(),p=progress();
