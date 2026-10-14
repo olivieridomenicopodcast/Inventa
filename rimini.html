@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05060d">
+<title>Inventa · Rimini 3 giorni</title>
+<meta name="description" content="Un giochino 2D: gira per il Palacongressi di Rimini durante tre giorni di evento, ritira l’accredito, segui workshop e speech, incontra persone. Fan project non ufficiale ispirato al Marketers World.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2305060d'/%3E%3Ccircle cx='32' cy='24' r='10' fill='%23e8b98a'/%3E%3Crect x='20' y='36' width='24' height='18' rx='4' fill='%23ff6a3d'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Unbounded:wght@300;600;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--ac:#ff6a3d;--ac2:#4dd0ff;--gl:rgba(12,16,34,.9);--ok:#4dff9a}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none;background:#0a0d18}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
+.hide{display:none!important}
+.glass{background:var(--gl);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(8px)}
+#hud{position:fixed;inset:0;z-index:5;pointer-events:none}
+#hud>*{position:absolute;pointer-events:auto}
+#clock{left:max(12px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));padding:8px 14px;font-size:12px;line-height:1.35}
+#clock b{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--ac);display:block;margin-bottom:3px;font-weight:400}
+#clock small{color:var(--dim);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob #clock{max-width:calc(100vw - 190px)}
+#btns{right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;gap:8px}
+#btns button{width:42px;height:42px;border-radius:12px;font-size:18px;display:grid;place-items:center}
+#prompt{left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);padding:10px 16px;font-size:14px;text-align:center;pointer-events:none;max-width:92vw}
+#prompt kbd{font-family:'Press Start 2P',monospace;font-size:10px;background:var(--ac);color:#1a0a04;padding:4px 7px;border-radius:5px;margin-right:6px}
+#dlg{left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(760px,calc(100vw - 20px));padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px}
+#dlg canvas{width:84px;height:84px;image-rendering:pixelated;border-radius:12px;background:#1b2240;border:2px solid var(--ac)}
+#dlg .nm{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--ac);margin-bottom:3px;font-weight:400}
+#dlg .rl{font-size:11px;color:var(--dim);margin-bottom:7px}
+#dlg .tx{font-size:15px;line-height:1.5;min-height:46px}
+#dlg .ch{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+#dlg .ch button{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.07);font-size:13px;text-align:left}
+#dlg .ch button:hover,#dlg .ch button:focus{border-color:var(--ac);background:rgba(255,106,61,.14);outline:none}
+#pad{left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:130px;height:130px;border-radius:50%;background:rgba(10,14,28,.45);border:1px solid rgba(255,255,255,.22);touch-action:none}
+#pad i{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px;border-radius:50%;background:rgba(255,255,255,.28);transition:none}
+#act{right:max(16px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));width:84px;height:84px;border-radius:50%;background:rgba(255,106,61,.5);border:1px solid rgba(255,255,255,.3);font-family:'Press Start 2P',monospace;font-size:20px;display:grid;place-items:center;touch-action:none}
+#act:active{background:rgba(255,106,61,.85)}
+body:not(.mob) #pad,body:not(.mob) #act{display:none}
+.mob #prompt{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 150px)}
+.mob #dlg{bottom:max(8px,env(safe-area-inset-bottom))}
+/* telefono */
+#phone{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(2,4,10,.7);backdrop-filter:blur(4px);padding:12px}
+#phone .box{width:min(430px,100%);height:min(720px,calc(100vh - 24px));background:#0c1020;border:2px solid #2a3358;border-radius:28px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#phone .hd{padding:14px 18px 8px;display:flex;justify-content:space-between;align-items:center;font-family:var(--disp);font-size:13px;letter-spacing:.08em}
+#phone .hd button{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08)}
+#phone .tabs{display:flex;gap:4px;padding:0 12px 8px}
+#phone .tabs button{flex:1;padding:8px 4px;border-radius:10px;font-size:12px;background:rgba(255,255,255,.05);border:1px solid transparent}
+#phone .tabs button.on{background:var(--ac);color:#1a0a04;font-weight:700}
+#phone .body{flex:1;overflow:auto;padding:6px 16px 18px;touch-action:pan-y;font-size:13.5px;line-height:1.5}
+.ring{width:78px;height:78px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),rgba(255,255,255,.12) 0);display:grid;place-items:center;position:relative;margin:4px auto 10px}
+.ring::before{content:'';position:absolute;inset:7px;background:#0c1020;border-radius:50%}
+.ring b{position:relative;font-family:var(--disp);font-size:15px}
+.q{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.04);margin-bottom:7px}
+.q .ck{width:22px;height:22px;border-radius:50%;border:2px solid #4a5478;flex:none;display:grid;place-items:center;font-size:13px;margin-top:1px}
+.q.done .ck{background:var(--ok);border-color:var(--ok);color:#052}
+.q.done{opacity:.75}.q small{display:block;color:var(--dim);font-size:11.5px}
+.pg{margin-bottom:8px;padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.04)}
+.pg b{font-family:var(--disp);font-size:12px;color:var(--ac)}.pg.now{border:1px solid var(--ac)}
+.note{font-size:11.5px;color:var(--dim);line-height:1.5;margin-top:10px}
+#mapc{width:100%;image-rendering:pixelated;border-radius:10px;background:#111}
+/* schermate */
+#title{position:fixed;inset:0;z-index:25;overflow:auto;display:grid;place-items:center;padding:20px;background:radial-gradient(1100px 600px at 70% -10%,#4a2030 0,transparent 60%),radial-gradient(900px 600px at 0% 100%,#0d2f45 0,transparent 60%),#05060d;touch-action:pan-y}
+#title .in{width:min(900px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center}
+@media(max-width:800px){#title .in{grid-template-columns:minmax(0,1fr)}#title{place-items:start center}}
+#title h1{font-family:'Press Start 2P',monospace;font-weight:400;font-size:clamp(22px,5vw,40px);line-height:1.35;color:var(--ink)}
+#title h1 span{color:var(--ac)}
+#title .lead{color:var(--dim);line-height:1.65;margin:16px 0}
+#title .pn{padding:18px}
+#title canvas{width:100%;image-rendering:pixelated;border-radius:12px;background:#10162c;display:block}
+#title .disc{font-size:11px;color:var(--dim);line-height:1.5;margin-top:14px}
+.row2{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#end{position:fixed;inset:0;z-index:26;display:grid;place-items:center;background:rgba(2,4,10,.8);backdrop-filter:blur(5px);padding:14px}
+#end .box{width:min(560px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px;background:#0c1020;border:1px solid var(--line);border-radius:18px}
+#end h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:15px;line-height:1.5;margin-bottom:8px;color:var(--ac)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:12px 0}
+.kv div{padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.05);font-size:11px;color:var(--dim);letter-spacing:.05em;text-transform:uppercase}
+.kv b{display:block;font-family:var(--disp);font-size:18px;color:var(--ink);margin-top:2px}
+@media(max-width:640px){.top{display:none}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud" class="hide">
+  <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small></div>
+  <div id="btns"><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bSnd" title="Audio">🔊</button></div>
+  <div id="prompt" class="glass hide"></div>
+  <div id="dlg" class="glass hide"><canvas id="por" width="28" height="28"></canvas><div><div class="nm" id="dN"></div><div class="rl" id="dR"></div><div class="tx" id="dT"></div><div class="ch" id="dC"></div></div></div>
+  <div id="pad"><i id="padi"></i></div><div id="act">E</div>
+</div>
+<div id="phone" class="hide"><div class="box"><div class="hd"><span>MARKETERS WORLD · APP</span><button id="phX">✕</button></div><div class="tabs" id="phT"></div><div class="body" id="phB"></div></div></div>
+<div id="end" class="hide"><div class="box" id="endB"></div></div>
+<div id="toast"></div>
+<div id="title">
+  <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
+  <div class="in">
+    <div>
+      <h1>RIMINI<br><span>3 GIORNI</span></h1>
+      <p class="lead">Sei <b style="color:var(--ink)">Niky</b>, con il badge al collo e le cuffie in testa. Gira per il Palacongressi di Rimini: ritira l’accredito, segui i workshop del venerdì e gli speech del weekend, chiacchiera con chi incontri, scopri gli stand e non perderti l’Offworld la sera.</p>
+      <div class="row2"><button class="btn" id="go">Entra a Rimini</button><button class="btn ghost" id="how">Come si gioca</button></div>
+      <p class="disc">Fan project non ufficiale, senza alcun legame con l’organizzazione. Le informazioni sull’evento vengono da pagine pubbliche; la pianta del Palacongressi è stilizzata e non in scala. I partecipanti sono inventati.</p>
+    </div>
+    <div class="glass pn"><canvas id="tcv" width="260" height="170"></canvas><div class="small" style="color:var(--dim);font-size:12px;margin-top:10px;line-height:1.5"><b style="color:var(--ink)">Muoviti</b> con WASD o frecce · <b style="color:var(--ink)">E</b> o Spazio per parlare e interagire · <b style="color:var(--ink)">P</b> telefono · <b style="color:var(--ink)">F</b> foto ricordo. Da telefono: stick a sinistra e pulsante a destra.</div></div>
+  </div>
+</div>
+<script src="rimini/data.js"></script>
+<script src="rimini/game.js"></script>
+</body>
+</html>
