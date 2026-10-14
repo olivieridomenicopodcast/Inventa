@@ -197,6 +197,7 @@ function cmReplies(){
 function cmFeed(T,onlyMine,pin,noExtras,full){
   const C=cmEnsure(),items=[];
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
+  if(!onlyMine)items.push(...cmLates(T).map(n=>Object.assign({},n,{mine:false,q:false})));
   if(!onlyMine)items.push(...cmNoShows(T).map(n=>Object.assign({},n,{mine:false,q:false})));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
@@ -220,6 +221,7 @@ function cmPostText(pid){const C=cmEnsure(),m=C.posts.find(p=>p.id===pid);if(m)r
 function cmActivity(T){
   const C=cmEnsure(),out=[];
   for(const p of C.posts)for(const c of cmComments(p,true))if(c.at<=T)out.push({id:c.id,type:'comment',at:c.at,met:c.met,who:c.who,text:c.text,pid:p.id,ptext:p.text});
+  for(const n of cmLates(T))out.push({id:n.id+'_a',type:'noshow',at:n.at,met:false,who:n.who,text:n.text,pid:n.id,ptext:'il tuo ritardo alla festa'});
   for(const n of cmNoShows(T))out.push({id:n.id+'_a',type:'noshow',at:n.at,met:false,who:n.who,text:n.text,pid:n.id,ptext:'il meeting saltato'});
   for(const x of cmReplies())if(x.at<=T)out.push({id:x.id,type:'reply',at:x.at,met:false,who:x.who,text:x.text,pid:x.pid,ptext:cmPostText(x.pid)});
   return out;
@@ -227,6 +229,14 @@ function cmActivity(T){
 function cmLikesNotes(T){const C=cmEnsure(),out=[];for(const p of C.posts){const n=cmView({id:p.id,at:p.at,mine:true,m:{}},T).likes;if(n>0)out.push({id:'lk_'+p.id,type:'like',at:p.at+10,count:n,pid:p.id,ptext:p.text});}return out;}
 /* meeting saltati: chi ti ha aspettato 10 minuti si lamenta su Marketers Pro */
 const CM_NOSHOW=['Ho aspettato dieci minuti all’Area networking e niente. Dare buca così non è il massimo. #MW26','Meeting fissato, meeting saltato: {me} non si è presentat{O|A}. Io ero lì con il caffè in mano. ☕','Quando dici sì a un incontro e poi sparisci… {me}, ci siamo capiti. #networking','Dieci minuti di attesa, zero messaggi. Il networking è anche rispetto del tempo degli altri.','Un consiglio a chi viene al #MW26: se accetti un meeting, presentati. Io oggi ho aspettato per niente.','Il mio meeting delle {ora} non si è presentato. Pazienza, ma lo segno. 📝','Mai dare buca a un meeting: il mondo del marketing è piccolo e le community ancora di più.','Ho trattenuto la delusione per dieci minuti, poi sono andat{o|a} via. Il meeting con {me} è saltato.'];
+/* arrivo in ritardo alla serata del Village: alcuni membri lo fanno notare */
+const CM_LATE=['La festa è già cominciata e manca solo {me}. Ritardatari si nasce. 😅 #Offworld','Qualcuno ha visto {me}? La navetta delle 22 è partita e lo ha riportato indietro per i capelli.','Premio ritardatario della serata a {me}: arrivat{O|A} quando il microfono era già caldo. #MW26','Alle 22 puntuali al Village, tranne {me}. Ti perdoniamo, ma offri il primo giro.','«Dieci minuti e arrivo» ‑ {me}, alle 22:00 in punto, in navetta all’ultimo secondo.'];
+function cmLate(day){
+  const C=cmEnsure();if(!C.late)C.late=[];if(C.late.some(x=>x.day===day))return;
+  const r=mulberry32(hashStr(G.seed+'|late|'+day)),M=cmMembers(),base=cmT()+4;
+  for(let i=0;i<3;i++)C.late.push({id:'l'+day+'_'+i,day,at:base+i*7+Math.floor(r()*6),k:(Math.floor(r()*CM_LATE.length)+i)%CM_LATE.length,mid:M[Math.floor(r()*M.length)].id});
+}
+const cmLates=T=>(cmEnsure().late||[]).filter(x=>x.at<=T).map(x=>{const m=cmMembers().find(q=>q.id===x.mid)||cmMembers()[0];return{id:'lt_'+x.id,at:x.at,m,text:gxf(cmFill(CM_LATE[x.k]),m.gender),kind:'late',who:m};});
 function cmNoShow(m){
   const C=cmEnsure(),pe=G.people.find(x=>x.id===m.pid);if(!pe)return;if(!C.noshow)C.noshow=[];
   const r=mulberry32(hashStr(G.seed+'|ns|'+m.pid+'|'+m.day+'|'+m.start));

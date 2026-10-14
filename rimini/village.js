@@ -109,14 +109,11 @@ function rideBus(toVillage){
   },250);
 }
 /* la sera si torna al Village con la navetta: il tempo continua, ci sono l'Offworld e poi si va a dormire */
-function eveningAtVillage(){
-  G.f=2;G.p.x=k(700);G.p.y=k(752);[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;
-  G.min=Math.max(G.min,17*60)+12;G.fade=1;if(G.min>23*60+29)G.min=23*60+29;
-  toast('Eccoti al Marketers Village. Questa sera: Offworld al palco, alle 22:00.',3600);
-  if(G.min<22*60)setTimeout(()=>{const host={name:'Marketers Village',role:'Serata',p:{shirt:'#1f2a50',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#ffd24d'}};
-    say(host,{t:G.day>=2?'È l’ultima sera! Alle 22:00, all’Offworld, c’è il pigiama party finale con la Family. Vuoi passare direttamente alla festa o girare liberamente e presentarti al Village alle 22?':'Alle 22:00 all’Offworld c’è il karaoke. Vuoi passare direttamente alla festa o girare liberamente e presentarti al Village alle 22?',c:[
-      {t:'Passo direttamente alla festa',n:null,act:()=>{G.min=22*60;G.p.x=k(1052);G.p.y=k(690);[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.cam.x=G.p.x;G.cam.y=G.p.y;G.fade=1;toast('Sono le 22:00: la festa è cominciata!',2600);}},
-      {t:'Giro liberamente, ci vediamo alle 22',n:null}]});},900);
+function eveningAtVillage(late){
+  G.f=2;G.p.x=k(1052);G.p.y=k(690);[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.p.dir=0;G.cam.x=G.p.x;G.cam.y=G.p.y;
+  G.eveDay=G.day;G.min=Math.max(G.min,22*60);G.fade=1;if(G.min>23*60+29)G.min=23*60+29;
+  if(late){toast('⏰ Sono le 22:00: la navetta ti porta al Village… sei arrivato in ritardo!',4200);if(typeof cmLate==='function')cmLate(G.day);}
+  else toast('Eccoti al Marketers Village: sono le 22:00 e la festa è cominciata!',3200);
 }
 function nextDay(){
   if(G.day>=2){endGame();return;}
@@ -130,8 +127,8 @@ function nextDay(){
 function shuttleHome(){
   if(!G.sandbox&&G.min<17*60){info('Navetta per il Village','La navetta serale parte dalle 17:00. Fino ad allora il Marketers World è tutto tuo.');return;}
   const host={name:'Navetta serale',role:'Rientro al Marketers Village',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
-  say(host,{t:G.day>=2?'È l’ultima sera: al Marketers Village, alle 22:00, c’è il pigiama party finale all’Offworld. Vuoi andare?':'Vuoi tornare al Marketers Village? Questa sera c’è l’Offworld alle 22:00; poi si va a dormire e domani si ricomincia con la navetta.',c:[
-    {t:'Sì, torno al Village',n:null,act:()=>rideBus(true)},{t:'Resto ancora un po’',n:null}]});
+  say(host,{t:(G.day>=2?'È l’ultima sera: alle 22:00 all’Offworld, al Marketers Village, c’è il pigiama party finale. ':'Alle 22:00 all’Offworld, al Marketers Village, c’è la serata (karaoke). ')+'Vuoi passare direttamente alla festa o girare liberamente al Palacongressi e prendere la navetta entro le 22? Se fai tardi, alle 22 ti ritrovi al Village… e su Marketers Pro si parlerà del ritardatario!',c:[
+    {t:'Passo direttamente alla festa',n:null,act:()=>rideBus(true)},{t:'Giro ancora al Palacongressi',n:null}]});
 }
 
 /* tasto "passa al giorno dopo": chiude la giornata e riparte dal Village (domenica: conclude il weekend) */
