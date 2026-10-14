@@ -1,6 +1,6 @@
 {
  "fonte": "screenshot dell'app ufficiale inviati dall'utente (batch 1-2; sono i workshop di VENERDÌ 16 ottobre)",
- "note": "sale: Silent Stage 1-4 e Main stage silent; Sala della Marina/Parco/Borgo (primo piano), Sala Castello (piano terra); orari 10:00-10:50 e 11:20-12:10 | Altri tipi: MK PRO con Ilaria Foresti (ingresso libero, MK PRO = prodotto Marketers), Game Quiz (Ve.Ma Game 13:30-14:00, Ergonet game 12:00-12:30). Venerdì è giorno di workshop.",
+ "note": "sale: Silent Stage 1-4 e Main stage silent; Sala della Marina/Parco/Borgo (primo piano), Sala Castello (piano terra); orari 10:00-10:50 e 11:20-12:10 | Altri tipi: MK PRO con Ilaria Foresti (ingresso libero, MK PRO = prodotto Marketers), Game Quiz (Ve.Ma Game 13:30-14:00, Ergonet game 12:00-12:30). Venerdì è giorno di workshop. | Batch 4: sessioni 15:20, 16:40, firmacopie Dario Vignali 16:00-17:00 (Stand Urlico Hoepli), Yoga Silent Party 18:15-18:55 (Main stage silent), Karaoke al Village 22:00-00:00 (Palco - zona ristorante). L'utente ha prenotato: 'Oltre il mito della viralità' (Sala del Borgo 16:40) e 'Il metodo che usiamo in Marketers per costruire app e tool con l'AI' (Silent Stage 4 15:20).",
  "sessioni": [
   {
    "ora": "11:20-12:10",
@@ -677,6 +677,202 @@
     "AI"
    ],
    "stato": "prenota"
+  },
+  {
+   "ora": "18:15-18:55",
+   "titolo": "Yoga Silent Party",
+   "sala": "Main stage silent",
+   "speaker": "Denise Dellagiacoma +1",
+   "ruolo": "Founder di Yoga Academ…",
+   "temi": [],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "22:00-00:00",
+   "titolo": "Karaoke al Village (Aperto a tutti i partecipanti del World. Microfono libero.)",
+   "sala": "Palco - zona ristorante (Village)",
+   "speaker": "",
+   "ruolo": "",
+   "temi": [],
+   "stato": "village / salva in agenda"
+  },
+  {
+   "ora": "16:40-17:30",
+   "titolo": "Oltre il mito della viralità: come creare contenuti che vendono",
+   "sala": "Sala del Borgo",
+   "speaker": "Alessia Bompani +1",
+   "ruolo": "Content Creator & Conten…",
+   "temi": [
+    "Social & Creator"
+   ],
+   "stato": "gestisci (prenotato dall'utente)"
+  },
+  {
+   "ora": "16:40-17:30",
+   "titolo": "Il successo non è come te lo immagini.",
+   "sala": "Sala Real Estate by Building Production",
+   "speaker": "Daniele Scatassi",
+   "ruolo": "Presidente Building Production Holdi…",
+   "temi": [
+    "Business",
+    "Mindset & Lifestyle"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "16:40-17:30",
+   "titolo": "Come far crescere (davvero) un brand nel 2026. Branding, Performance, dati e approcci corretti alla crescita dei business",
+   "sala": "Sala Castello",
+   "speaker": "Francesco Agostinis",
+   "ruolo": "Marketer, imprenditore, investitore, d…",
+   "temi": [
+    "Growth & Advertising"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "16:40-17:30",
+   "titolo": "E-commerce AI Scaling Framework 2026. Come usare l'AI per far crescere l'e-commerce dove conta davvero: margine, acquisizione e retention.",
+   "sala": "Sala del Parco",
+   "speaker": "Omar Bragantini",
+   "ruolo": "Growth Manager & Ecommerce Grow…",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "16:40-17:30",
+   "titolo": "Agenzia di Marketing al tempo dell’A.I. Ma davvero?",
+   "sala": "Sala by Active Powered",
+   "speaker": "Roberto Tarzia",
+   "ruolo": "Co-founder & COO Active Powered",
+   "temi": [
+    "Business",
+    "AI"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "16:40-17:30",
+   "titolo": "AI vs Persone: ha ancora senso assumere oggi?",
+   "sala": "Sala della Marina",
+   "speaker": "Samantha Marzullo",
+   "ruolo": "Imprenditrice, autrice, TEDx speaker …",
+   "temi": [
+    "AI",
+    "Business"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:45-16:10",
+   "titolo": "Una psicologa senza studio: come far crescere un business oltre i confini fisici",
+   "sala": "MK PRO con Ilaria Foresti",
+   "speaker": "Ilenia Defrancesco",
+   "ruolo": "Psicologa e Mental Coach",
+   "temi": [],
+   "stato": "ingresso libero"
+  },
+  {
+   "ora": "16:00-17:00",
+   "titolo": "FIRMACOPIE: Dario Vignali - Il tao del business. L'arte di ribellarsi all'ordinario.",
+   "sala": "Stand Urlico Hoepli",
+   "speaker": "Dario Vignali",
+   "ruolo": "",
+   "temi": [],
+   "stato": "firmacopie"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Titolo in arrivo",
+   "sala": "Silent Stage 3",
+   "speaker": "Riccardo Zanetti",
+   "ruolo": "Content Creator e Divulgatore Finanz…",
+   "temi": [
+    "Economics"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Un sito diverso per ogni cliente: come vendere di più con l’AI",
+   "sala": "Silent Stage 2",
+   "speaker": "Gianmaria Monteleone",
+   "ruolo": "Founder & CEO di Veliu",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Scoprire, scegliere, percepire un brand con l'IA: cosa cambia per il marketing",
+   "sala": "Silent Stage 1",
+   "speaker": "Greta Munari +2",
+   "ruolo": "Senior Organic Searc…",
+   "temi": [],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Software ed AI: Investire in automatico grazie all’intelligenza artificiale?",
+   "sala": "Sala del Parco",
+   "speaker": "Leonardo Zampieri",
+   "ruolo": "CTO & Co-Founder Novagroup",
+   "temi": [
+    "Economics",
+    "AI"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Le 3 regole per investire senza diventare un esperto in finanza",
+   "sala": "Sala Finance by FINECO",
+   "speaker": "Roberto Fuccaro",
+   "ruolo": "Educatore finanziario, analista tecnic…",
+   "temi": [
+    "Economics",
+    "Mindset & Lifestyle"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Prima il pubblico, poi l’azienda: il vantaggio che si è rivelato una trappola",
+   "sala": "Sala Castello",
+   "speaker": "Nikola Greku",
+   "ruolo": "Creator & Startupper",
+   "temi": [
+    "Mindset & Lifestyle",
+    "Business"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Identità è strategia: il caso Idealista",
+   "sala": "Sala Real Estate by Building Production",
+   "speaker": "Antonio Giordano",
+   "ruolo": "Co-CEO, Idealista",
+   "temi": [
+    "Brand & Comunicazione"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Il metodo che usiamo in Marketers per costruire app e tool con l'AI",
+   "sala": "Silent Stage 4",
+   "speaker": "Pierdomenico Amodei +1",
+   "ruolo": "Technical Support Special…",
+   "temi": [
+    "AI"
+   ],
+   "stato": "gestisci (prenotato dall'utente)"
   }
  ]
 }
