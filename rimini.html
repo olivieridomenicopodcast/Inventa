@@ -194,7 +194,8 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 #howm .stp b{display:block;color:#fff;margin-bottom:2px}#howm .stp span{color:#9fb0d8;font-size:13px;line-height:1.5}#howm .stp span b{display:inline;color:#ffd24d}
 #howm .hh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}#howm .hh span{font-size:11px;color:#8f9bbd}#howm .hn{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}#howm .hn .btn{padding:10px 12px;font-size:11px;letter-spacing:0;white-space:nowrap}#howD{display:flex;gap:5px}#howD i{width:8px;height:8px;border-radius:50%;background:#2a3566}#howD i.on{background:#ff6a3d}#howm .kb{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;color:#9fb0d8;margin:8px 0}#howm kbd{display:inline-block;min-width:22px;padding:2px 6px;border-radius:6px;background:#1d2650;border:1px solid #2a3566;color:#fff;font:700 11px monospace;text-align:center}#howm h3{font-size:12px;color:#ffd24d;margin:12px 0 4px;letter-spacing:.06em}#howm p{font-size:13px;line-height:1.55;color:#9fb0d8;margin:6px 0}#howm p b{color:#fff}#howm .ctl{margin:12px 0;font-size:12px;line-height:1.6;color:#9fb0d8}#howm .ctl b{color:#fff;display:block}
 #goal{left:max(12px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 62px);max-width:min(340px,calc(100vw - 24px));padding:8px 12px;font-size:12px;line-height:1.4;border-color:#ff6a3d!important}
-#goal{pointer-events:none}.mob #goal{top:calc(max(10px,env(safe-area-inset-top)) + 112px)}
+#goal{pointer-events:auto;cursor:pointer;display:flex;gap:6px;align-items:flex-start;padding:4px 10px;font-size:11px;line-height:1.35;background:rgba(10,14,28,.55)!important;max-width:min(360px,calc(100vw - 24px))}.mob #goal{top:calc(max(10px,env(safe-area-inset-top)) + 112px)}
+#goal .gt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#goal.open .gt{white-space:normal}#goal .gi{flex:none}
 #goal b{color:#ff6a3d;font-family:'Press Start 2P',monospace;font-size:9px;font-weight:400;display:block;margin-bottom:3px}
 #jobl{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}#jobl button{padding:6px 10px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:12px;color:var(--ink)}#jobl .jh{flex:0 0 100%;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#ff6a3d;margin-top:6px}#jobl button.alt{border-style:dashed;color:#ffd24d}
 #jobsum{font-size:12px;line-height:1.5;color:var(--dim);margin-top:8px}#jobsum b{color:var(--ink)}
@@ -211,21 +212,19 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 .cc{margin-top:8px;border-top:1px solid #2a3566;padding-top:8px}.cm{display:flex;gap:8px;margin-bottom:8px;font-size:13px;color:#cfd8ee}.cm .cav{width:26px;height:26px;font-size:10px}.cm b{color:#fff;font-size:12px;margin-right:6px}.cm.me b{color:#ff6a3d}.cin{display:flex;gap:6px;margin-top:6px}.cin input{flex:1;background:#0c1124;color:#e9efff;border:1px solid #2a3566;border-radius:8px;padding:7px;font-size:13px}
 .chips3b.on{background:#ff6a3d!important;color:#1a0a04!important;border-color:#ff6a3d!important;font-weight:700}
 #clock{cursor:default}
-#bComm{right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 52px);padding:8px 14px;border-radius:12px;font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;position:fixed;z-index:6}
-#bComm .bdg{min-width:18px;height:18px;border-radius:9px;background:#ff4d5a;color:#fff;font:700 11px/18px sans-serif;text-align:center;font-style:normal;padding:0 5px}
-.mob #bComm{top:calc(max(10px,env(safe-area-inset-top)) + 112px)}
-.mob #goal{top:calc(max(10px,env(safe-area-inset-top)) + 158px)!important}
 #phone .tabs button{white-space:normal;line-height:1.1;text-align:center}
 #savem{z-index:40!important}
 .cfil{display:flex;gap:6px;margin:0 0 10px}.cfil button{padding:7px 12px;border-radius:99px;background:#151c3a;border:1px solid #2a3566;color:#fff;font-size:12px}.cfil button.on{background:#ff6a3d;color:#1a0a04;border-color:#ff6a3d;font-weight:700}
+#btns #bComm{position:relative}#btns #bComm .bdg{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#ff4d5a;color:#fff;font:700 10px/16px sans-serif;text-align:center;font-style:normal;padding:0 4px}
+#bSnd{left:max(12px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));width:42px;height:42px;border-radius:12px;font-size:18px;display:grid;place-items:center}.mob #bSnd{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 142px);width:38px;height:38px;font-size:15px}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 <div id="hud" class="hide">
   <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small></div>
-  <button class="glass" id="bComm" title="Marketers Pro (C)">🌐 Marketers Pro<i id="bCommN" class="bdg" style="display:none"></i></button>
-  <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bMap" title="Mappa (M)">🗺</button><button class="glass" id="bSave" title="Salva / Carica (G)">💾</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bSnd" title="Audio">🔊</button></div>
+  <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bMap" title="Mappa (M)">🗺</button><button class="glass" id="bSave" title="Salva / Carica (G)">💾</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bComm" title="Marketers Pro (C)" aria-label="Marketers Pro">🌐<i id="bCommN" class="bdg" style="display:none"></i></button></div>
+  <button class="glass" id="bSnd" title="Audio">🔊</button>
   <div id="goal" class="glass hide"></div>
   <div id="prompt" class="glass hide"></div>
   <div id="stg" class="glass hide"><div class="nm" id="sN"></div><div class="rl" id="sR"></div><div class="tx" id="sT"></div><div class="ch" id="sC"></div></div>
@@ -240,7 +239,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="66">build</div>
+<div id="bld" data-b="67">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>

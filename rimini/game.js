@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=66;
+const BUILD=67;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -713,7 +713,7 @@ function quests(){
 function progress(){const q=quests();return{done:q.filter(x=>x.ok).length,tot:q.length};}
 let phoneTab='home',progDay=null,progMine=false,progFor=false;
 function openPhone(tab){$('#phT').style.display='';$('#phH').textContent='MW26 · APP';$('#phone').classList.remove('solo');if(!G.flags.app){toast('L’app dell’evento (nel gioco) si attiva all’Assistenza app, fuori dall’Ingresso A.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
-function openPro(){if(!G)return;phoneTab='comm';$('#phone').classList.remove('hide');$('#phone').classList.toggle('solo',!G.flags.app);$('#phT').style.display=G.flags.app?'':'none';$('#phH').textContent=G.flags.app?'MW26 · APP':'MARKETERS PRO';renderPhone();}
+function openPro(){if(!G)return;phoneTab='comm';$('#phone').classList.remove('hide');$('#phone').classList.toggle('solo',!G.flags.app);$('#phT').style.display=G.flags.app?'':'none';$('#phH').textContent='MARKETERS PRO';renderPhone();}
 function closePhone(){$('#phone').classList.add('hide');}
 const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
 const forMe=e=>(e.tags||[]).some(t=>JOBFAM[ME().fam].tags.includes(t));
@@ -830,6 +830,7 @@ $('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#cloc
 $('#bSkip').onclick=()=>skipTime();
 function skipTime(){if(!G||G.watching||G.react)return;G.min+=G.sandbox?60:15;toast(G.sandbox?'Passa un’ora.':'Passano 15 minuti.',1200);}
 addEventListener('wheel',e=>{if(G&&mode==='play'&&!G.watching&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide'))zoomStep(e.deltaY<0?1:-1);},{passive:true});
+$('#goal').onclick=()=>$('#goal').classList.toggle('open');
 $('#bSnd').onclick=()=>{A.on=!A.on;$('#bSnd').textContent=A.on?'🔊':'🔇';};
 
 
@@ -983,7 +984,7 @@ function photo(){
   const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;const g=c.getContext('2d');g.drawImage(cv,0,0);
   g.fillStyle='rgba(8,10,20,.8)';const bh=Math.round(c.height*.09);g.fillRect(0,c.height-bh,c.width,bh);g.fillStyle='#fff';g.font='700 '+Math.round(bh*.38)+'px "Space Grotesk",sans-serif';g.textAlign='left';g.fillText(pname()+' · Rimini '+DAYNAMES[G.day]+' ottobre 2026',Math.round(bh*.4),c.height-bh*.4);
   g.textAlign='right';g.fillStyle='#ff6a3d';g.fillText('Realizzato da Olivieri Domenico con Claude Code · Inventa',c.width-bh*.4,c.height-bh*.4);
-  c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rimini-foto-ricordo.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);});
+  c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rimini-foto-ricordo-'+new Date().toISOString().replace(/[-:T]/g,'').slice(0,14)+'.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);});
   if(!G.flags.selfie){G.flags.selfie=true;A.stamp();}toast('Foto ricordo scattata!');
 }
 function endGame(){
@@ -1067,7 +1068,7 @@ function goal(){const F=G.flags,el=$('#goal');let t='',key='';
   else if(!F.app){key='app';t='Vai all’<u>Assistenza app</u> (a destra, fuori dall’Ingresso A) e attiva l’app (nel gioco, non devi installare niente): ti serve per avere il QR.';}
   else if(!F.accred){key='acc';t='Hai l’app! Ora vai dallo <u>Staff accrediti</u> (a sinistra) e mostra il QR per ritirare il badge.';}
   if(!t){el.classList.add('hide');return;}
-  el.classList.remove('hide');const s='<b>OBIETTIVO</b>'+t;if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=s;}
+  el.classList.remove('hide');const s='<span class="gi">🎯</span><span class="gt">'+t+'</span>';if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=s;}
   if(goalFor!==key){goalFor=key;if(key==='bus'){if(!G.dest||G.dest.auto)G.dest={n:'Fermata della navetta',f:2,x:k(VG.bus.x),y:k(VG.bus.y),auto:1};}else{const n=NPC.find(x=>x.id===(key==='app'?'info':'accred'));if(n&&(!G.dest||G.dest.auto))G.dest={n:n.name,f:0,x:n.x,y:n.y,auto:1};}}
 }
 function drawGate(){
