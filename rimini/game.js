@@ -186,7 +186,7 @@ function buildFirst(){
   const L=layer(WW,WH),c=L.c;
   c.fillStyle='#090b16';c.fillRect(0,0,WW,WH);
   const WOOD=(c,x,y,w,h)=>paintWood(c,x,y,w,h,'#d8c3a0','#cbb48f'),CARP=(a,b)=>(c,x,y,w,h)=>paintCarpet(c,x,y,w,h,a,b);
-  RK(L,395,90,490,625,WOOD,[{s:'w',a:380,b:700},{s:'e',a:340,b:690},{s:'s',a:560,b:705}]);
+  RK(L,395,90,490,625,WOOD,[{s:'w',a:100,b:700},{s:'e',a:340,b:690},{s:'s',a:560,b:705}]);
   // vuoto sopra la Sala della Piazza (con parapetto)
   c.fillStyle='#05060c';c.fillRect(k(470),k(130),k(362),k(420));c.fillStyle='rgba(255,255,255,.12)';for(let y=k(130);y<k(550);y+=6)c.fillRect(k(470),y,k(362),1);
   c.fillStyle='#c9c2b2';c.fillRect(k(466),k(126),k(370),3);c.fillRect(k(466),k(548),k(370),3);c.fillRect(k(466),k(126),3,k(424));c.fillRect(k(833),k(126),3,k(424));solid(L,k(464),k(124),k(374),k(6));solid(L,k(464),k(548),k(374),k(6));solid(L,k(464),k(124),6,k(430));solid(L,k(832),k(124),6,k(430));
@@ -307,7 +307,7 @@ function interactables(){
     I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(590)));
     I(635,775,70,'Sala dell’Anfiteatro',()=>info('Sala dell’Anfiteatro',FACTS.anfi+' Qui oggi non ci sono sessioni: gli speech sono in Sala della Piazza, al piano terra.'));
     ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,30,n.replace('Sala Real Estate by Building Production','Sala Real Estate')));
-    I(651,330,70,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
+    I(651,575,45,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
   }
   for(const n of NPC)if(n.f===f)out.push({x:n.x,y:n.y,r:22,npc:n,label:'Parla con '+n.name,fn:()=>talkTo(n)});
   return out;
@@ -451,7 +451,7 @@ function advance(){
   const full=sayText();
   if(w.typed<full.length){w.typed=full.length;return;}
   if(w.ex&&w.ex.picked==null)return;
-  if(w.i>=w.c.slides.length-1){w.done=true;w.applause=2.4;$('#sC').innerHTML='';setTimeout(()=>leaveTheatre(true),2400);A.stamp();return;}
+  if(w.i>=w.c.slides.length-1){w.done=true;w.applause=2.4;$('#sC').innerHTML='';{const ww=w;setTimeout(()=>{if(G&&G.watching===ww)leaveTheatre(true);},2400);}A.stamp();return;}
   w.i++;renderSlide();
 }
 function leaveTheatre(complete){
@@ -502,7 +502,7 @@ function drawTheatre(){
   c.fillStyle='rgba(0,0,0,.25)';c.fillRect(0,172,320,8);
   // composizione
   const barH=MOB?Math.max(250,H*.36):210;
-  const zs=Math.min(W/320,(H-barH)/180),w0=320*zs,x0=(W-w0)/2,y0=Math.max(6,(H-barH-180*zs)/2);
+  const zs=Math.min(W/320,(H-barH)/180),w0=320*zs,x0=(W-w0)/2,y0=H>W?Math.max(70,H-barH-180*zs-8):Math.max(6,(H-barH-180*zs)/2);
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#05060d';ctx.fillRect(0,0,W,H);ctx.imageSmoothingEnabled=false;ctx.drawImage(stCv,x0,y0,w0,180*zs);
   // testo della slide
   const sl=slideOf(),lx=x0+60*zs,ly=y0+16*zs,lw=198*zs,lh=88*zs;
@@ -665,7 +665,7 @@ function renderPhone(){
      <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
      <div class="sec">// ULTIMO ANNUNCIO</div><div class="ann"><small>13 OTT · 18:00</small><b>Benvenuti a Rimini!</b><span>Ritira il badge fuori dall’Ingresso A e scarica l’app: dentro trovi programma, workshop e networking.</span></div>
      <div class="spread"><b>Fai sapere che ci sarai</b><span>La tua card per le storie e LinkedIn, pronta in un tocco.</span><button id="card">Crea la tua card</button></div>
-     <div class="note">Fan project non ufficiale. I workshop del venerdì vengono dal programma pubblico; speech del weekend, partecipanti e contenuti delle slide sono inventati.</div>`;
+     <div class="note">Realizzato da Olivieri Domenico usando Claude Code. Fan project non ufficiale. I workshop del venerdì vengono dal programma pubblico; speech del weekend, partecipanti e contenuti delle slide sono inventati.</div>`;
     const hc=$('#heroc').getContext('2d');hc.imageSmoothingEnabled=false;hc.drawImage(FL[0].cv,k(470),k(600),k(330),k(160),0,0,400,190);hc.fillStyle='rgba(10,16,50,.55)';hc.fillRect(0,0,400,190);
     $('#card').onclick=()=>{closePhone();photo();};
     bind();
@@ -720,7 +720,7 @@ function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('sho
 function photo(){
   const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;const g=c.getContext('2d');g.drawImage(cv,0,0);
   g.fillStyle='rgba(8,10,20,.8)';const bh=Math.round(c.height*.09);g.fillRect(0,c.height-bh,c.width,bh);g.fillStyle='#fff';g.font='700 '+Math.round(bh*.38)+'px "Space Grotesk",sans-serif';g.textAlign='left';g.fillText('Niky · Rimini '+DAYNAMES[G.day]+' ottobre 2026',Math.round(bh*.4),c.height-bh*.4);
-  g.textAlign='right';g.fillStyle='#ff6a3d';g.fillText('Fan project · Inventa',c.width-bh*.4,c.height-bh*.4);
+  g.textAlign='right';g.fillStyle='#ff6a3d';g.fillText('Realizzato da Olivieri Domenico con Claude Code · Inventa',c.width-bh*.4,c.height-bh*.4);
   c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rimini-foto-ricordo.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);});
   if(!G.flags.selfie){G.flags.selfie=true;A.stamp();}toast('Foto ricordo scattata!');
 }
@@ -730,7 +730,7 @@ function endGame(){
   $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div>
    <div class="kv"><div>Contatti<b>${G.contacts.length}</b></div><div>Workshop<b>${F.ws}</b></div><div>Speech<b>${F.talk}</b></div><div>Stand<b>${Object.keys(F.stands).length}</b></div><div>Spunti<b>${G.tips.length}</b></div><div>Offworld<b>${F.off}</b></div></div>
    <div class="row2"><button class="btn" id="eAgain">Rigioca</button><button class="btn ghost" id="eBack">Torna al gioco</button></div>
-   <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
+   <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Realizzato da Olivieri Domenico usando Claude Code. Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
   $('#end').classList.remove('hide');
   $('#eAgain').onclick=()=>{$('#end').classList.add('hide');startGame();};
   $('#eBack').onclick=()=>{$('#end').classList.add('hide');G.done=false;};
@@ -795,7 +795,7 @@ function hud(){
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr);
   const nx=nextEvent(),p=progress();
-  setT($('#ckS'),'cs',(nx?'Prossimo '+nx.t+': '+(nx.talk?nx.talk.title:nx.e):'Giornata finita')+' · '+p.done+'/'+p.tot+' obiettivi');
+  setT($('#ckS'),'cs',(nx?'Prossimo '+nx.t+': '+(nx.title.length>38?nx.title.slice(0,36)+'…':nx.title):'Giornata finita')+' · '+p.done+'/'+p.tot+' obiettivi');
   if(MOB){const hide=!!(DL||G.watching||G.react);$('#pad').style.display=hide?'none':'';$('#act').style.display=hide?'none':'';}
   const n=DL||G.watching||G.react?null:nearest();const pr=$('#prompt');
   if(n){const h=`<kbd>${MOB?'●':'E'}</kbd>${esc(n.label)}`;if(cacheP!==h){cacheP=h;pr.innerHTML=h;}pr.classList.remove('hide');}else{pr.classList.add('hide');cacheP='';}
