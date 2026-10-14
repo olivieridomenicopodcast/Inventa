@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=72;
+const BUILD=73;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -409,6 +409,7 @@ function talkTo(n){
   else if(n.id==='info')say(n,nodeInfo());
   else if(n.id==='yoga')say(n,nodeYoga());
   else if(n.id==='scout')say(n,nodeScout());
+  else if(n.id==='denise'&&typeof deniseTalk==='function')deniseTalk(n);
   else if(n.id==='recep'||n.id==='driver')say(n,{t:chPick(Math.random,n.id==='recep'?['Benvenuto al Marketers Village! La navetta per il Palacongressi è alla fermata qui davanti.','Buongiorno! Colazione al bar, poi navetta: il World comincia presto.','Se hai dimenticato qualcosa in camera, hai ancora qualche minuto prima della navetta.']:['Prossima partenza tra poco! Sali quando vuoi.','Dieci minuti di viaggio e sei al Palacongressi.','Mi raccomando: l’app serve dopo, in navetta si chiacchiera.']),c:[{t:'Grazie!',n:null}]});
   else if(n.id==='dj')say(n,{t:'Benvenuto all’Offworld! '+FACTS.off+' Passa la sera: si canta.',c:[{t:'Ci vediamo stasera!',n:null}]});
   else attendee(n);

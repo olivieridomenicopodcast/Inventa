@@ -48,6 +48,8 @@ function extrasNPC(add,pk){
     if(f.self){q.p=Object.assign(q.p,{phones:true,shirt:'#2a5a8a',hair:'#1a1a20',badge:'#ffd24d'});}
     if(FL[q.f])[q.x,q.y]=freeSpot(q.f,q.x,q.y);
   });
+  /* Denise Dellagiacoma davanti allo stand di Yoga Academy */
+  {const st=STANDS.find(x=>x.id==='yoga');if(st){const q=add({id:'denise',kind:'staff',name:'Denise Dellagiacoma',role:'Stand Yoga Academy',gender:'f',f:0,x:k(st.x+18),y:k(st.y+46),p:{shirt:'#7ad37a',pants:'#e8e8f0',skin:'#e8b98a',hair:'#4a3322',badge:'#7ad37a',long:true},dir:0});[q.x,q.y]=freeSpot(0,k(st.x+16),k(st.y+34));}}
   /* CatGPT: gatto grigio che gira ovunque. Alpachino: alpaca sul prato */
   add({id:'catgpt',kind:'pet',pet:'cat',name:'CatGPT',role:'Gatto grigio · modello felino',f:0,x:k(430),y:k(700),p:{shirt:'#8e939e',pants:'#6b707c',skin:'#8e939e',hair:'#6b707c',badge:'#6bd16b'},wander:{x0:k(330),y0:k(560),x1:k(860),y1:k(860)},dir:2,roam:0});
   add({id:'alpachino',kind:'pet',pet:'alpaca',name:'Alpachino',role:'Alpaca del Marketers Village',f:VILLAGE_ON?2:0,x:k(760),y:k(640),p:{shirt:'#eadcc0',pants:'#cdb98f',skin:'#f5ecd8',hair:'#cdb98f',badge:'#ffd24d'},wander:{x0:k(330),y0:k(560),x1:k(1000),y1:k(700)},dir:2,roam:0});
@@ -296,4 +298,14 @@ function alpaGuide(n){
     {t:'Programma e sessioni',n:()=>prog()},
     {t:'Altro…',n:()=>altroMenu()}]);
   say(n,main());
+}
+
+/* ---------- Denise Dellagiacoma allo stand di Yoga Academy ---------- */
+function deniseTalk(n){
+  const ct=()=>{addContact(n);};
+  const menu=()=>({t:'Ciao! Benvenuta o benvenuto allo stand di Yoga Academy. Qui si parla di yoga, respiro e benessere, anche tra una sessione e l’altra. Cosa ti incuriosisce?',c:[
+    {t:'Cos’è Yoga Academy?',n:()=>({t:'Yoga Academy è una scuola di yoga online, e qui allo stand ti racconto come funziona. È uno dei progetti del gruppo Marketers: yoga e business si parlano più di quanto pensi.',c:[{t:'Scambiamoci i contatti',n:null,act:ct},{t:'Indietro',n:()=>menu()}]})},
+    {t:'Parlami del Kalemana Festival',n:()=>({t:'Il Kalemana Experience Festival è organizzato da Yoga Academy insieme a WeAreMarketers a Punta Marina di Ravenna: yoga in spiaggia, workshop creativi e DJ set la sera. Un festival per anime libere, ribelli e sognatori.',c:[{t:'Che bello!',n:null,act:ct},{t:'Indietro',n:()=>menu()}]})},
+    {t:'Facciamo tre respiri',n:{t:'Inspira… espira… Meglio. Il respiro è l’unico strumento che hai sempre con te: usalo prima di ogni speech importante.',c:[{t:'Grazie!',n:null,act:()=>{if(!G.flags.yoga){G.flags.yoga=true;A.stamp();toast('Yoga fatto!',2200);}ct();}}]}}]});
+  say(n,menu());
 }
