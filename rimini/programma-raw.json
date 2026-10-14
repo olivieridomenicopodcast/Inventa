@@ -1,0 +1,239 @@
+{
+ "fonte": "screenshot dell'app ufficiale inviati dall'utente (batch 1 di 10 immagini; giorno da confermare)",
+ "note": "sale: Silent Stage 1-4 e Main stage silent; Sala della Marina/Parco/Borgo (primo piano), Sala Castello (piano terra); orari 10:00-10:50 e 11:20-12:10",
+ "sessioni": [
+  {
+   "ora": "11:20-12:10",
+   "titolo": "L'arte di farsi scegliere - andando controtendenza",
+   "sala": "Silent Stage 4",
+   "speaker": "Chiara Dosio",
+   "ruolo": "Imprenditrice e Consulente",
+   "temi": [
+    "Brand & Comunicazione",
+    "Social & Creator"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "Le 4 AI dietro Meta Ads (e cosa fare per tornare a performare)",
+   "sala": "Silent Stage 1",
+   "speaker": "Massimo Giacchino",
+   "ruolo": "Digital Strategy, autore Design Marke…",
+   "temi": [
+    "AI",
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "Da 250 a 500K in un anno: l'autopsia del metodo di vendita Marketers",
+   "sala": "Sala della Marina",
+   "speaker": "Mattia Bonetti",
+   "ruolo": "CCO e Event Director in Marketers",
+   "temi": [
+    "Business",
+    "AI"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "Fatturi 200.000 euro e non sei ricco: il calcolo che nessuno fa",
+   "sala": "Main stage silent",
+   "speaker": "Marco Casario",
+   "ruolo": "Imprenditore e divulgatore finanziario…",
+   "temi": [
+    "Economics",
+    "Business"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "AI AL LAVORO: DUE CERVELLI, UN METODO – Come costruire con l'intelligenza artificiale un secondo cervello digitale e governarlo con creatività, giudizio e responsabilità",
+   "sala": "Sala del Borgo",
+   "speaker": "Andrea Giorgi +1",
+   "ruolo": "AI Educator & Consultant",
+   "temi": [
+    "AI",
+    "Business"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "AI for Performance Creative: Dove finisce il prompt e inizia la performance",
+   "sala": "Sala by CANVA",
+   "speaker": "Barbara Tulissi",
+   "ruolo": "Senior Designer & Canvassador",
+   "temi": [
+    "Growth & Advertising",
+    "AI"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Pimp my brand: il metodo 60 minuti di Canva per un vero upgrade al tuo brand!",
+   "sala": "Sala by CANVA",
+   "speaker": "Eugenia Brini",
+   "ruolo": "Canva Verified Expert, formatrice in …",
+   "temi": [
+    "Brand & Comunicazione",
+    "Social & Creator"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "3 pratiche neuroscientifiche per lavorare con l'AI senza spegnere il cervello",
+   "sala": "Sala del Parco",
+   "speaker": "Erica …ni (cognome non leggibile)",
+   "ruolo": "Chief Happiness Officer at Marketers",
+   "temi": [
+    "Mindset & Lifestyle",
+    "AI"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Feedback Loop: dialogare con i clienti per massimizzare i risultati",
+   "sala": "Sala del Parco",
+   "speaker": "Mirko Morfino",
+   "ruolo": "Consulente marketing automation e …",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Finanza personale per professionisti: come gestire I soldi (davvero)",
+   "sala": "Sala Finance by FINECO",
+   "speaker": "Pietro Michelangeli",
+   "ruolo": "Divulgatore finanziario & Content Cre…",
+   "temi": [
+    "Economics"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Il cliente o prodotto che ti sta facendo perdere soldi senza che tu lo sappia.",
+   "sala": "Silent Stage 1",
+   "speaker": "Simone Bergamini",
+   "ruolo": "Controller at Marketers",
+   "temi": [
+    "Economics"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Imprenditore nel mondo dell'A.I: Come fare impresa nel nuovo mondo",
+   "sala": "Sala by Active Powered",
+   "speaker": "Roberto Tarzia",
+   "ruolo": "Co-founder & COO Active Powered",
+   "temi": [
+    "Business",
+    "AI"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Da 0 a 100k € in un anno: come trasformare i follower in clienti",
+   "sala": "Silent Stage 2",
+   "speaker": "Arianna Cavina",
+   "ruolo": "Imprenditrice digitale, Social Media &…",
+   "temi": [
+    "Growth & Advertising",
+    "Social & Creator"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Dall'utile al valore per il socio - 5 leve per trasformare l'utile in ricchezza personale",
+   "sala": "Sala della Marina",
+   "speaker": "Giulio Lora Lamia",
+   "ruolo": "Dottore Commercialista e Consulente…",
+   "temi": [
+    "Business",
+    "Economics"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "CAMBIARE LE REGOLE. CAMBIARE IL GIOCO.",
+   "sala": "Main stage silent",
+   "speaker": "Cecilia Pessina",
+   "ruolo": "TBD",
+   "temi": [
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Come non diventare irrilevanti quando l'AI pensa al tuo posto",
+   "sala": "Silent Stage 4",
+   "speaker": "Giovanni Beggiato",
+   "ruolo": "Co-founder di Gentes AI e Founder di…",
+   "temi": [
+    "AI"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Community building 2026: cosa fare quando 'pubblica di più' non basta",
+   "sala": "Sala Castello",
+   "speaker": "Ilaria Foresti",
+   "ruolo": "PRO Product Specialist at Marketers …",
+   "temi": [
+    "Brand & Comunicazione",
+    "Social & Creator"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Costruire non è più il problema. Prodotti digitali, AI e SaaS: perché oggi vince chi trova il problema giusto e sa distribuire la soluzione.",
+   "sala": "Silent Stage 3",
+   "speaker": "Marco Cappelli",
+   "ruolo": "Imprenditore e Founder della Marco …",
+   "temi": [
+    "Business",
+    "AI"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "10:00-10:50",
+   "titolo": "Ads: da strategia a ROAS con l'AI. Il framework completo che usiamo in Marketers.",
+   "sala": "Sala del Borgo",
+   "speaker": "Vittoria Vecchio",
+   "ruolo": "Adv & Communication Manager at M…",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "10:00-14:00",
+   "titolo": "Aula Real Estate",
+   "sala": "Sala Real Estate by Building Production",
+   "speaker": "",
+   "ruolo": "",
+   "temi": [],
+   "stato": "ingresso libero senza prenotazione"
+  }
+ ]
+}
