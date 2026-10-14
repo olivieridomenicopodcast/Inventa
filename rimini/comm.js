@@ -169,7 +169,7 @@ function cmMetPeople(){
 const cmFill=(s,extra)=>s.replace('{me}',pname()).replace('{job}',(extra&&extra.job)||ME().job);
 /* commenti di un post (del pool o mio): deterministici, ordinati nel tempo */
 function cmComments(p,mine){
-  const r=mulberry32(hashStr(G.seed+'|cm|'+p.id)),M=cmMembers(),met=mine?cmMetPeople().filter(x=>x.at<=p.at):[],out=[],usedT=new Set(),usedW=new Set();
+  const C=cmEnsure(),r=mulberry32(hashStr(G.seed+'|cm|'+p.id)),M=cmMembers(),met=mine?cmMetPeople().filter(x=>x.at<=p.at):[],out=[],usedT=new Set(),usedW=new Set();
   const n=mine?2+Math.floor(r()*4):p.q?2+Math.floor(r()*4):Math.floor(r()*4);
   let t=p.at;const warm=met.slice().sort(()=>r()-.5).slice(0,Math.min(3,met.length));
   for(let i=0;i<n;i++){
@@ -184,6 +184,7 @@ function cmComments(p,mine){
     usedT.add(text);if(who&&who.id)usedW.add(who.id);
     out.push({id:p.id+'_'+i,at:t,who,text,met:isMet});
   }
+  if(mine&&C.selfLike&&C.selfLike[p.id]!=null){const w2=cmPick(mulberry32(hashStr(G.seed+'|sl|'+p.id)),M);out.push({id:p.id+'_sl',at:C.selfLike[p.id]+5,who:w2,text:'Mettersi il like al proprio post è come darsi il cinque da soli.',met:false});}
   return out;
 }
 /* risposte alle mie commenti */
@@ -197,6 +198,7 @@ function cmReplies(){
 function cmFeed(T,onlyMine,pin,noExtras,full){
   const C=cmEnsure(),items=[];
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
+  if(!onlyMine)items.push(...cmThanks(T).map(n=>Object.assign({},n,{mine:false,q:false})));
   if(!onlyMine)items.push(...cmLates(T).map(n=>Object.assign({},n,{mine:false,q:false})));
   if(!onlyMine)items.push(...cmNoShows(T).map(n=>Object.assign({},n,{mine:false,q:false})));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
@@ -209,7 +211,7 @@ function cmFeed(T,onlyMine,pin,noExtras,full){
   return out;
 }
 function cmView(p,T){
-  const C=cmEnsure(),base=p.mine?cmComments(p,true):p.kind==='met'?[]:cmComments(p,false),mine=(C.cm[p.id]||[]).map(c=>({id:c.id,at:c.at,who:{name:pname(),me:true,pal:playerLook()},text:c.text,me:true}));
+  const C=cmEnsure(),base=p.mine?cmComments(p,true):p.kind==='met'?[]:p.kind==='noshow'?cmReactComments(p,CM_INDIG):p.kind==='late'?cmReactComments(p,CM_TEASE):p.kind==='thanks'?cmReactComments(p,CM_THX_R):cmComments(p,false),mine=(C.cm[p.id]||[]).map(c=>({id:c.id,at:c.at,who:{name:pname(),me:true,pal:playerLook()},text:c.text,me:true}));
   const reps=cmReplies().filter(x=>x.pid===p.id).map(x=>({id:x.id,at:x.at,who:x.who,text:x.text}));
   const all=[...base,...mine,...reps].filter(c=>c.at<=T).sort((a,b)=>a.at-b.at);
   const r=mulberry32(hashStr(G.seed+'|lk|'+p.id)),cap=p.mine?3+Math.floor(r()*6)+cmMetPeople().length*3:4+Math.floor(r()*40);
@@ -221,6 +223,7 @@ function cmPostText(pid){const C=cmEnsure(),m=C.posts.find(p=>p.id===pid);if(m)r
 function cmActivity(T){
   const C=cmEnsure(),out=[];
   for(const p of C.posts)for(const c of cmComments(p,true))if(c.at<=T)out.push({id:c.id,type:'comment',at:c.at,met:c.met,who:c.who,text:c.text,pid:p.id,ptext:p.text});
+  for(const n of cmThanks(T))out.push({id:n.id+'_a',type:'noshow',at:n.at,met:false,who:n.who,text:n.text,pid:n.id,ptext:'il tuo favore'});
   for(const n of cmLates(T))out.push({id:n.id+'_a',type:'noshow',at:n.at,met:false,who:n.who,text:n.text,pid:n.id,ptext:'il tuo ritardo alla festa'});
   for(const n of cmNoShows(T))out.push({id:n.id+'_a',type:'noshow',at:n.at,met:false,who:n.who,text:n.text,pid:n.id,ptext:'il meeting saltato'});
   for(const x of cmReplies())if(x.at<=T)out.push({id:x.id,type:'reply',at:x.at,met:false,who:x.who,text:x.text,pid:x.pid,ptext:cmPostText(x.pid)});
@@ -228,7 +231,7 @@ function cmActivity(T){
 }
 function cmLikesNotes(T){const C=cmEnsure(),out=[];for(const p of C.posts){const n=cmView({id:p.id,at:p.at,mine:true,m:{}},T).likes;if(n>0)out.push({id:'lk_'+p.id,type:'like',at:p.at+10,count:n,pid:p.id,ptext:p.text});}return out;}
 /* meeting saltati: chi ti ha aspettato 10 minuti si lamenta su Marketers Pro */
-const CM_NOSHOW=['Ho aspettato dieci minuti all’Area networking e niente. Dare buca così non è il massimo. #MW26','Meeting fissato, meeting saltato: {me} non si è presentat{O|A}. Io ero lì con il caffè in mano. ☕','Quando dici sì a un incontro e poi sparisci… {me}, ci siamo capiti. #networking','Dieci minuti di attesa, zero messaggi. Il networking è anche rispetto del tempo degli altri.','Un consiglio a chi viene al #MW26: se accetti un meeting, presentati. Io oggi ho aspettato per niente.','Il mio meeting delle {ora} non si è presentato. Pazienza, ma lo segno. 📝','Mai dare buca a un meeting: il mondo del marketing è piccolo e le community ancora di più.','Ho trattenuto la delusione per dieci minuti, poi sono andat{o|a} via. Il meeting con {me} è saltato.'];
+const CM_NOSHOW=['Ho aspettato dieci minuti all’Area networking e {me} non si è presentat{O|A}. Dare buca così non è il massimo. #MW26','Meeting fissato, meeting saltato: {me} non si è presentat{O|A}. Io ero lì con il caffè in mano.','Quando dici sì a un incontro e poi sparisci… {me}, ci siamo capiti. #networking','Dieci minuti di attesa, zero messaggi da {me}. Il networking è anche rispetto del tempo degli altri.','Un consiglio a chi viene al #MW26: se accetti un meeting, presentati. Io oggi ho aspettato {me} per niente.','Il mio meeting delle {ora} con {me} non c’è stato: non si è visto. Pazienza, ma lo segno.','Mai dare buca a un meeting: il mondo del marketing è piccolo e le community ancora di più. Parlo di {me}.','Ho trattenuto la delusione per dieci minuti, poi sono andat{o|a} via. Il meeting con {me} è saltato.'];
 /* arrivo in ritardo alla serata del Village: alcuni membri lo fanno notare */
 const CM_LATE=['La festa è già cominciata e manca solo {me}. Ritardatari si nasce. 😅 #Offworld','Qualcuno ha visto {me}? La navetta delle 22 è partita e lo ha riportato indietro per i capelli.','Premio ritardatario della serata a {me}: arrivat{O|A} quando il microfono era già caldo. #MW26','Alle 22 puntuali al Village, tranne {me}. Ti perdoniamo, ma offri il primo giro.','«Dieci minuti e arrivo» ‑ {me}, alle 22:00 in punto, in navetta all’ultimo secondo.'];
 function cmLate(day){
@@ -237,12 +240,24 @@ function cmLate(day){
   for(let i=0;i<3;i++)C.late.push({id:'l'+day+'_'+i,day,at:base+i*7+Math.floor(r()*6),k:(Math.floor(r()*CM_LATE.length)+i)%CM_LATE.length,mid:M[Math.floor(r()*M.length)].id});
 }
 const cmLates=T=>(cmEnsure().late||[]).filter(x=>x.at<=T).map(x=>{const m=cmMembers().find(q=>q.id===x.mid)||cmMembers()[0];return{id:'lt_'+x.id,at:x.at,m,text:gxf(cmFill(CM_LATE[x.k]),m.gender),kind:'late',who:m};});
+const CM_INDIG=['Ma davvero? Che maleducazione.','Dare buca così non si fa.','Succede, ma almeno avvisare…','Io ci sarei rimasto malissimo al posto tuo, {first}.','Il tempo degli altri vale quanto il proprio.','Solidarietà! Anche a me è capitato, mai più.','Poteva almeno mandare un messaggio, no?','Brutta storia. Il networking vive di parola data.','Mai più meeting con chi non si presenta.','Che peccato, {first}: la prossima volta scegli un orario più comodo.','Inaccettabile. Ma la community sa chi è, eh.'];
+const CM_TEASE=['Ahahah, il ritardatario ufficiale!','Il classico ritardo da navetta.','Lo sapevamo tutti.','La festa non è festa senza di te, ma nemmeno senza orologio.','Ti aspettavamo con il karaoke già acceso!','Prossima volta sveglia presto, ritardatario!'];
+function cmReactComments(p,pool){
+  const r=mulberry32(hashStr(G.seed+'|ic|'+p.id)),M=cmMembers(),n=2+Math.floor(r()*4),out=[],first=(p.m&&p.m.name||'').split(' ')[0];let t=p.at;
+  for(let i=0;i<n;i++){t+=3+Math.floor(r()*30);const who=cmPick(r,M);out.push({id:p.id+'_i'+i,at:t,who,text:cmPick(r,pool).replace('{first}',first)});}
+  return out;
+}
+const CM_MEETRE=/(facciamo qualcosa|qualcosa insieme|prendiamo un caff|ne riparliamo|ci sentiamo|ci vediamo|collaboriamo|collaborare|incontriamoci|ne parliamo di persona|continuare la conversazione|teniamoci in contatto)/i;
 function cmNoShow(m){
   const C=cmEnsure(),pe=G.people.find(x=>x.id===m.pid);if(!pe)return;if(!C.noshow)C.noshow=[];
   const r=mulberry32(hashStr(G.seed+'|ns|'+m.pid+'|'+m.day+'|'+m.start));
   C.noshow.push({id:'n'+C.noshow.length+m.pid,pid:m.pid,at:cmT()+6+Math.floor(r()*14),k:Math.floor(r()*CM_NOSHOW.length),ora:hm(m.start)});
   A.blip();toast('🙄 '+pe.name.split(' ')[0]+' ti ha aspettato dieci minuti e se n’è andat'+(pe.gender==='f'?'a':'o')+'. Potrebbe lamentarsi su Marketers Pro…',4200);
 }
+const CM_THX={coffee:['Grazie {me} per il caffè salvavita di oggi al #MW26!','Un grazie a {me}: mi ha portato l’espresso giusto al momento giusto.'],lost:['Grazie {me}: ha ritrovato il mio {obj} e mi ha salvato la giornata. #MW26','Un applauso a {me}, che mi ha riportato il {obj} che davo per perso!'],intro:['Grazie {me} per avermi fatto conoscere la persona giusta al #MW26.','Un grazie a {me}: mi ha fatto da tramite e adesso abbiamo un caffè in programma.']};
+const CM_THX_R=['Che bel gesto, {first}!','Il bello del #MW26 è anche questo.','Applausi.','Ecco, queste sono le persone che vogliamo in community.','Grazie, {first}, per aver aiutato!'];
+const cmThanks=T=>(cmEnsure().thanks||[]).filter(x=>x.at<=T).map(x=>{const pe={id:'th_'+hashStr(x.name),name:x.name,job:x.job,gender:x.gender,pal:x.pal||facePal(x.name,x.gender)},pool=CM_THX[x.type]||CM_THX.coffee,r=mulberry32(hashStr('thx|'+x.id));
+  return{id:'th_'+x.id,at:x.at,m:pe,text:gxf(cmFill(cmPick(r,pool).replace('{obj}',x.obj||'oggetto')),x.gender),kind:'thanks',who:pe};});
 const cmNoShows=T=>(cmEnsure().noshow||[]).filter(x=>x.at<=T).map(x=>{const pe=G.people.find(p=>p.id===x.pid)||{name:'?',job:'',gender:'m'};return{id:'ns_'+x.id,at:x.at,m:pe,text:gxf(cmFill(CM_NOSHOW[x.k].replace('{ora}',x.ora)),pe.gender),kind:'noshow',who:pe};});
 const cmUnread=T=>cmActivity(T).filter(a=>a.at>cmEnsure().seenT).length;
 const cmHasMetComment=T=>cmActivity(T).some(a=>a.met);
@@ -313,14 +328,15 @@ function renderComm(B){
    fil+
    (feed.length?feed.map(p=>{const v=cmView(p,T),open=!!cmOpen[p.id],liked=!!C.liked[p.id];
      return `<div class="cp ${p.mine?'mine':''}" data-pid="${p.id}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(gxf(p.text,p.m.gender||'m'))}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
-      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''} ${c.id===cmHi?'hi':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(gxf(c.text,(c.who&&c.who.gender)||'m'))}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
+      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''} ${c.id===cmHi?'hi':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(gxf(c.text,(c.who&&c.who.gender)||'m'))}</div>${(!c.me&&c.who&&CM_MEETRE.test(c.text))?`<button class="pb cmeet" data-cmeet="${esc(c.who.name)}">Proponi un meeting</button>`:''}</div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
   $('#cmHow').onclick=()=>{cmHow=true;renderPhone();};
   const ta=$('#cmT');ta.oninput=()=>{$('#cmN').textContent=ta.value.length+'/160';};
   bindFil();
   if(cmPin){const el=B.querySelector('[data-pid="'+cmPin+'"]');if(el)setTimeout(()=>el.scrollIntoView({block:'center'}),30);cmPin=null;}
   B.querySelectorAll('[data-sg]').forEach(b=>b.onclick=()=>{ta.value=sug[+b.dataset.sg];ta.oninput();});
   $('#cmP').onclick=()=>{const t=ta.value.trim();if(!t){toast('Scrivi qualcosa prima di pubblicare.',1800);return;}C.posts.push({id:'u'+(++C.pid),text:t.slice(0,160),at:cmT()});toast('Post pubblicato su Marketers Pro.',1800);A.stamp();renderPhone();};
-  B.querySelectorAll('[data-lk]').forEach(b=>b.onclick=()=>{const id=b.dataset.lk;C.liked[id]=!C.liked[id];A.blip();const y=B.scrollTop;renderPhone();B.scrollTop=y;});
+  B.querySelectorAll('[data-cmeet]').forEach(b=>b.onclick=()=>{const nm=b.dataset.cmeet,m=cmMembers().find(x=>x.name===nm)||G.people.find(x=>x.name===nm)||cmMetPeople().find(x=>x.name===nm);if(!m)return;const ct=G.contacts.find(c=>c.name===nm)||{name:m.name,role:(m.job||'Partecipante')+' · '+(m.city||'Rimini'),p:m.pal,gender:m.gender,fam:m.fam};askMeeting(personFor(ct).id);});
+  B.querySelectorAll('[data-lk]').forEach(b=>b.onclick=()=>{const id=b.dataset.lk;C.liked[id]=!C.liked[id];if(C.liked[id]&&/^u/.test(id)){C.selfLike=C.selfLike||{};if(C.selfLike[id]==null)C.selfLike[id]=cmT();}A.blip();const y=B.scrollTop;renderPhone();B.scrollTop=y;});
   B.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{const id=b.dataset.op;cmOpen[id]=!cmOpen[id];const y=B.scrollTop;renderPhone();B.scrollTop=y;});
   B.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{const id=b.dataset.cs,inp=B.querySelector('[data-ci="'+id+'"]'),t=inp.value.trim();if(!t)return;(C.cm[id]=C.cm[id]||[]).push({id:'x'+(++C.pid),text:t,at:cmT()});toast('Commento pubblicato.',1400);const y=B.scrollTop;renderPhone();B.scrollTop=y;});
 }

@@ -22,17 +22,15 @@ function qaSlide(e,c){
 }
 function qaAdd(c,e){if(!c||c.qaAdded)return c;c.slides=[...c.slides,qaSlide(e,c)];c.qaAdded=true;return c;}
 
-/* ---------- workshop esauriti: lista d'attesa e coda davanti alla sala ---------- */
-function queueRoom(e){
-  G.wait=G.wait||new Set();
-  const host={name:'Ingresso · '+e.room,role:'Sala piena',p:{shirt:'#ff6a3d',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#fff'}};
-  const early=Math.max(0,e.start-G.min),late=Math.max(0,G.min-e.start),w=G.wait.has(e.id);
-  const ahead=3+Math.floor(mulberry32(hashStr(G.seed+'|qa|'+e.id))()*9);
-  const p=Math.max(.05,Math.min(.95,.25+(w?.4:0)+Math.min(.3,early/60)-Math.min(.3,late/40)));
-  say(host,{t:'«'+(e.title.length>60?e.title.slice(0,58)+'…':e.title)+'» è esaurito. Davanti a te ci sono circa '+ahead+' persone in coda. '+(w?'Sei in lista d’attesa: hai la precedenza se si libera un posto.':'Mettendoti in lista d’attesa dal telefono (scheda Programma) hai più possibilità.')+(early>10?' Sei arrivato in anticipo: ottimo posto in fila.':late>5?' La sessione è già iniziata: i posti liberi sono pochissimi.':''),c:[
-    {t:'Mi metto in coda (attendo 10 minuti)',n:null,act:()=>{G.min+=10;const r=mulberry32(hashStr(G.seed+'|qr|'+e.id+'|'+(w?1:0)+'|'+ahead))();
-      if(r<p){toast('Si è liberato un posto: entri!',2600);A.stamp();startTheatre(e);}else toast('Niente da fare: i posti sono finiti. Prova con un’altra sessione.',3400);}},
-    {t:'Vedo altre sessioni',n:null}]});
+/* ---------- workshop senza prenotazione: all'ingresso decide un po' la sorte ---------- */
+const WS_OK=['Eh, va bene: è rimasto un posto in fondo, entra pure!','Oggi sono di buon umore: entra, ma siediti dove trovi posto.','Qualcuno non si è presentato: puoi entrare.','Non dovrei, ma c’è una sedia libera: vai, vai!'];
+const WS_NO=['Mi dispiace, non c’è più posto.','No, non ti sei prenotato, mi dispiace.','La sala è piena: prova con un’altra sessione.','Senza prenotazione non posso farti entrare, mi dispiace.','Sono rimasti solo i posti per chi ha prenotato.','Mi spiace, siamo al completo: riprova più tardi o scegli un’altra sala.'];
+function wsEntry(e){
+  const host={name:'Ingresso · '+e.room,role:'Controllo accessi',p:{shirt:'#ff6a3d',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#fff'}};
+  const r=mulberry32(hashStr(G.seed+'|we|'+e.id+'|'+Math.floor(G.min/20)))();
+  const ok=r<.42,pick=a=>a[Math.floor(mulberry32(hashStr(G.seed+'|wm|'+e.id+'|'+Math.floor(G.min/20)))()*a.length)];
+  if(ok)say(host,{t:pick(WS_OK),c:[{t:'Grazie!',n:null,act:()=>startTheatre(e)}]});
+  else say(host,{t:pick(WS_NO)+' (Puoi riprovare fra un po’, oppure prenotare dal telefono le prossime sessioni.)',c:[{t:'Va bene',n:null}]});
 }
 
 /* ---------- favori dei partecipanti ---------- */
@@ -49,10 +47,14 @@ function sqPlan(){
 }
 const sqNpc=id=>NPC.find(n=>n.id===id);
 function sqState(q){G.sqd=G.sqd||{};const s=G.sqd[q.id]||(G.sqd[q.id]={s:'offer'});if(s.s!=='done'&&q.day<G.day&&!G.sandbox)s.s='lost';return s;}
+const sqOfferOK=()=>!(G.flags&&G.flags.pjOn)&&G.f!==2&&G.f!==3;
 function sqToday(){return sqPlan().filter(q=>q.day===G.day);}
 function sqActive(){return sqPlan().find(q=>sqState(q).s==='active')||null;}
 function sqItemPos(q){
-  if(q._p)return q._p;const z=q.z,x=k(z[0])+q.rx*(k(z[2])-k(z[0])),y=k(z[1])+q.ry*(k(z[3])-k(z[1])),f=z[4],[fx,fy]=FL[f]?freeSpot(f,x,y):[x,y];return q._p={f,x:fx,y:fy};
+  if(q._p)return q._p;let z=q.z,f=z[4],rx=q.rx,ry=q.ry,x,y,g=0;
+  const bad=(f,x,y)=>f===1&&x>=k(462)&&x<=k(840)&&y>=k(122)&&y<=k(556);
+  do{x=k(z[0])+rx*(k(z[2])-k(z[0]));y=k(z[1])+ry*(k(z[3])-k(z[1]));[x,y]=FL[f]?freeSpot(f,x,y):[x,y];if(!bad(f,x,y))break;rx=(rx*7.31+.17)%1;ry=(ry*5.93+.29)%1;if(g>10){z=SQ_ZONES[0];f=z[4];}}while(g++<24);
+  return q._p={f,x,y};
 }
 const sqFirst=n=>(n.name||'').split(' ')[0];
 function sqOffer(q,g){
@@ -65,6 +67,7 @@ function sqOffer(q,g){
 function sqDone(q,g){
   const s=sqState(q);s.s='done';G.flags.fav=(G.flags.fav||0)+1;addContact(g);A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);
   toast('Favore completato! '+sqFirst(g)+' ti ringrazia (+35 punti).',3600);
+  try{const C=cmEnsure();(C.thanks=C.thanks||[]).push({id:'t'+q.id,name:g.name,at:cmT()+5+Math.floor(mulberry32(hashStr(G.seed+'|th|'+q.id))()*10),type:q.type,obj:q.obj,gender:g.gender||'m',job:g.job||'',pal:g.p});}catch(err){}
 }
 function sqTalk(n){
   const plan=sqPlan();
@@ -72,7 +75,7 @@ function sqTalk(n){
     const s=sqState(q),g=sqNpc(q.giver);
     if(q.day!==G.day&&!G.sandbox)continue;
     if(q.giver===n.id){
-      if(s.s==='offer'){if(sqActive()){say(n,{t:'Ho visto che stai aiutando qualcun altro: finisci prima quel favore, io posso aspettare.',c:[{t:'Ok',n:null}]});return true;}sqOffer(q,n);return true;}
+      if(s.s==='offer'){if(!sqOfferOK())return false;if(sqActive()){say(n,{t:'Ho visto che stai aiutando qualcun altro: finisci prima quel favore, io posso aspettare.',c:[{t:'Ok',n:null}]});return true;}sqOffer(q,n);return true;}
       if(s.s==='active'){
         const ready=q.type==='intro'?s.met:s.has;
         if(ready){say(n,{t:q.type==='coffee'?'Il mio caffè! Sei un angelo, grazie.':q.type==='lost'?'Il mio '+q.obj+'! Non ci speravo più, grazie mille.':'Allora l’hai salutat'+(sqNpc(q.target).gender==='f'?'a':'o')+'? Fantastico, grazie per il tramite.',c:[{t:'Di niente!',n:null,act:()=>sqDone(q,g)}]});return true;}
@@ -111,7 +114,7 @@ function sqDraw(){
     const b=Math.sin(G.t*5+n.x)*3;ctx.save();ctx.translate(sx,sy+b);ctx.fillStyle=col;ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,10*Math.max(1,Z*.45),0,7);ctx.fill();ctx.stroke();
     ctx.fillStyle='#1a0a04';ctx.font='900 '+Math.round(14*Math.max(1,Z*.45))+'px "Space Grotesk",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ch,0,1);ctx.restore();};
   for(const q of sqToday()){const s=sqState(q),g=sqNpc(q.giver);if(!g)continue;
-    if(s.s==='offer')mark(g,'!','#ffd24d');
+    if(s.s==='offer'){if(sqOfferOK())mark(g,'!','#ffd24d');}
     else if(s.s==='active'&&(q.type==='intro'?s.met:s.has))mark(g,'?','#4dd0ff');}
   const a=sqActive();if(a){const t=sqTarget();if(t){
     let tx=t.x,ty=t.y,lab=t.lab;if(t.f!==G.f){const v=viaFloor({f:t.f});tx=v.x;ty=v.y;lab=v.lab+' → '+t.lab;}
@@ -125,7 +128,7 @@ function sqCard(){
   const a=sqActive();
   if(a){const g=sqNpc(a.giver),s=sqState(a),t=a.type==='coffee'?(s.has?'porta il caffè a '+g.name:'prendi un caffè al bar per '+g.name):a.type==='lost'?(s.has?'riporta il '+a.obj+' a '+g.name:'cerca il '+a.obj+' di '+g.name+' ('+SQ_ZN[a.zi]+')'):(s.met?'torna da '+g.name:'saluta '+sqNpc(a.target).name+' da parte di '+g.name);
     return '<div class="bn" style="cursor:default">Favore in corso: <b>'+esc(t)+'</b> (segui la freccia verde)</div>';}
-  const open=sqToday().filter(q=>sqState(q).s==='offer').length;
+  const open=sqOfferOK()?sqToday().filter(q=>sqState(q).s==='offer').length:0;
   return open?'<div class="bn" style="cursor:default">Oggi ci sono <b>'+open+'</b> partecipanti che hanno bisogno di una mano: cerca il punto esclamativo giallo sopra la testa.</div>':'';
 }
 function sqQuests(){const n=(G.flags&&G.flags.fav)||0;return[{t:'Aiuta due partecipanti',s:'Cerca il punto esclamativo giallo sopra la testa di chi ha bisogno ('+Math.min(2,n)+'/2)',ok:n>=2}];}
@@ -170,3 +173,7 @@ function importSavesText(txt){
 function importSavesFile(file,done){
   const r=new FileReader();r.onload=()=>done(importSavesText(String(r.result||'')));r.onerror=()=>done({ok:false,msg:'Impossibile leggere il file.'});r.readAsText(file);
 }
+
+/* ---------- storico delle notifiche di gioco (con l'ora di gioco) ---------- */
+if(typeof toast==='function'){const _toast=toast;
+  toast=function(t,ms){try{if(G&&G.flags&&!/^(Passano|Passa un|Musica ed|Solo effetti|Audio disattivato|Esatto|Non proprio)/.test(t)){const L=G.nlog=G.nlog||[],m=Math.floor(G.min),last=L[L.length-1];if(!(last&&last.t===t&&last.d===G.day&&last.m===m)){L.push({t:String(t),d:G.day,m});if(L.length>200)L.shift();}}}catch(e){}_toast(t,ms);};}

@@ -33,6 +33,7 @@ function scoreRun(){
   add('Obiettivi completati',progress().done,25);
   add('Domande al relatore',F.qa||0,15);
   add('Favori ai partecipanti',F.fav||0,35);
+  add('Sessioni lasciate a metà',-(F.early||0),15);
   add('Meeting saltati',-(C.noshow||[]).length,30);
   add('Arrivi in ritardo alla serata',-lateDays,25);
   const total=Math.max(0,rows.reduce((s,r)=>s+r.pts,0));

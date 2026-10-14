@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=95;
+const BUILD=96;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -239,7 +239,7 @@ function buildFirst(){
 /* ============================================================ stato */
 let FL=[null,null,null],G=null,NPC=[],mode='title';
 const keys={};let touch={x:0,y:0};
-const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,fin:false,pets:0,glasses:0,friends:0,pjOn:false,pjp:false,banner:false,kn:0,ks:0,pjg:0,qa:0,fav:0};
+const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,fin:false,pets:0,glasses:0,friends:0,pjOn:false,pjp:false,banner:false,kn:0,ks:0,pjg:0,qa:0,fav:0,early:0,sun:false};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 const RNG=()=>(G&&G.rng)?G.rng():Math.random();
@@ -486,7 +486,7 @@ function firmacopie(e){
   const dario=e&&/Vignali/.test(e.sp||'');
   const d=dario?NPC.find(n=>n.id==='dario'):{name:(e&&e.sp)||'Autore',role:'Firmacopie · Stand Urlico Hoepli',p:{shirt:'#3a4a8a',pants:'#232a44',skin:'#dfae80',hair:'#2a2420',badge:'#ffd24d'}};
   const book=e?e.title.replace(/^.*? - /,''):'«Il tao del business. L’arte di ribellarsi all’ordinario»';
-  say(d,{t:'Ciao! Vuoi che ti firmi il libro? '+book,c:[{t:'Sì, grazie! Per '+pname(),n:{t:'Fatto! Un abbraccio e buon Marketers World.',c:[{t:'Grazie!',n:null,act:()=>{G.flags.sign=true;if(dario){G.flags.dario=true;addContact(d);}A.stamp();toast('Libro firmato!');}}]}},{t:'Passo dopo',n:null}]});
+  say(d,{t:'Ciao! Vuoi che ti firmi il libro? '+book,c:[{t:'Sì, grazie! Per '+pname(),n:{t:'Fatto! Un abbraccio e buon Marketers World.',c:[{t:'Grazie!',n:null,act:()=>{G.flags.sign=true;if(e)G.seen.add(e.id);if(dario){G.flags.dario=true;addContact(d);}A.stamp();toast('Libro firmato!');}}]}},{t:'Passo dopo',n:null}]});
 }
 function quiz(e){
   const qs=[
@@ -494,7 +494,7 @@ function quiz(e){
    {q:'Quali giorni dura l’evento?',o:['16–18 ottobre','2–4 maggio','16–18 novembre'],a:0},
    {q:'Come si accede all’app ufficiale?',o:['Con l’email del biglietto e un codice a 6 cifre','Con un abbonamento','Con il numero di telefono'],a:0}];
   let i=0,ok=0;
-  const step=()=>{if(i>=qs.length){G.flags.quiz++;G.min=Math.max(G.min,e.e);A.stamp();return say({name:'Game Quiz',role:e.title,p:NPC.find(n=>n.id==='info').p},{t:'Quiz concluso: '+ok+'/3 risposte esatte!',c:[{t:'Ok',n:null}]});}
+  const step=()=>{if(i>=qs.length){G.flags.quiz++;G.seen.add(e.id);G.min=Math.max(G.min,e.e);A.stamp();return say({name:'Game Quiz',role:e.title,p:NPC.find(n=>n.id==='info').p},{t:'Quiz concluso: '+ok+'/3 risposte esatte!',c:[{t:'Ok',n:null}]});}
     const q=qs[i++];say({name:'Game Quiz',role:e.title,p:NPC.find(n=>n.id==='info').p},{t:q.q,c:q.o.map((t,j)=>({t,n:null,act:()=>{if(j===q.a){ok++;toast('Esatto!',900);}else toast('Non proprio…',900);setTimeout(step,200);}}))});};
   step();
 }
@@ -533,14 +533,14 @@ function enterSession(e){
   if(!G.flags.accred){info('Varco','Serve il badge per entrare in sala.');return;}
   if(e.kind==='ws'){
     if(!G.booked.has(e.id)){
-      if(e.sold&&!G.sandbox&&typeof queueRoom==='function'){queueRoom(e);return;}
+      if(!G.sandbox&&typeof wsEntry==='function'){wsEntry(e);return;}
       toast('Non l’avevi prenotato, ma entri lo stesso.',2200);
     }
   }
   startTheatre(e);
 }
 function partySilent(e){
-  say({name:'Host Yoga Silent Party',role:'Main stage silent',p:NPC.find(n=>n.id==='yoga').p},{t:'Cuffie sulle orecchie, silenzio fuori e musica dentro: balliamo tutti insieme sul Main stage silent!',c:[{t:'Si balla!',n:{t:'Che energia! Ti senti più leggero.',c:[{t:'Fantastico',n:null,act:()=>{G.flags.party=true;G.flags.yoga=true;G.min=Math.max(G.min,e.e);A.stamp();toast('Yoga Silent Party vissuta!');}}]}},{t:'Magari dopo',n:null}]});
+  say({name:'Host Yoga Silent Party',role:'Main stage silent',p:NPC.find(n=>n.id==='yoga').p},{t:'Cuffie sulle orecchie, silenzio fuori e musica dentro: balliamo tutti insieme sul Main stage silent!',c:[{t:'Si balla!',n:{t:'Che energia! Ti senti più leggero.',c:[{t:'Fantastico',n:null,act:()=>{G.flags.party=true;G.flags.yoga=true;G.seen.add(e.id);G.min=Math.max(G.min,e.e);A.stamp();toast('Yoga Silent Party vissuta!');}}]}},{t:'Magari dopo',n:null}]});
 }
 /* ----- teatro: si guarda davvero lo speech ----- */
 const stg=$('#stg');let stCv=null;
@@ -579,7 +579,7 @@ function leaveTheatre(complete){
   if(complete&&typeof finaleCheck==='function')setTimeout(()=>finaleCheck(w.e),200);
   if(complete){G.seen.add(w.e.id);if(w.where==='work'){G.flags.ws++;const n=NPC.filter(x=>x.kind==='att'&&!G.met[x.id])[0];if(n){G.met[n.id]=1;addContact(n);}}else G.flags.talk++;
     toast((w.where==='work'?'Sessione':'Speech')+' conclusa: '+w.notes+' appunti nel taccuino'+(w.good?', esercizio riuscito!':'.'),4200);}
-  else toast('Sei uscito prima della fine.',2500);
+  else{G.flags.early=(G.flags.early||0)+1;toast('Sei uscito prima della fine: -15 punti.',2800);}
 }
 function updateTheatre(dt){
   const w=G.watching;w.t+=dt;if(w.applause>0)w.applause-=dt;
@@ -683,7 +683,7 @@ function updateReact(dt){
   if(!R.done&&R.t>R.end&&R.cfg){R.done=true;G.react=null;R.cfg.onDone(R);return;}
   if(!R.done&&R.t>R.end){
     R.done=true;const sc=R.hits/R.notes.length;
-    G.flags.react++;G.min=Math.max(G.min,R.e.e);A.stamp();
+    G.flags.react++;G.seen.add(R.e.id);G.min=Math.max(G.min,R.e.e);A.stamp();
     const msg=sc>=.85?'Ti senti rinato!':sc>=.5?'Più leggero di prima.':'Almeno hai respirato.';
     G.react=null;
     say({name:'Jo Dunica',role:'Riattivazione · Main Stage',p:NPC.find(n=>n.id==='yoga').p},{t:'Riattivazione finita: '+R.hits+'/'+R.notes.length+' respiri a tempo ('+R.perfect+' perfetti). '+msg,c:[{t:'Grazie!',n:null,act:()=>{addTip('Una pausa di respiro a metà giornata aiuta a seguire meglio gli speech.','Riattivazione');}}]});
@@ -750,8 +750,8 @@ function quests(){
   ];
 }
 function progress(){const q=quests();return{done:q.filter(x=>x.ok).length,tot:q.length};}
-let phoneTab='home',progDay=null,progMine=false,progFor=false,netTab='rec',netOpen=null;
-function openPhone(tab){$('#phT').style.display='';$('#phH').textContent='MW26 · APP';$('#phone').classList.remove('solo');if(!G.flags.app){toast('L’app dell’evento (nel gioco) si attiva all’Assistenza app, fuori dall’Ingresso A.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
+let phoneTab='home',progDay=null,progMine=false,progFor=false,progHide=true,progScroll=false,netTab='rec',netOpen=null;
+function openPhone(tab){if(tab==='prog'){progDay=G.day;progScroll=true;}$('#phT').style.display='';$('#phH').textContent='MW26 · APP';$('#phone').classList.remove('solo');if(!G.flags.app){toast('L’app dell’evento (nel gioco) si attiva all’Assistenza app, fuori dall’Ingresso A.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
 function openPro(){if(!G)return;phoneTab='comm';cmPerson=null;$('#phone').classList.remove('hide');$('#phone').classList.toggle('solo',!G.flags.app);$('#phT').style.display=G.flags.app?'':'none';$('#phH').textContent='MARKETERS PRO';renderPhone();}
 function closePhone(){$('#phone').classList.add('hide');}
 const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
@@ -765,12 +765,12 @@ function sessCard(e){
   const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
   let btn='';
   if(G.seen.has(e.id))btn='<button class="pb ok" disabled>Concluso ✓ · seguito</button>';
-  else if(e.kind==='ws'){btn=booked&&past(e)?'<button class="pb occ" disabled>Concluso</button>':booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':e.sold&&!G.sandbox?`<button class="pb ghost" data-wl="${e.id}">${G.wait&&G.wait.has(e.id)?'✓ In lista d’attesa':'Esaurito · lista d’attesa'}</button>`:`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
+  else if(e.kind==='ws'){btn=booked&&past(e)?'<button class="pb occ" disabled>Concluso</button>':booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
   else if(e.kind==='lounge'){btn='';}
   else if(past(e))btn='<button class="pb occ" disabled>Concluso</button>';
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
   const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
-  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${e.kind==='sign'?'Firmacopie con '+esc(e.sp):esc(e.title)}</div>${e.kind==='sign'?'<div class="rm">📖 '+esc(e.title.replace(/^.*? - /,''))+'</div>':''}<div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small>${typeof spkNote==='function'?spkNote(e.sp):''}</div>`:''}<div class="tags">${forMe(e)?'<span class="tg me">★ Per te</span>':''}${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
+  return `<div class="sc ${booked?'mine':''}" data-past="${past(e)?1:0}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${e.kind==='sign'?'Firmacopie con '+esc(e.sp):esc(e.title)}</div>${e.kind==='sign'?'<div class="rm">📖 '+esc(e.title.replace(/^.*? - /,''))+'</div>':''}<div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small>${typeof spkNote==='function'?spkNote(e.sp):''}</div>`:''}<div class="tags">${forMe(e)?'<span class="tg me">★ Per te</span>':''}${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
 }
 function meetOptions(){
   const out=[];
@@ -796,25 +796,24 @@ function renderPhone(){
   phClock();
   const T=[['home','Home','⌂'],['prog','Programma','▦'],['agenda','Agenda','✓'],['net','Rete','☺'],['comm','Marketers Pro','🌐']];
   const tb=([k,n,i])=>`<button data-k="${k}" class="${phoneTab===k?'on':''}"><span>${i}</span>${n}</button>`;$('#phT').innerHTML=T.slice(0,2).map(tb).join('')+'<button class="qrb" id="qrb">▣</button>'+T.slice(2).map(tb).join('');{const u=cmUnread(cmT()),cb=document.querySelector('#phT [data-k=comm]');if(cb&&u&&phoneTab!=='comm')cb.insertAdjacentHTML('beforeend','<i class="bdg">'+u+'</i>');}
-  document.querySelectorAll('#phT [data-k]').forEach(b=>b.onclick=()=>{phoneTab=b.dataset.k;if(typeof cmPerson!=='undefined'&&b.dataset.k==='comm')cmPerson=null;renderPhone();});
+  document.querySelectorAll('#phT [data-k]').forEach(b=>b.onclick=()=>{if(b.dataset.k==='prog'&&phoneTab!=='prog'){progDay=G.day;progScroll=true;}phoneTab=b.dataset.k;if(typeof cmPerson!=='undefined'&&b.dataset.k==='comm')cmPerson=null;renderPhone();});
   $('#qrb').onclick=()=>showQR();
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
     B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.sandbox&&!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}keepPhone();});
-    B.querySelectorAll('[data-wl]').forEach(b=>b.onclick=()=>{const id=+b.dataset.wl;G.wait=G.wait||new Set();if(G.wait.has(id)){G.wait.delete(id);toast('Tolto dalla lista d’attesa.',1600);}else{G.wait.add(id);toast('In lista d’attesa: presentati davanti alla sala in anticipo.',2800);A.blip();}keepPhone();});
     B.querySelectorAll('[data-dst]').forEach(b=>b.onclick=()=>{const n=b.dataset.dst,r=roomPos(n);if(!r)return;G.dest={n,f:r.f,x:k(r.x),y:k(r.y)};closePhone();toast('Destinazione: '+n,2200);});
     B.querySelectorAll('[data-gw]').forEach(b=>b.onclick=()=>{toggleWear(b.dataset.gw);renderPhone();});
     B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);keepPhone();});
     B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
-    B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');if(t==='notes'){phoneTab='net';netTab='tips';netOpen=null;renderPhone();return;}phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
+    B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');if(t==='prog'){progScroll=true;progDay=(d!=null&&d!=='')?+d:G.day;phoneTab='prog';renderPhone();return;}if(t==='notes'){phoneTab='net';netTab='tips';netOpen=null;renderPhone();return;}phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
   };
   if(phoneTab==='home'){
     const nw=[...G.booked].filter(id=>BYID[id].kind==='ws'&&!G.seen.has(id)&&(BYID[id].d>G.day||(BYID[id].d===G.day&&BYID[id].e>G.min))).length,p=progress();
     const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
     B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2><small style="opacity:.85">${esc(ME().job)}</small></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
      ${typeof scoreCard==='function'?scoreCard():''}${typeof sqCard==='function'?sqCard():''}
-     <div class="bn" data-go="prog:0">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
-     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="notes">📝<b>Appunti (${G.tips.length})</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
+     <div class="bn" data-go="prog:${G.day}">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
+     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="notes">📝<b>Appunti (${G.tips.length})</b></button><button data-go="nlog">🔔<b>Notifiche (${(G.nlog||[]).length})</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
      <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
      ${typeof glassesRow==='function'?glassesRow():''}
@@ -828,9 +827,11 @@ function renderPhone(){
     bind();
   }else if(phoneTab==='prog'){
     if(progDay==null)progDay=G.day;
-    const list=PROGRAMMA.filter(e=>e.d===progDay&&e.kind!=='lounge'&&(!progMine||G.booked.has(e.id)||G.saved.has(e.id))&&(!progFor||forMe(e)));
-    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button><button id="forme" class="${progFor?'on':''}">★ Per te</button></div>`+'<div class="note" style="margin:0 0 8px">Titoli, speaker, sale e orari vengono dal programma dell’app; i contenuti delle slide sono inventati per il gioco.</div>'+(list.length?list.map(sessCard).join(''):'<div class="note">Niente da mostrare.</div>');
-    B.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{progDay=+b.dataset.d;renderPhone();});$('#mine').onclick=()=>{progMine=!progMine;renderPhone();};$('#forme').onclick=()=>{progFor=!progFor;renderPhone();};bind();
+    const pastE=x=>!G.sandbox&&(x.d<G.day||(x.d===G.day&&x.e<=G.min));
+    const list=PROGRAMMA.filter(e=>e.d===progDay&&e.kind!=='lounge'&&(!progHide||!pastE(e))&&(!progMine||G.booked.has(e.id)||G.saved.has(e.id))&&(!progFor||forMe(e)));
+    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button><button id="forme" class="${progFor?'on':''}">★ Per te</button><button id="hidep" class="${progHide?'on':''}">Nascondi svolti</button></div>`+'<div class="note" style="margin:0 0 8px">Titoli, speaker, sale e orari vengono dal programma dell’app; i contenuti delle slide sono inventati per il gioco.</div>'+(list.length?list.map(sessCard).join(''):'<div class="note">'+(progHide?'Niente da mostrare: le sessioni di questo giorno sono già concluse (tocca «Nascondi svolti» per rivederle).':'Niente da mostrare.')+'</div>');
+    B.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{progDay=+b.dataset.d;renderPhone();});$('#mine').onclick=()=>{progMine=!progMine;renderPhone();};$('#forme').onclick=()=>{progFor=!progFor;renderPhone();};$('#hidep').onclick=()=>{progHide=!progHide;progScroll=true;renderPhone();};bind();
+    if(progScroll){progScroll=false;const f=B.querySelector('.sc[data-past="0"]');if(f&&!progHide)setTimeout(()=>{B.scrollTop=Math.max(0,f.offsetTop-90);},30);}
   }else if(phoneTab==='agenda'){
     const items=[...G.booked,...G.saved].map(id=>BYID[id]);
     const ms=G.meets.map(m=>({d:m.day,start:m.start,e:m.start+30,title:'Meeting con '+G.people.find(p=>p.id===m.pid).name,room:'Area networking',kind:'meet',tags:[],sp:'',role:''}));
@@ -844,7 +845,7 @@ function renderPhone(){
     if(netTab==='rec')body=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.filter(pe=>!(G.xpeople||[]).includes(pe)).map(pe=>personCard(pe,true)).join('');
     else if(netTab==='con')body=nc?`<div class="note" style="margin:0 0 10px">Le persone con cui hai scambiato i contatti in questa partita. Tocca un contatto per i dettagli.</div>`+G.contacts.map((c,i)=>({c,i})).reverse().map(({c,i})=>{
       const at=c.at!=null?c.at:(G.comm&&G.comm.metT&&G.comm.metT[c.name]),open=netOpen===i,pe=G.people.find(x=>x.name===c.name);
-      return `<div class="pcard ct ${open?'open':''}"><button class="ctb" data-ct="${i}">${faceImg(c.p||facePal(c.name,c.gender||genderOf(c.name)),'avi2')}<div class="pi"><b>${esc(c.name)}</b><small>${esc(c.role||'')}</small><em>Incontrat${(c.gender||genderOf(c.name))==='f'?'a':'o'}: ${when(at)}${c.place?' · '+esc(c.place):''}</em></div></button>`+(open?`<div class="ctd"><div class="note" style="margin:6px 0">${esc(c.name)} ti ha lasciato il contatto${c.place?' vicino a «'+esc(c.place)+'»':''}. Su Marketers Pro puoi vedere se ha commentato i tuoi post.</div><div class="crow2"><button class="pb" data-mtc="${i}">Proponi un meeting</button><button class="pb ghost" data-cgo="${i}">Vedi su Marketers Pro</button></div></div>`:'')+'</div>';}).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri e scegli “Scambiamoci i contatti”.</div>';
+      return `<div class="pcard ct ${open?'open':''}"><button class="ctb" data-ct="${i}">${faceImg(c.p||facePal(c.name,c.gender||genderOf(c.name)),'avi2')}<div class="pi"><b>${esc(c.name)}</b><small>${esc(c.role||'')}</small><em>Incontrat${(c.gender||genderOf(c.name))==='f'?'a':'o'}: ${when(at)}${c.place?' · '+esc(c.place):''}</em></div></button>`+`<div class="ctd">${open?`<div class="note" style="margin:6px 0">${esc(c.name)} ti ha lasciato il contatto${c.place?' vicino a «'+esc(c.place)+'»':''}. Su Marketers Pro puoi vedere se ha commentato i tuoi post.</div>`:''}<div class="crow2"><button class="pb" data-mtc="${i}">Proponi un meeting</button><button class="pb ghost" data-cgo="${i}">Vedi su Marketers Pro</button></div></div></div>`;}).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri e scegli “Scambiamoci i contatti”.</div>';
     else body=nt?`<div class="note" style="margin:0 0 10px">I consigli e gli appunti che hai raccolto in questa partita.</div>`+G.tips.slice().reverse().map(t=>`<div class="pg"><b>«${esc(t.t)}»</b><br><small style="color:var(--dim)">${esc(t.src||'')}${t.at!=null?' · '+when(t.at):''}</small></div>`).join(''):'<div class="note">Ancora nessun appunto. Prendi appunti durante gli speech (“Segna l’appunto”) o chiedi consigli a chi incontri.</div>';
     B.innerHTML=tabs+body;
     B.querySelectorAll('[data-nv]').forEach(b=>b.onclick=()=>{netTab=b.dataset.nv;netOpen=null;renderPhone();});
@@ -863,6 +864,9 @@ function renderPhone(){
   }else if(phoneTab==='off'){
     const ev=PROGRAMMA.filter(e=>['party','karaoke','sign','game'].includes(e.kind)).sort((a,b)=>a.d-b.d||a.start-b.start);
     B.innerHTML=`<div class="back" data-go="home">‹ Home</div>`+ev.map(sessCard).join('');bind();
+  }else if(phoneTab==='nlog'){
+    const L=(G.nlog||[]).slice().reverse();
+    B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="note" style="margin:0 0 10px">Storico delle notifiche di gioco, con l’ora in cui sono arrivate. Quelle di Marketers Pro sono nella scheda Marketers Pro › Notifiche.</div>`+(L.length?L.map(x=>`<div class="pg"><b>${esc(x.t)}</b><br><small style="color:var(--dim)">${['Ven','Sab','Dom'][x.d]||''} ${hm(x.m)}</small></div>`).join(''):'<div class="note">Ancora nessuna notifica.</div>');bind();
   }else if(phoneTab==='ann'){
     B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="ann"><small>13 OTT · 18:00</small><b>Benvenuti a Rimini!</b><span>Ritira il badge fuori dall’Ingresso A e attiva l’app dell’evento all’Assistenza.</span></div><div class="ann"><small>10 OTT · 09:00</small><b>Kalemana Experience Festival</b><span>Yoga, workshop creativi e DJ set a Punta Marina di Ravenna: il festival di Yoga Academy e WeAreMarketers per anime libere, ribelli e sognatori.</span></div><div class="ann"><small>11 OTT · 13:37</small><b>Spread the Wor(l)d</b><span>Adesso puoi condividere sui social la tua presenza all’evento.</span></div>`;bind();
   }else if(phoneTab==='pass'){
@@ -1010,10 +1014,10 @@ function putSaves(a){
     try{localStorage.setItem(SKEY,JSON.stringify(b));if(typeof toast==='function')toast('Spazio del browser quasi pieno: le foto restano solo nel salvataggio più recente.',3600);return true;}
     catch(e2){if(typeof toast==='function')toast('Impossibile salvare: spazio del browser pieno. Elimina qualche vecchio salvataggio.',4000);return false;}}
 }
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},nlog:G.nlog||[],sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},nlog:st.nlog||[],seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   G.xpeople=(st.xpeople||[]).map(p=>Object.assign({},p));G.people.push(...G.xpeople.filter(p=>!G.people.some(q=>q.id===p.id)));
   G.qd=null;
   if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
@@ -1210,7 +1214,7 @@ function act(){
 }
 addEventListener('keydown',e=>{
   if(mode!=='play'){return;}
-  if(e.target&&e.target.tagName==='INPUT')return;
+  if(e.target&&(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable))return;
   if(G&&G.react){const L={KeyA:0,ArrowLeft:0,KeyS:1,ArrowDown:1,KeyD:2,ArrowRight:2}[e.code];if(L!=null){e.preventDefault();reactHit(L);}return;}
   if(G&&G.watching){const w=G.watching;if(e.code==='Space'||e.code==='KeyE'||e.code==='Enter'){e.preventDefault();if(!e.repeat)advance();}else if(e.code==='KeyN')takeNote();else if(e.code==='Escape')leaveTheatre(false);else if(/^Digit[1-3]$/.test(e.code)&&w.ex&&w.ex.picked==null)pickEx(+e.code.slice(5)-1);return;}
   keys[e.code]=1;

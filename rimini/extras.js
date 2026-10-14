@@ -164,10 +164,11 @@ const EX_ZN=['atrio sud-ovest, verso i varchi','atrio sud-est','atrio nord, tra 
 function itemPos(id){
   if(!G.itemPos){G.itemPos={};const used={};
     for(const i of Object.keys(ITEMS)){
-      const d=itemDays()[i],r=mulberry32(hashStr(G.seed+'|item|'+i));let z,g=0;
-      do{z=EX_ZONES[Math.floor(r()*EX_ZONES.length)];}while((used[d]||[]).includes(z)&&g++<40);
+      const d=itemDays()[i],r=mulberry32(hashStr(G.seed+'|item|'+i));let z,g=0,fx,fy,f,t=0;
+      const bad=(f,x,y)=>f===1&&x>=k(462)&&x<=k(840)&&y>=k(122)&&y<=k(556);   /* il vuoto sulla Sala della Piazza non è raggiungibile */
+      do{do{z=EX_ZONES[Math.floor(r()*EX_ZONES.length)];}while((used[d]||[]).includes(z)&&g++<40);
+        const x=k(z[0])+r()*(k(z[2])-k(z[0])),y=k(z[1])+r()*(k(z[3])-k(z[1]));f=z[4];[fx,fy]=FL[f]?freeSpot(f,x,y):[x,y];}while(bad(f,fx,fy)&&t++<30);
       (used[d]=used[d]||[]).push(z);
-      const x=k(z[0])+r()*(k(z[2])-k(z[0])),y=k(z[1])+r()*(k(z[3])-k(z[1])),f=z[4],[fx,fy]=FL[f]?freeSpot(f,x,y):[x,y];
       G.itemPos[i]={f,x:fx,y:fy,z:EX_ZONES.indexOf(z)};}}
   return G.itemPos[id];
 }
@@ -179,6 +180,7 @@ function pickItem(id){
   const it=ITEMS[id];G.items=G.items||{};G.items[id]=true;wearItem(id,true);G.flags.glasses=Object.keys(G.items).length;A.stamp();
   const d=itemDays()[id],n=itemFound(d);
   toast('Trovato: '+it.n+'! '+it.desc+(id==='banner'?'':' (lo indossi: cambia dal telefono, Home)'),4200);
+  if(id==='banner'&&!G.flags.banner){G.dest={n:'Offworld (pianta lo stendardo)',f:2,x:k(1052),y:k(700),auto:1};setTimeout(()=>toast('Portalo al Village: alle 22:00, davanti al palco Offworld, scegli «Pianta lo stendardo» nel menu del pigiama party.',5200),1800);}
   if(n>=2)setTimeout(()=>toast('Trovati tutti e due gli oggetti nascosti di '+DAYNAMES[d].toLowerCase()+'! ✨',3200),900);
 }
 function wearItem(id,on){
@@ -378,7 +380,7 @@ function alpaGuide(n){
     {t:'Indietro',n:()=>main()}]);
   const altroMenu=()=>menu('Qui il bot lascia spazio all’alpaca.',[
     {t:'Accarezza Alpachino',n:()=>menu(exPick(AL_PET),[{t:'Ancora!',n:()=>altroMenu(),act:()=>A.hum()},{t:'Indietro al menu',n:()=>main()}]),act:()=>A.hum()},
-    {t:'Fai un selfie insieme',n:null,act:()=>{G.flags.selfie=true;A.stamp();toast('Selfie con Alpachino! Sembra che sorrida (o stia ruminando).',3000);}},
+    {t:'Fai un selfie insieme',n:null,act:()=>selfie(n)},
     {t:'Chi sei davvero?',n:()=>menu('Nella realtà sono il bot di assistenza clienti di Marketers: rispondo a domande e smisto problemi. Qui sono la guida del gioco, solo con più pelo e meno ticket. '+exPick(AL_ADV),[{t:'Indietro al menu',n:()=>main()}])},
     {t:'Indietro',n:()=>main()}]);
   const main=()=>menu(exPick(AL_GREET)+' Sono Alpachino, assistenza clienti del Marketers World (tecnicamente un bot, praticamente un alpaca). Come posso aiutarti?',[
