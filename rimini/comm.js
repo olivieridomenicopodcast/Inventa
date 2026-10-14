@@ -233,13 +233,13 @@ function cmNotify(){
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
 let cmOpen={},cmMine=false,cmAlbum=false,cmNotif=false,cmPin=null,cmHi=null,cmPerson=null;
 /* ---------- punti e livelli di Marketers Pro: 1 Mi piace ricevuto = 1 punto; tutti partono dal livello 1 ---------- */
-const CM_LV=['Osservatore','Apprendista','Iniziato','Custode','Mentore','Sciamano','Profeta','Alchimista','Oracolo illuminato'];
-const CM_TH=[0,6,14,26,42,66,100,150,220];            // punti per raggiungere i livelli 1..9 (fasce piccole)
+const CM_LV=['Osservatore','Apprendista','Iniziato','Custode','Sciamano','Profeta','Alchimista','Oracolo','Illuminato'];
+const CM_TH=[0,6,14,22,35,50,70,95,120];            // punti per raggiungere i livelli 1..9 (fasce piccole)
 const CM_T0=495,CM_TEND=2*1440+1400;
 const cmRamp=T=>Math.pow(Math.max(0,Math.min(1,(T-CM_T0)/(CM_TEND-CM_T0))),.65);
 function cmLvOf(pt){let l=0;for(let i=0;i<CM_TH.length;i++)if(pt>=CM_TH[i])l=i;return l+1;}
 function cmLikesLite(p,T){const r=mulberry32(hashStr(G.seed+'|lk|'+p.id)),cap=4+Math.floor(r()*40);return Math.min(cap,Math.floor(Math.max(0,T-p.at)/25*(1+r())));}
-function cmInfl(key){const r=mulberry32(hashStr(G.seed+'|infl|'+key)),x=r();return x<.3?.25+r()*.35:x<.75?.7+r()*.8:x<.93?1.8+r()*1.4:3.5+r()*3;}
+function cmInfl(key){const r=mulberry32(hashStr(G.seed+'|infl|'+key)),x=r();return x<.3?.25+r()*.35:x<.75?.7+r()*.8:x<.93?1.4+r()*.9:2.2+r()*1.3;}
 function cmPtsMap(T){
   if(G._cmPt&&G._cmPt.T===T&&G._cmPt.s===G.seed)return G._cmPt.v;
   const ramp=cmRamp(T),v={},sums={};
