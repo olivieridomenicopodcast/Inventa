@@ -194,7 +194,7 @@ function cmReplies(){
   return out;
 }
 /* feed visibile: pool + post degli incontrati + miei */
-function cmFeed(T,onlyMine,pin,noExtras){
+function cmFeed(T,onlyMine,pin,noExtras,full){
   const C=cmEnsure(),items=[];
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
@@ -202,7 +202,7 @@ function cmFeed(T,onlyMine,pin,noExtras){
   const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:playerLook(),me:true};
   for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,img:p.img||null,kind:'mine',mine:true});
   if(typeof extrasFeed==='function'&&!onlyMine&&!noExtras)items.push(...extrasFeed(T));
-  const all=items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at),out=all.slice(0,onlyMine?200:40);
+  const all=items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at),out=full?all:all.slice(0,onlyMine?200:40);
   if(pin&&!out.some(x=>x.id===pin)){const f=all.find(x=>x.id===pin);if(f)out.unshift(f);}
   return out;
 }
@@ -231,16 +231,17 @@ function cmNotify(){
   if(n&&phoneTab!=='comm')toast('Marketers Pro: '+n+(n>1?' nuove interazioni':' nuova interazione')+' con i tuoi contenuti',2800);
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
-let cmOpen={},cmMine=false,cmAlbum=false,cmNotif=false,cmPin=null,cmHi=null;
+let cmOpen={},cmMine=false,cmAlbum=false,cmNotif=false,cmPin=null,cmHi=null,cmPerson=null;
 const cmAv=m=>faceImg(m.pal&&m.pal.hair?m.pal:facePal(m.name||'?',m.gender||'m'),'cav');
 function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>gxf(cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}),PLAYER.gender,PLAYER.gender));}
 function renderComm(B){
   const C=cmEnsure(),T=cmT();
   const sug=cmCompose(),feed=cmFeed(T,cmMine&&!cmNotif,cmPin),nMine=C.posts.length,nAlb=(G.album||[]).length,nUn=cmUnread(T);
   const fil=`<div class="cfil"><button data-f="all" class="${cmMine||cmAlbum||cmNotif?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine&&!cmAlbum&&!cmNotif?'on':''}">✎ I miei post (${nMine})</button><button data-f="notif" class="${cmNotif?'on':''}">🔔 Notifiche${nUn?' <i class="nbd">'+nUn+'</i>':''}</button><button data-f="album" class="${cmAlbum?'on':''}">📷 Album (${nAlb})</button></div>`;
-  const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmNotif=b.dataset.f==='notif';cmMine=b.dataset.f==='mine';cmPin=null;cmHi=null;renderPhone();});
+  const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmNotif=b.dataset.f==='notif';cmMine=b.dataset.f==='mine';cmPin=null;cmHi=null;cmPerson=null;renderPhone();});
   const av=cmAv;
   if(cmAlbum){albumRender(B,fil);bindFil();return;}
+  if(cmPerson){personRender(B,T);return;}
   if(cmNotif){notifRender(B,fil,T);bindFil();return;}
   B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+
@@ -297,3 +298,20 @@ function notifRender(B,fil,T){
   C.seenT=T;
 }
 const cmHL2=(t,w)=>cmHL(gxf(t,(w&&w.gender)||'m'));
+
+/* ---------- profilo di una persona incontrata: cosa ha scritto e commentato ---------- */
+function cmShowPerson(name){cmPerson=name;cmAlbum=cmNotif=cmMine=false;cmPin=null;cmHi=null;phoneTab='comm';renderPhone();}
+function personRender(B,T){
+  const C=cmEnsure(),name=cmPerson,ct=G.contacts.find(x=>x.name===name)||{name,role:''},gender=ct.gender||genderOf(name),pal=ct.p||facePal(name,gender);
+  const posts=cmFeed(T,false,null,false,true).filter(p=>p.m&&p.m.name===name&&!p.mine),acts=cmActivity(T).filter(a=>a.who&&a.who.name===name).sort((a,b)=>b.at-a.at);
+  const cut=s=>{s=(s||'').replace(/\s+/g,' ');return s.length>60?s.slice(0,58)+'…':s;};
+  const rows=[...posts.map(p=>({at:p.at,html:`<button class="nt" data-pp="${esc(p.id)}">${faceImg(pal,'cav')}<div><div><b>${esc(name)}</b> ha pubblicato</div><div class="nq">${cmHL(gxf(p.text,gender))}</div><small>${cmRel(p.at,T)}</small></div></button>`})),
+   ...acts.map(a=>({at:a.at,html:`<button class="nt" data-nid="${esc(a.pid)}|${esc(a.id)}">${faceImg(pal,'cav')}<div><div><b>${esc(name)}</b> ${a.type==='comment'?'ha commentato il tuo post':'ha risposto al tuo commento su'} «${esc(cut(a.ptext))}»</div><div class="nq">${cmHL(gxf(a.text,gender))}</div><small>${cmRel(a.at,T)}</small></div></button>`}))].sort((a,b)=>b.at-a.at);
+  const pe=typeof personFor==='function'?personFor(ct):null;
+  B.innerHTML=`<div class="pcard ct" style="margin-bottom:10px"><div class="ctb" style="display:flex;gap:10px;align-items:center">${faceImg(pal,'avi2')}<div class="pi"><b>${esc(name)}</b><small>${esc(ct.role||'')}</small></div></div><div class="crow2" style="margin-top:8px"><button class="pb" id="pfMt">Proponi un meeting</button><button class="pb ghost" id="pfBack">‹ Torna ai contatti</button></div></div>`+
+   (rows.length?`<div class="note" style="margin:0 0 8px">Cosa ha scritto e commentato ${esc(name.split(' ')[0])} su Marketers Pro. Tocca per aprire il post.</div>`+rows.map(r=>r.html).join(''):`<div class="note">Per ora ${esc(name.split(' ')[0])} non ha scritto né commentato nulla su Marketers Pro. Pubblica un post: chi hai incontrato può risponderti.</div>`);
+  $('#pfBack').onclick=()=>{cmPerson=null;phoneTab='net';netTab='con';renderPhone();};
+  $('#pfMt').onclick=()=>{cmPerson=null;if(pe)askMeeting(pe.id);};
+  B.querySelectorAll('[data-nid]').forEach(b=>b.onclick=()=>{const [pid,cid]=b.dataset.nid.split('|');cmPerson=null;cmAlbum=false;cmNotif=false;cmMine=!!C.posts.find(p=>p.id===pid);cmPin=pid;cmOpen[pid]=true;cmHi=cid;renderPhone();});
+  B.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{cmPerson=null;cmAlbum=false;cmNotif=false;cmMine=false;cmPin=b.dataset.pp;cmOpen[b.dataset.pp]=true;renderPhone();});
+}

@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=75;
+const BUILD=76;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -397,7 +397,14 @@ function pickChoice(c){
 }
 function closeDlg(){DL=null;dlg.classList.add('hide');}
 function info(title,t){say({name:title,role:'Informazioni',p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'}},{t:t});}
-function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({at:cmT(),place:(typeof albumPlace==='function'?albumPlace():''),name:n.name,role:n.role,kind:n.kind,p:n.p?Object.assign({},n.p):null,gender:n.gender||null});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
+function personFor(c){
+  let pe=G.people.find(x=>x.name===c.name);if(pe)return pe;
+  const [job,city]=(c.role||'').split(' · '),jb=jobFind(job),fam=c.fam||(jb?jb[1]:'strat'),gender=c.gender||genderOf(c.name),me=ME(),r=mulberry32(hashStr('xp|'+c.name)),a=aff(me.fam,fam),tr=jobTraits(job||'Partecipante');
+  const compat=Math.max(48,Math.min(98,Math.round(44+46*a+tr.filter(t=>me.traits.includes(t)).length*3+r()*7)));
+  pe={id:'x'+hashStr(c.name),name:c.name,job:job||'Partecipante',fam,city:city||'Rimini',compat,tag:'Vi siete già conosciuti: un meeting per approfondire',pal:c.p||facePal(c.name,gender),gender,tr,a};
+  G.people.push(pe);(G.xpeople=G.xpeople||[]).push(pe);return pe;
+}
+function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({fam:n.fam||null,at:cmT(),place:(typeof albumPlace==='function'?albumPlace():''),name:n.name,role:n.role,kind:n.kind,p:n.p?Object.assign({},n.p):null,gender:n.gender||null});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
 function talkTo(n){
   if(n.kind==='pet'&&typeof petTalk==='function'){petTalk(n);return;}
   if(n.friend&&typeof friendTalk==='function'){friendTalk(n);return;}
@@ -734,7 +741,7 @@ function quests(){
 function progress(){const q=quests();return{done:q.filter(x=>x.ok).length,tot:q.length};}
 let phoneTab='home',progDay=null,progMine=false,progFor=false,netTab='rec',netOpen=null;
 function openPhone(tab){$('#phT').style.display='';$('#phH').textContent='MW26 · APP';$('#phone').classList.remove('solo');if(!G.flags.app){toast('L’app dell’evento (nel gioco) si attiva all’Assistenza app, fuori dall’Ingresso A.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
-function openPro(){if(!G)return;phoneTab='comm';$('#phone').classList.remove('hide');$('#phone').classList.toggle('solo',!G.flags.app);$('#phT').style.display=G.flags.app?'':'none';$('#phH').textContent='MARKETERS PRO';renderPhone();}
+function openPro(){if(!G)return;phoneTab='comm';cmPerson=null;$('#phone').classList.remove('hide');$('#phone').classList.toggle('solo',!G.flags.app);$('#phT').style.display=G.flags.app?'':'none';$('#phH').textContent='MARKETERS PRO';renderPhone();}
 function closePhone(){$('#phone').classList.add('hide');}
 const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
 const forMe=e=>(e.tags||[]).some(t=>JOBFAM[ME().fam].tags.includes(t));
@@ -775,7 +782,7 @@ function personCard(pe,big){return `<div class="pcard ${big?'':'sm'}"><div class
 function renderPhone(){
   const T=[['home','Home','⌂'],['prog','Programma','▦'],['agenda','Agenda','✓'],['net','Rete','☺'],['comm','Marketers Pro','🌐']];
   const tb=([k,n,i])=>`<button data-k="${k}" class="${phoneTab===k?'on':''}"><span>${i}</span>${n}</button>`;$('#phT').innerHTML=T.slice(0,2).map(tb).join('')+'<button class="qrb" id="qrb">▣</button>'+T.slice(2).map(tb).join('');{const u=cmUnread(cmT()),cb=document.querySelector('#phT [data-k=comm]');if(cb&&u&&phoneTab!=='comm')cb.insertAdjacentHTML('beforeend','<i class="bdg">'+u+'</i>');}
-  document.querySelectorAll('#phT [data-k]').forEach(b=>b.onclick=()=>{phoneTab=b.dataset.k;renderPhone();});
+  document.querySelectorAll('#phT [data-k]').forEach(b=>b.onclick=()=>{phoneTab=b.dataset.k;if(typeof cmPerson!=='undefined'&&b.dataset.k==='comm')cmPerson=null;renderPhone();});
   $('#qrb').onclick=()=>showQR();
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
@@ -816,13 +823,15 @@ function renderPhone(){
     const tabs=`<div class="cfil"><button data-nv="rec" class="${netTab==='rec'?'on':''}">Consigliati</button><button data-nv="con" class="${netTab==='con'?'on':''}">👥 I miei contatti (${nc})</button><button data-nv="tips" class="${netTab==='tips'?'on':''}">💡 I miei spunti (${nt})</button></div>`;
     const when=at=>at==null?'—':DAYNAMES[Math.min(2,Math.floor(at/1440))]+' '+hm(((at%1440)+1440)%1440);
     let body='';
-    if(netTab==='rec')body=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('');
+    if(netTab==='rec')body=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.filter(pe=>!(G.xpeople||[]).includes(pe)).map(pe=>personCard(pe,true)).join('');
     else if(netTab==='con')body=nc?`<div class="note" style="margin:0 0 10px">Le persone con cui hai scambiato i contatti in questa partita. Tocca un contatto per i dettagli.</div>`+G.contacts.map((c,i)=>({c,i})).reverse().map(({c,i})=>{
       const at=c.at!=null?c.at:(G.comm&&G.comm.metT&&G.comm.metT[c.name]),open=netOpen===i,pe=G.people.find(x=>x.name===c.name);
-      return `<div class="pcard ct ${open?'open':''}"><button class="ctb" data-ct="${i}">${faceImg(c.p||facePal(c.name,c.gender||genderOf(c.name)),'avi2')}<div class="pi"><b>${esc(c.name)}</b><small>${esc(c.role||'')}</small><em>Incontrat${(c.gender||genderOf(c.name))==='f'?'a':'o'}: ${when(at)}${c.place?' · '+esc(c.place):''}</em></div></button>`+(open?`<div class="ctd"><div class="note" style="margin:6px 0">${esc(c.name)} ti ha lasciato il contatto${c.place?' vicino a «'+esc(c.place)+'»':''}. Su Marketers Pro puoi vedere se ha commentato i tuoi post.</div><div class="crow2">${pe?`<button class="pb" data-mt="${pe.id}">Proponi un meeting</button>`:''}<button class="pb ghost" data-go="comm:">Vedi su Marketers Pro</button></div></div>`:'')+'</div>';}).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri e scegli “Scambiamoci i contatti”.</div>';
+      return `<div class="pcard ct ${open?'open':''}"><button class="ctb" data-ct="${i}">${faceImg(c.p||facePal(c.name,c.gender||genderOf(c.name)),'avi2')}<div class="pi"><b>${esc(c.name)}</b><small>${esc(c.role||'')}</small><em>Incontrat${(c.gender||genderOf(c.name))==='f'?'a':'o'}: ${when(at)}${c.place?' · '+esc(c.place):''}</em></div></button>`+(open?`<div class="ctd"><div class="note" style="margin:6px 0">${esc(c.name)} ti ha lasciato il contatto${c.place?' vicino a «'+esc(c.place)+'»':''}. Su Marketers Pro puoi vedere se ha commentato i tuoi post.</div><div class="crow2"><button class="pb" data-mtc="${i}">Proponi un meeting</button><button class="pb ghost" data-cgo="${i}">Vedi su Marketers Pro</button></div></div>`:'')+'</div>';}).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri e scegli “Scambiamoci i contatti”.</div>';
     else body=nt?`<div class="note" style="margin:0 0 10px">I consigli e gli appunti che hai raccolto in questa partita.</div>`+G.tips.slice().reverse().map(t=>`<div class="pg"><b>«${esc(t.t)}»</b><br><small style="color:var(--dim)">${esc(t.src||'')}${t.at!=null?' · '+when(t.at):''}</small></div>`).join(''):'<div class="note">Ancora nessuno spunto. Prendi appunti durante gli speech (“Segna l’appunto”) o chiedi consigli a chi incontri.</div>';
     B.innerHTML=tabs+body;
     B.querySelectorAll('[data-nv]').forEach(b=>b.onclick=()=>{netTab=b.dataset.nv;netOpen=null;renderPhone();});
+    B.querySelectorAll('[data-mtc]').forEach(b=>b.onclick=()=>askMeeting(personFor(G.contacts[+b.dataset.mtc]).id));
+    B.querySelectorAll('[data-cgo]').forEach(b=>b.onclick=()=>cmShowPerson(G.contacts[+b.dataset.cgo].name));
     B.querySelectorAll('[data-ct]').forEach(b=>b.onclick=()=>{const i=+b.dataset.ct;netOpen=netOpen===i?null:i;const y=B.scrollTop;renderPhone();B.scrollTop=y;});
     bind();
   }else if(phoneTab==='comm'){
@@ -983,10 +992,11 @@ function putSaves(a){
     try{localStorage.setItem(SKEY,JSON.stringify(b));if(typeof toast==='function')toast('Spazio del browser quasi pieno: le foto restano solo nel salvataggio più recente.',3600);return true;}
     catch(e2){if(typeof toast==='function')toast('Impossibile salvare: spazio del browser pieno. Elimina qualche vecchio salvataggio.',4000);return false;}}
 }
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
   Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  G.xpeople=(st.xpeople||[]).map(p=>Object.assign({},p));G.people.push(...G.xpeople.filter(p=>!G.people.some(q=>q.id===p.id)));
   if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
   Object.assign(G.p,st.p);G.cam.x=G.p.x;G.cam.y=G.p.y;zOff=st.zOff||0;applyZoom();
 }
