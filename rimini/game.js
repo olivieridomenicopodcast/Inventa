@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=67;
+const BUILD=68;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -699,6 +699,10 @@ function quests(){
     {t:'Ricevi una proposta di collaborazione',s:'Dalla talent scout, da sabato vicino all’Area networking',ok:F.offer},
     {t:'Scrivi un post su Marketers Pro',s:'Pulsante Marketers Pro o scheda dell’app',ok:cmEnsure().posts.length>=1},
     {t:'Fatti riconoscere dalla community',s:'Pubblica un post: chi hai incontrato di persona può commentarlo',ok:cmHasMetComment(cmT())},
+    ...(typeof extrasNPC==='function'?[
+      {t:(F.pets||0)>=2?'Saluta CatGPT e Alpachino':'???? ?????? ?? ?????????',s:(F.pets||0)>=2?'Il gatto grigio e l’alpaca girano per la mappa':'Obiettivo segreto',ok:(F.pets||0)>=2},
+      {t:(F.glasses||0)>=2?'Trova gli occhiali nascosti':'??????? ?????????',s:(F.glasses||0)>=2?'Due paia sparsi per il Palacongressi':'Obiettivo segreto'+((F.glasses||0)?' ('+F.glasses+'/2)':''),ok:(F.glasses||0)>=2},
+      {t:(F.friends||0)>=5?'Incontra gli amici del gruppo':'?????? ?? ?????? ???????',s:(F.friends||0)>=5?'Persone sparse tra Palacongressi e Village':'Obiettivo segreto',ok:(F.friends||0)>=5}]:[]),
     {t:'Scambia 5 contatti',s:'Parla con le persone ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
     {t:'Incontra Dario e Luca',s:'Vicino al palco principale',ok:F.dario&&F.luca},
