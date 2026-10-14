@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=100;
+const BUILD=101;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -54,7 +54,8 @@ function person(c,x,y,dir,step,p){
   c.fillStyle=p.skin;c.fillRect(x-4,y-22-bob,8,8);
   // capelli
   c.fillStyle=p.hair;
-  if(dir===1){c.fillRect(x-5,y-23-bob,10,9);}
+  if(p.bald){c.fillStyle='rgba(255,255,255,.22)';c.fillRect(x-2,y-22-bob,3,1);}
+  else if(dir===1){c.fillRect(x-5,y-23-bob,10,p.long?15:9);}
   else{c.fillRect(x-5,y-23-bob,10,3);c.fillRect(x-5,y-21-bob,2,3);c.fillRect(x+3,y-21-bob,2,3);if(p.long){c.fillRect(x-5,y-21-bob,2,7);c.fillRect(x+3,y-21-bob,2,7);}}
   // occhi
   c.fillStyle='#1b1b24';
@@ -65,17 +66,17 @@ function person(c,x,y,dir,step,p){
   if(p.cap){c.fillStyle=p.cap;c.fillRect(x-5,y-24-bob,10,3);if(dir===0)c.fillRect(x-5,y-22-bob,10,1);}
   if(p.gear&&typeof drawGear==='function')drawGear(c,x,y,dir,bob,p.gear);
 }
-const SHIRTS=['#ff7a3d','#3da5d9','#6bc46d','#b57bff','#e86a8a','#ffd24d'],HAIRC=['#2a1d14','#6a4a2a','#c9a24a','#1a1a20','#8a3a2a','#d9d2c4'],SKINC=['#f0c8a0','#e8b98a','#c98e62','#a8734c'];
+const SHIRTS=['#ff7a3d','#3da5d9','#6bc46d','#b57bff','#e86a8a','#ffd24d','#d6403a','#2a4a8a','#2aa8a0','#f0f0f5','#23232c','#8a90a0','#b6d84a','#ff8f7a','#8a5a3a','#8a2a4a','#7ac8f0','#8fe0c0'],HAIRC=['#2a1d14','#6a4a2a','#c9a24a','#1a1a20','#8a3a2a','#d9d2c4','#0d0d10','#e8d070','#b0401c','#9a9aa4','#2a6aa8','#c04aa0','#2a8a5a','#ff8a2a'],SKINC=['#f0c8a0','#e8b98a','#c98e62','#a8734c','#fbdcc0','#8a5a38','#6b4226','#52321d','#3d2415','#2b190f'];
 let SANDBOX=lsGet('rimini.mode','timed')==='sandbox';
 let PLAYER=Object.assign({name:'Ospite',gender:'m',si:0,hi:0,ki:1,job:''},lsGet('rimini.player',{}));
 let _me=null;const ME=()=>{const j=PLAYER.job||'';if(!_me||_me.src!==j)_me=Object.assign({src:j},jobProfile(j));return _me;};
-function playerLook(){const f=PLAYER.gender==='f';const pj=!!(G&&G.flags&&G.flags.pjOn);return{shirt:pj?'#9fc4ff':SHIRTS[PLAYER.si%6],pants:pj?'#7aa6ee':f?'#3a3f66':'#26304f',cap:pj?'#ff8fb0':undefined,skin:SKINC[PLAYER.ki%4],hair:HAIRC[PLAYER.hi%6],long:f,skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff',gear:(G&&typeof wornGear==='function')?wornGear():''};}
+function playerLook(){const f=PLAYER.gender==='f',hs=PLAYER.hs||(f?'long':'short');const pj=!!(G&&G.flags&&G.flags.pjOn);return{shirt:pj?'#9fc4ff':SHIRTS[PLAYER.si%SHIRTS.length],pants:pj?'#7aa6ee':f?'#3a3f66':'#26304f',cap:pj?'#ff8fb0':undefined,skin:SKINC[PLAYER.ki%SKINC.length],hair:HAIRC[PLAYER.hi%HAIRC.length],long:hs==='long',bald:hs==='bald',skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff',gear:(G&&typeof wornGear==='function')?wornGear():''};}
 const NIKY=new Proxy({},{get:(_,k)=>playerLook()[k]});
 const pname=()=>(PLAYER.name||'Ospite').trim()||'Ospite';
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 const _faceC={};
-function faceURL(p){const key=[p.shirt,p.skin,p.hair,p.long?1:0,p.skirt?1:0,p.cap||'',p.gear||'',p.pants||'',p.phones?1:0].join('|');if(_faceC[key])return _faceC[key];const c=document.createElement('canvas');c.width=c.height=30;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#1b2240';x.fillRect(0,0,30,30);x.fillStyle='#2a3566';x.fillRect(0,25,30,5);x.save();x.scale(2.5,2.5);person(x,6,24,0,0,p);x.restore();return _faceC[key]=c.toDataURL();}
+function faceURL(p){const key=[p.shirt,p.skin,p.hair,p.long?1:0,p.bald?1:0,p.skirt?1:0,p.cap||'',p.gear||'',p.pants||'',p.phones?1:0].join('|');if(_faceC[key])return _faceC[key];const c=document.createElement('canvas');c.width=c.height=30;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#1b2240';x.fillRect(0,0,30,30);x.fillStyle='#2a3566';x.fillRect(0,25,30,5);x.save();x.scale(2.5,2.5);person(x,6,24,0,0,p);x.restore();return _faceC[key]=c.toDataURL();}
 function facePal(name,gender){const r=mulberry32(hashStr('face|'+name)),s=FPAL[Math.floor(r()*FPAL.length)];return{shirt:s[0],pants:s[1],skin:SKINS[Math.floor(r()*SKINS.length)],hair:HAIRS[Math.floor(r()*HAIRS.length)],long:gender==='f',skirt:gender==='f'&&r()<.3,badge:'#ff6a3d'};}
 const faceImg=(p,cls)=>`<img class="${cls||'cav'}" src="${faceURL(p)}" alt="">`;
 function portrait(canvas,p){const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,28,28);c.fillStyle='#1b2240';c.fillRect(0,0,28,28);c.fillStyle='#2a3566';c.fillRect(0,18,28,10);person(c,14,37,0,0,p);}
@@ -251,9 +252,9 @@ function newGame(seed){
   G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:VILLAGE_ON?8*60+15:8*60+45,f:VILLAGE_ON?2:0,p:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y),dir:0,step:0}:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),album:[],qd:{},qq:[],sandbox:SANDBOX,meets:[],people:genPeople(seed||SEED),done:false,cam:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y)}:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
   FL[0]=buildGround();drawShuttleStop(FL[0]);FL[1]=buildFirst();FL[2]=VILLAGE_ON?buildVillage():null;FL[3]=typeof buildSunflower==='function'?buildSunflower():null;buildNPC();
 }
-const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
-const HAIRS=['#2a1d14','#4a3322','#7a5a2a','#1a1a20','#8a3a2a','#c9a24a','#d9d2c4'],SKINS=['#e8b98a','#dfae80','#c98e62','#f0c8a0','#a8734c'];
-function randPal(){const s=pickFrom(FPAL);return{shirt:s[0],pants:s[1],skin:pickFrom(SKINS),hair:pickFrom(HAIRS),long:RNG()<.35,badge:pickFrom(['#ff6a3d','#4dd0ff','#7ad37a','#ffd24d']),cap:RNG()<.12?pickFrom(['#2a3566','#8a2a2a']):null};}
+const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40'],['#d6403a','#2b3350'],['#2a4a8a','#3a3a4a'],['#2aa8a0','#2a3566'],['#ff8f7a','#303850'],['#8a5a3a','#242a40'],['#b6d84a','#2b3350'],['#7ac8f0','#3a3350'],['#8a2a4a','#2a2a44']];
+const HAIRS=['#2a1d14','#4a3322','#7a5a2a','#1a1a20','#8a3a2a','#c9a24a','#d9d2c4','#0d0d10','#b0401c','#9a9aa4'],SKINS=['#e8b98a','#dfae80','#c98e62','#f0c8a0','#a8734c','#fbdcc0','#8a5a38','#6b4226','#52321d','#3d2415'];
+function randPal(){const s=pickFrom(FPAL);return{shirt:s[0],pants:s[1],skin:pickFrom(SKINS),hair:pickFrom(HAIRS),long:RNG()<.35,bald:RNG()<.05,badge:pickFrom(['#ff6a3d','#4dd0ff','#7ad37a','#ffd24d']),cap:RNG()<.12?pickFrom(['#2a3566','#8a2a2a']):null};}
 function buildNPC(){
   NPC=[];
   const add=o=>{o.dir=o.dir??0;o.step=0;o.vx=0;o.vy=0;o.t=RNG()*3;NPC.push(o);return o;};
@@ -267,7 +268,7 @@ function buildNPC(){
   // partecipanti inventati che girano: numero, aspetto e zone cambiano a ogni seme
   const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[420,560,830,680,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0],[420,780,860,860,0],[740,640,830,705,0],[960,560,1180,820,0],[330,300,470,720,0],[300,280,420,620,1],[860,300,1000,560,1],[420,560,830,680,1]];
   const nAtt=46+Math.floor(RNG()*16),usedN=new Set();
-  const mkAtt=(i,zones)=>{const r=pickFrom(zones);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.gender=genderOf(fn);q.p.long=q.gender==='f';q.p.skirt=q.gender==='f'&&RNG()<.4;q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}};
+  const mkAtt=(i,zones)=>{const r=pickFrom(zones);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.gender=genderOf(fn);q.p.long=q.gender==='f';if(q.gender==='f')q.p.bald=false;q.p.skirt=q.gender==='f'&&RNG()<.4;q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}};
   for(let i=0;i<nAtt;i++)mkAtt(i,ZONES);
   if(VILLAGE_ON){
     add({id:'recep',kind:'staff',name:'Reception del Village',role:'Marketers Village',f:2,x:k(650),y:k(284),p:{shirt:'#1f2a50',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#ffd24d'},dir:0});
@@ -1278,20 +1279,21 @@ function profList(){
   L.forEach(pf=>{const d=document.createElement('div');d.className='pri';const b=document.createElement('button');b.textContent=(pf.name||'Senza nome')+' · '+pf.job;b.onclick=()=>{Object.assign(PLAYER,{name:pf.name,gender:pf.gender,si:pf.si,hi:pf.hi,ki:pf.ki,job:pf.job});lsSet('rimini.player',PLAYER);buildCreator();toast('Profilo caricato: '+(pf.name||pf.job),1600);};
     const x=document.createElement('button');x.textContent='✕';x.onclick=()=>{lsSet('rimini.profiles',getProfiles().filter(o=>o.id!==pf.id));profList();};d.appendChild(b);d.appendChild(x);box.appendChild(d);});
 }
-function profCode(){const pf={name:PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,job:PLAYER.job};return 'RIM1:'+btoa(unescape(encodeURIComponent(JSON.stringify(pf))));}
-function profFromCode(s){try{s=(s||'').trim();if(!s.startsWith('RIM1:'))return null;const o=JSON.parse(decodeURIComponent(escape(atob(s.slice(5)))));if(typeof o!=='object'||!o)return null;return{name:String(o.name||'').slice(0,16),gender:o.gender==='f'?'f':'m',si:+o.si||0,hi:+o.hi||0,ki:+o.ki||0,job:jobNorm(o.job).slice(0,40)};}catch(e){return null;}}
+function profCode(){const pf={name:PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,hs:PLAYER.hs||'',job:PLAYER.job};return 'RIM1:'+btoa(unescape(encodeURIComponent(JSON.stringify(pf))));}
+function profFromCode(s){try{s=(s||'').trim();if(!s.startsWith('RIM1:'))return null;const o=JSON.parse(decodeURIComponent(escape(atob(s.slice(5)))));if(typeof o!=='object'||!o)return null;return{name:String(o.name||'').slice(0,16),gender:o.gender==='f'?'f':'m',si:+o.si||0,hi:+o.hi||0,ki:+o.ki||0,hs:['short','long','bald'].includes(o.hs)?o.hs:'',job:jobNorm(o.job).slice(0,40)};}catch(e){return null;}}
 function buildCreator(){
   const nm=$('#pname');nm.value=PLAYER.name==='Ospite'?'':PLAYER.name;
   nm.oninput=()=>{PLAYER.name=nm.value;lsSet('rimini.player',PLAYER);};
   const jb=$('#pjob');jb.oninput=()=>{PLAYER.job=jobNorm(jb.value);lsSet('rimini.player',PLAYER);jobUI();};jb.onfocus=()=>jb.select&&0;
   const sw=(id,arr,key)=>{const el=$(id);el.innerHTML='';arr.forEach((c,i)=>{const b=document.createElement('button');b.style.background=c;b.className=PLAYER[key]%arr.length===i?'on':'';b.onclick=()=>{PLAYER[key]=i;lsSet('rimini.player',PLAYER);buildCreator();};el.appendChild(b);});};
   sw('#cs',SHIRTS,'si');sw('#ch',HAIRC,'hi');sw('#cskin',SKINC,'ki');
+  {const cur=PLAYER.hs||(PLAYER.gender==='f'?'long':'short');document.querySelectorAll('#chs button').forEach(b=>{b.className=b.dataset.hs===cur?'on':'';b.onclick=()=>{PLAYER.hs=b.dataset.hs;lsSet('rimini.player',PLAYER);buildCreator();};});const chw=$('#ch');if(chw)chw.style.opacity=cur==='bald'?.35:1;}
   document.querySelectorAll('#cg button').forEach(b=>{b.className=b.dataset.g===PLAYER.gender?'on':'';b.onclick=()=>{PLAYER.gender=b.dataset.g;lsSet('rimini.player',PLAYER);buildCreator();};});
   const setMode=m=>{SANDBOX=m==='sandbox';lsSet('rimini.mode',m);$('#mdT').className='chips3b'+(SANDBOX?'':' on');$('#mdS').className='chips3b'+(SANDBOX?' on':'');
     $('#mdNote').innerHTML=SANDBOX?'<b>Sandbox libera:</b> il tempo è fermo e puoi entrare in qualsiasi speech o workshop, in qualsiasi giorno. Non è come il gioco è stato pensato: la modalità <b>a tempo</b> è la più bella e divertente perché simula davvero l’evento.':'<b>A tempo (consigliata):</b> la giornata scorre dalle 8:45 alle 23:30, le sessioni hanno orari e sale veri, i workshop si prenotano. È l’esperienza completa.';};
   $('#mdT').onclick=()=>setMode('timed');$('#mdS').onclick=()=>setMode('sandbox');setMode(SANDBOX?'sandbox':'timed');
   jobUI();profList();
-  $('#prSave').onclick=()=>{const L=getProfiles().filter(o=>!(o.name===PLAYER.name&&o.job===PLAYER.job));L.unshift({id:'pf'+Date.now(),name:PLAYER.name==='Ospite'?'':PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,job:PLAYER.job||jobProfile('').job});lsSet('rimini.profiles',L.slice(0,10));profList();toast('Profilo salvato.',1500);};
+  $('#prSave').onclick=()=>{const L=getProfiles().filter(o=>!(o.name===PLAYER.name&&o.job===PLAYER.job));L.unshift({id:'pf'+Date.now(),name:PLAYER.name==='Ospite'?'':PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,hs:PLAYER.hs||'',job:PLAYER.job||jobProfile('').job});lsSet('rimini.profiles',L.slice(0,10));profList();toast('Profilo salvato.',1500);};
   $('#prCopy').onclick=()=>{const c=profCode();(navigator.clipboard?navigator.clipboard.writeText(c).then(()=>toast('Codice profilo copiato. Incollalo su un altro dispositivo.',2600),()=>prompt('Copia questo codice:',c)):Promise.reject()).catch(()=>prompt('Copia questo codice:',c));};
   $('#prPaste').onclick=()=>{const s=prompt('Incolla il codice profilo (inizia con RIM1:)');if(s==null)return;const o=profFromCode(s);if(!o){toast('Codice non valido.',2200);return;}Object.assign(PLAYER,o);lsSet('rimini.player',PLAYER);buildCreator();toast('Profilo caricato.',1600);};
 }

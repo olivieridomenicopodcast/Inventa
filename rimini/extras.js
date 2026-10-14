@@ -44,7 +44,7 @@ function extrasNPC(add,pk){
   FRIENDS.forEach((f,i)=>{
     const r=pk(zones),x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);
     const q=add({id:'fr_'+f.id,kind:'att',friend:f.id,name:f.name,role:f.job,f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:f.name.split(' ')[0],job:f.job,fam:f.fam});
-    q.gender=genderOf(f.name);q.p.long=q.gender==='f';q.p.skirt=q.gender==='f'&&RNG()<.35;
+    q.gender=genderOf(f.name);q.p.long=q.gender==='f';if(q.gender==='f')q.p.bald=false;q.p.skirt=q.gender==='f'&&RNG()<.35;
     if(f.self){q.p=Object.assign(q.p,{phones:true,shirt:'#2a5a8a',hair:'#1a1a20',badge:'#ffd24d'});}
     if(r[4]===1&&r[1]<200){const zz=[420,560,830,680];q.wander={x0:k(zz[0]),y0:k(zz[1]),x1:k(zz[2]),y1:k(zz[3])};q.x=q.wander.x0+RNG()*(q.wander.x1-q.wander.x0);q.y=q.wander.y0+RNG()*(q.wander.y1-q.wander.y0);}
     if(FL[q.f])[q.x,q.y]=freeSpot(q.f,q.x,q.y);
