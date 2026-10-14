@@ -63,7 +63,7 @@ function sqOffer(q,g){
   say(g,{t:txt,c:[{t:'Volentieri!',n:null,act:()=>{sqState(q).s='active';A.stamp();toast('Favore accettato: segui la freccia gialla.',3000);}},{t:'Non ora',n:null}]});
 }
 function sqDone(q,g){
-  const s=sqState(q);s.s='done';G.flags.fav=(G.flags.fav||0)+1;addContact(g);A.stamp();
+  const s=sqState(q);s.s='done';G.flags.fav=(G.flags.fav||0)+1;addContact(g);A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);
   toast('Favore completato! '+sqFirst(g)+' ti ringrazia (+35 punti).',3600);
 }
 function sqTalk(n){

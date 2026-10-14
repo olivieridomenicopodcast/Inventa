@@ -58,6 +58,7 @@ function scoreCard(){
 function scoreEndHtml(){
   const S=scoreRun(),r=scoreSave(S.total),runs=lsGet('rimini.runs',[]).slice(0,5);
   const missing=[['Speech seguiti',60],['Workshop seguiti',50],['Meeting fatti',40],['Oggetti nascosti trovati',40],['Persone conosciute',15],['Post su Marketers Pro',8]].filter(m=>!S.rows.some(x=>x.l===m[0])).slice(0,3);
+  if(r.record&&A.fanfare)setTimeout(()=>A.fanfare(),400);
   let h=`<div class="scbox"><div class="sct">PUNTEGGIO</div><div class="scn">${S.total}</div>`;
   if(r.valid)h+=r.record?`<div class="scr">Nuovo record personale! (prima: ${r.prev})</div>`:`<div class="scs">Record personale: ${r.prev}${r.prev>S.total?' · te ne mancano '+(r.prev-S.total)+' per superarlo':''}</div>`;
   else h+='<div class="scs">Sandbox: il punteggio non conta per il record. Prova la modalità a tempo!</div>';

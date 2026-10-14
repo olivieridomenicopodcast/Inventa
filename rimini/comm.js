@@ -280,7 +280,7 @@ function cmTop(T,n){return cmMembers().map(m=>({m,pt:cmPtsOf(m,T)})).sort((a,b)=
 function cmLevelWatch(){
   if(!G||!G.comm)return;const C=cmEnsure(),l=cmLvOf(cmMyPts(cmT()));
   if(C.lv==null){C.lv=l;return;}
-  if(l>C.lv){C.lv=l;A.stamp();toast('🏅 Sei salito al livello '+l+' di Marketers Pro: '+CM_LV[l-1]+'!',3600);}
+  if(l>C.lv){C.lv=l;A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);toast('🏅 Sei salito al livello '+l+' di Marketers Pro: '+CM_LV[l-1]+'!',3600);}
 }
 let cmHow=false;
 function levelCard(T){
