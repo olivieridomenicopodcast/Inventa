@@ -707,7 +707,7 @@ function renderPhone(){
   }else if(phoneTab==='pass'){
     const p=progress(),q=quests();
     B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="ring" style="--p:${Math.round(p.done/p.tot*100)}"><b>${p.done}/${p.tot}</b></div>`+q.map(x=>`<div class="q ${x.ok?'done':''}"><div class="ck">${x.ok?'✓':''}</div><div><b>${esc(x.t)}</b><small>${esc(x.s)}</small></div></div>`).join('')+`<div class="note">Spunti raccolti: ${G.tips.length}</div><div style="margin-top:12px"><button class="btn ghost" id="finish" style="width:100%">Termina i tre giorni</button></div><div style="margin-top:12px"><button class="btn ghost" id="mapb" style="width:100%">Mappa</button></div>`;
-    $('#finish').onclick=()=>{closePhone();endGame();};$('#mapb').onclick=()=>{phoneTab='map';renderPhone();};bind();
+    $('#finish').onclick=()=>{closePhone();endGame();};$('#mapb').onclick=()=>{closePhone();openMap();};bind();
   }else{
     B.innerHTML=`<div class="back" data-go="pass">‹ Obiettivi</div><canvas id="mapc" width="410" height="215"></canvas><div class="note">Pianta stilizzata, non in scala. ${esc(FACTS.piazza)}. ${esc(FACTS.anfi)}.</div><div style="margin-top:8px"><button class="btn ghost" id="mf" style="width:100%">${G.f===0?'Mostra il primo piano':'Mostra il piano terra'}</button></div>`;
     drawMap($('#mapc'),G.f);$('#mf').onclick=()=>{drawMap($('#mapc'),G.f===0?1:0,true);};bind();
@@ -728,6 +728,103 @@ $('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#bSki
 function skipTime(){if(!G||G.watching||G.react)return;G.min+=15;toast('Passano 15 minuti.',1200);}
 addEventListener('wheel',e=>{if(G&&mode==='play'&&!G.watching&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide'))zoomStep(e.deltaY<0?1:-1);},{passive:true});
 $('#bSnd').onclick=()=>{A.on=!A.on;$('#bSnd').textContent=A.on?'🔊':'🔇';};
+
+
+/* ============================================================ mappa consultabile */
+const uiOpen=()=>!$('#phone').classList.contains('hide')||!$('#end').classList.contains('hide')||!$('#mapov').classList.contains('hide')||!$('#savem').classList.contains('hide');
+const mapPlaces=()=>{
+  const P=[];const add=(n,f,x,y,cat,rooms)=>P.push({n,f,x,y,cat,rooms});
+  add('Ingresso A (principale)',0,632,770,'Ingressi');add('Ingresso B',0,180,356,'Ingressi');add('Ingresso C',0,918,460,'Ingressi');
+  add('Accrediti (badge)',0,520,805,'Servizi');add('Assistenza app',0,745,805,'Servizi');
+  add('Scale mobili (cambia piano)',0,630,610,'Servizi');add('Bistrot',0,300,670,'Servizi');add('Area networking',0,250,690,'Servizi');add('Bar',0,458,300,'Servizi');
+  add('Main Stage · Sala della Piazza',0,651,470,'Sale',['Main Stage','Main stage silent','Sala della Piazza']);
+  for(let i=1;i<=4;i++)add('Silent Stage '+i,0,ROOMS['Silent Stage '+i].x,ROOMS['Silent Stage '+i].y,'Sale',['Silent Stage '+i]);
+  add('Sala Castello',0,920,255,'Sale',['Sala Castello']);
+  STANDS.forEach(st=>add(st.label,0,st.x,st.y+30,'Stand',st.id==='pro'?['MK PRO con Ilaria Foresti']:st.id==='mkt'?['Stand Urlico Hoepli']:st.id==='tool'?['Game Quiz','Gamification']:null));
+  add('Village (karaoke, party)',0,1060,690,'Fuori',['Village']);add('Prato dello yoga',0,810,810,'Fuori');
+  add('Scale mobili (cambia piano)',1,630,610,'Servizi');
+  ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>add(n,1,ROOMS[n].x,ROOMS[n].y,'Sale',[n]));
+  add('Sala dell’Anfiteatro',1,635,775,'Sale');add('Vuoto sulla Piazza (affaccio)',1,651,575,'Servizi');
+  return P;
+};
+let MAPF=0,MAPSEL=null,mapRaf=0;
+function openMap(){if(!G)return;MAPF=G.f;MAPSEL=null;$('#mapov').classList.remove('hide');mapList();mapLoop();}
+function closeMap(){$('#mapov').classList.add('hide');cancelAnimationFrame(mapRaf);last=performance.now();}
+function mapList(){
+  $('#mfl0').className=MAPF===0?'on':'';$('#mfl1').className=MAPF===1?'on':'';
+  const P=mapPlaces(),box=$('#plist');box.innerHTML='';const cats=['Ingressi','Sale','Stand','Servizi','Fuori'];
+  cats.forEach(c=>{const L=P.filter(p=>p.cat===c&&p.f===MAPF);if(!L.length)return;const h=document.createElement('h4');h.textContent=c.toUpperCase();box.appendChild(h);
+    L.forEach(p=>{const live=p.rooms?activeAt(p.rooms):null;const b=document.createElement('button');b.className=(MAPSEL===p?'on ':'')+(G.dest&&G.dest.n===p.n&&G.dest.f===p.f?'dst':'');
+      b.innerHTML=esc(p.n)+(live?`<small>ora: ${esc(live.title.length>40?live.title.slice(0,38)+'…':live.title)}</small>`:'')+(G.dest&&G.dest.n===p.n&&G.dest.f===p.f?'<small>★ destinazione</small>':'');
+      b.onclick=()=>{MAPSEL=p;mapList();};box.appendChild(b);});});
+  if(MAPSEL){const d=document.createElement('div');d.style.cssText='position:sticky;bottom:0;background:#0c1124;padding-top:8px';
+    d.innerHTML=`<div style="font-size:12px;color:#9fb0d8;margin-bottom:6px">${esc(MAPSEL.n)}${MAPSEL.f!==G.f?' · sull’altro piano: ti guido alle scale mobili':''}</div><button id="godst" style="background:#ff6a3d;color:#1a0a04;font-weight:700;border-color:#ff6a3d">Portami qui</button>${G.dest?'<button id="nodst">Togli destinazione</button>':''}`;box.appendChild(d);
+    $('#godst').onclick=()=>{G.dest={n:MAPSEL.n,f:MAPSEL.f,x:k(MAPSEL.x),y:k(MAPSEL.y)};toast('Destinazione: '+MAPSEL.n,2000);closeMap();};
+    const nd=$('#nodst');if(nd)nd.onclick=()=>{G.dest=null;mapList();};}
+}
+function mapLoop(){
+  const cvm=$('#mapcv2');if($('#mapov').classList.contains('hide'))return;
+  const r=cvm.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);const cw=Math.max(200,Math.round(r.width*dpr)),ch=Math.max(160,Math.round(r.height*dpr));
+  if(cvm.width!==cw||cvm.height!==ch){cvm.width=cw;cvm.height=ch;}
+  const c=cvm.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#090b16';c.fillRect(0,0,cw,ch);
+  const sc=Math.min(cw/WW,ch/WH),ox=(cw-WW*sc)/2,oy=(ch-WH*sc)/2;mapT={sc,ox,oy,dpr};
+  c.drawImage(FL[MAPF].cv,0,0,WW,WH,ox,oy,WW*sc,WH*sc);
+  const t=performance.now()/1000,P=mapPlaces().filter(p=>p.f===MAPF);
+  for(const p of P){const x=ox+k(p.x)*sc,y=oy+k(p.y)*sc;c.fillStyle=MAPSEL===p?'#ffd24d':'rgba(255,255,255,.75)';c.strokeStyle='#0c1124';c.lineWidth=2;c.beginPath();c.arc(x,y,(MAPSEL===p?7:4)*dpr,0,7);c.fill();c.stroke();}
+  if(MAPSEL&&MAPSEL.f===MAPF){const x=ox+k(MAPSEL.x)*sc,y=oy+k(MAPSEL.y)*sc;c.font='700 '+13*dpr+'px "Space Grotesk",sans-serif';c.textAlign='center';const w=c.measureText(MAPSEL.n).width+14*dpr;c.fillStyle='rgba(12,17,36,.92)';c.fillRect(x-w/2,y-30*dpr,w,20*dpr);c.fillStyle='#ffd24d';c.fillText(MAPSEL.n,x,y-15*dpr);}
+  if(G.dest&&G.dest.f===MAPF){const x=ox+G.dest.x*sc,y=oy+G.dest.y*sc;c.fillStyle='#ff6a3d';c.beginPath();c.moveTo(x,y);c.lineTo(x-7*dpr,y-18*dpr);c.lineTo(x+7*dpr,y-18*dpr);c.fill();}
+  if(G.f===MAPF){const x=ox+G.p.x*sc,y=oy+(G.p.y-6)*sc,pu=(t*1.6)%1;c.strokeStyle='rgba(255,106,61,'+(1-pu)+')';c.lineWidth=3*dpr;c.beginPath();c.arc(x,y,(8+pu*22)*dpr,0,7);c.stroke();
+    c.fillStyle='#fff';c.beginPath();c.arc(x,y,8*dpr,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(x,y,5*dpr,0,7);c.fill();
+    c.font='700 '+13*dpr+'px "Space Grotesk",sans-serif';c.textAlign='center';const lb='Sei qui · '+pname();const w=c.measureText(lb).width+14*dpr;c.fillStyle='rgba(255,106,61,.95)';c.fillRect(x-w/2,y+12*dpr,w,20*dpr);c.fillStyle='#1a0a04';c.fillText(lb,x,y+27*dpr);}
+  else{c.font='700 '+13*dpr+'px "Space Grotesk",sans-serif';c.textAlign='left';c.fillStyle='rgba(255,106,61,.95)';c.fillText('Tu sei al '+(G.f===0?'piano terra':'primo piano'),12*dpr,24*dpr);}
+  mapRaf=requestAnimationFrame(mapLoop);
+}
+let mapT=null;
+$('#mapcv2').addEventListener('pointerdown',e=>{if(!mapT)return;const r=e.currentTarget.getBoundingClientRect(),px=(e.clientX-r.left)*(e.currentTarget.width/r.width),py=(e.clientY-r.top)*(e.currentTarget.height/r.height);
+  let best=null,bd=28*mapT.dpr;for(const p of mapPlaces().filter(p=>p.f===MAPF)){const d=Math.hypot(mapT.ox+k(p.x)*mapT.sc-px,mapT.oy+k(p.y)*mapT.sc-py);if(d<bd){bd=d;best=p;}}if(best){MAPSEL=best;mapList();}});
+$('#mfl0').onclick=()=>{MAPF=0;MAPSEL=null;mapList();};$('#mfl1').onclick=()=>{MAPF=1;MAPSEL=null;mapList();};$('#mapX').onclick=closeMap;$('#bMap').onclick=openMap;
+function drawDest(){
+  const d=G.dest;if(!d)return;let tx=d.x,ty=d.y,lab=d.n;
+  if(d.f!==G.f){tx=k(630);ty=k(610);lab='Scale mobili → '+(d.f===1?'primo piano':'piano terra')+' → '+d.n;}
+  const dist=Math.hypot(tx-G.p.x,ty-G.p.y);
+  if(dist<k(26)){if(d.f!==G.f){/* arrivato alle scale */}else{toast('Sei arrivato: '+d.n,2600);G.dest=null;return;}}
+  const a=Math.atan2(ty-G.p.y,tx-G.p.x),sx=W/2+(G.p.x-G.cam.x)*Z,sy=H/2+(G.p.y-G.cam.y)*Z,r=Math.min(W,H)*.22;
+  ctx.save();ctx.translate(sx+Math.cos(a)*r,sy+Math.sin(a)*r);ctx.rotate(a);ctx.fillStyle='#ffd24d';ctx.strokeStyle='rgba(0,0,0,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-9,10);ctx.lineTo(-4,0);ctx.lineTo(-9,-10);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+  ctx.save();ctx.font='700 12px "Space Grotesk",sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineWidth=4;const m=Math.round(dist/K*.19),txt=lab+' · ~'+m+' m';
+  const lx=sx+Math.cos(a)*(r+30),ly=sy+Math.sin(a)*(r+30);ctx.strokeText(txt,lx,ly);ctx.fillText(txt,lx,ly);ctx.restore();
+  // pallino sul bersaglio se visibile
+  if(d.f===G.f){const bx=W/2+(tx-G.cam.x)*Z,by=H/2+(ty-G.cam.y)*Z;if(bx>0&&bx<W&&by>0&&by<H){ctx.fillStyle='#ffd24d';ctx.beginPath();ctx.arc(bx,by-18,6,0,7);ctx.fill();ctx.strokeStyle='#000';ctx.stroke();}}
+}
+
+/* ============================================================ salvataggi (più slot) */
+const SKEY='rimini.saves';
+const getSaves=()=>lsGet(SKEY,[]);
+const putSaves=a=>lsSet(SKEY,a);
+function snap(){return{v:1,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function restore(st){
+  if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G.p,st.p);G.cam.x=G.p.x;G.cam.y=G.p.y;zOff=st.zOff||0;applyZoom();
+}
+const summary=()=>{const p=progress();return ['Ven','Sab','Dom'][G.day]+' '+hm(Math.floor(G.min))+' · '+p.done+'/'+p.tot+' obiettivi · '+G.contacts.length+' contatti';};
+function saveTo(id,name){const a=getSaves();const now=Date.now();const ent={id:id||('s'+now),name:name||('Salvataggio '+(a.length+1)),ts:now,sum:summary(),st:snap()};
+  const i=a.findIndex(x=>x.id===ent.id);if(i>=0){ent.name=name||a[i].name;a[i]=ent;}else a.unshift(ent);putSaves(a.slice(0,15));return ent;}
+function autoSave(){if(!G||mode!=='play'||G.done)return;try{saveTo('auto','Autosalvataggio');}catch(e){}}
+let autoT=0;
+function openSaves(from){
+  const inGame=from!=='title'&&G&&mode==='play';
+  const box=$('#saveB'),a=getSaves();
+  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
+  $('#savem').classList.remove('hide');
+  $('#svx').onclick=()=>{$('#savem').classList.add('hide');last=performance.now();};
+  const n=$('#svnew');if(n)n.onclick=()=>{const e=saveTo(null,$('#svname').value.trim());toast('Salvato: '+e.name,1800);openSaves(from);};
+  box.querySelectorAll('[data-ow]').forEach(b=>b.onclick=()=>{saveTo(b.dataset.ow);toast('Salvataggio aggiornato.',1500);openSaves(from);});
+  box.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{putSaves(getSaves().filter(x=>x.id!==b.dataset.dl));openSaves(from);});
+  box.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{const e=getSaves().find(x=>x.id===b.dataset.ld);if(!e)return;$('#savem').classList.add('hide');closePhone();$('#end').classList.add('hide');startGame(e.st);});
+}
+$('#bSave').onclick=()=>openSaves();
+function refreshLoadBtn(){const b=$('#loadb');if(b)b.style.display=getSaves().length?'':'none';}
+refreshLoadBtn();
 
 /* ============================================================ foto, fine, toast */
 function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),ms||2400);}
@@ -751,18 +848,18 @@ function endGame(){
 }
 
 /* ============================================================ ciclo */
-function startGame(){newGame();mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
-  toast('Venerdì mattina a Rimini. Dall’Ingresso A: accrediti a sinistra, assistenza app a destra.',4800);last=performance.now();}
+function startGame(st){newGame();if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
+  if(!st)toast('Venerdì mattina a Rimini. Dall’Ingresso A: accrediti a sinistra, assistenza app a destra. Mappa: tasto M.',5200);else toast('Partita caricata.',1800);last=performance.now();}
 let last=performance.now();
 function update(dt){
   G.t+=dt;
   if(G.fade>0)G.fade=Math.max(0,G.fade-dt*4);
   if(G.watching){updateTheatre(dt);return;}
   if(G.react){updateReact(dt);return;}
-  if(!DL&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide')){
-    // orologio: 1 secondo reale = 2 minuti di gioco
-    G.min+=dt/4;
-    if(G.min>=23*60+30){G.fade=1;if(G.day>=2){endGame();G.min=23*60+29;}else{G.day++;G.min=8*60+45;G.f=0;G.p.x=k(632);G.p.y=k(885);toast('Notte a Rimini: nuova giornata, '+DAYNAMES[G.day]+' ottobre.',3500);}}
+  if(!DL&&!G.react&&!uiOpen()){
+    // orologio: 1 minuto di gioco ogni 4 secondi reali
+    G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
+    if(G.min>=23*60+30){G.fade=1;if(G.day>=2){endGame();G.min=23*60+29;}else{G.day++;G.min=8*60+45;G.f=0;G.p.x=k(632);G.p.y=k(885);toast('Notte a Rimini: nuova giornata, '+DAYNAMES[G.day]+' ottobre.',3500);autoSave();}}
     let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0)+touch.x,dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0)+touch.y;
     const m=Math.hypot(dx,dy);const p=G.p;
     if(m>.15){dx/=Math.max(1,m);dy/=Math.max(1,m);const sp=(keys.ShiftLeft?85:62)*dt;moveBody(p,dx*sp,dy*sp,FL[G.f]);p.step+=dt*(keys.ShiftLeft?6:4.2);p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);if(Math.floor(p.step*2)!==Math.floor((p.step-dt*4)*2))A.step();}else p.step=0;
@@ -803,6 +900,7 @@ function draw(){
   if(ta>0&&G.f===0){ctx.fillStyle='rgba(12,20,70,'+ta.toFixed(3)+')';ctx.fillRect(0,0,WW,WH);}
   // UI
   ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(G.dest)drawDest();
   if(G.fade>0){ctx.fillStyle='rgba(5,6,13,'+G.fade+')';ctx.fillRect(0,0,W,H);}
 }
 function hud(){
@@ -827,11 +925,12 @@ requestAnimationFrame(frame);
 function act(){
   if(mode!=='play'||!G)return;
   if(DL){const f=$('#dC button');if(f)f.click();return;}
-  if(G.watching||G.react||!$('#phone').classList.contains('hide'))return;
+  if(G.watching||G.react||uiOpen())return;
   const n=nearest();if(n){A.init();n.fn();}
 }
 addEventListener('keydown',e=>{
   if(mode!=='play'){return;}
+  if(e.target&&e.target.tagName==='INPUT')return;
   if(G&&G.react){const L={KeyA:0,ArrowLeft:0,KeyS:1,ArrowDown:1,KeyD:2,ArrowRight:2}[e.code];if(L!=null){e.preventDefault();reactHit(L);}return;}
   if(G&&G.watching){const w=G.watching;if(e.code==='Space'||e.code==='KeyE'||e.code==='Enter'){e.preventDefault();if(!e.repeat)advance();}else if(e.code==='KeyN')takeNote();else if(e.code==='Escape')leaveTheatre(false);else if(/^Digit[1-3]$/.test(e.code)&&w.ex&&w.ex.picked==null)pickEx(+e.code.slice(5)-1);return;}
   keys[e.code]=1;
@@ -843,7 +942,9 @@ addEventListener('keydown',e=>{
   else if(e.code==='Equal'||e.code==='NumpadAdd'||e.key==='+')zoomStep(1);
   else if(e.code==='Minus'||e.code==='NumpadSubtract'||e.key==='-')zoomStep(-1);
   else if(e.code==='KeyT')skipTime();
-  else if(e.code==='Escape'){if(!$('#phone').classList.contains('hide'))closePhone();else if(DL)closeDlg();}
+  else if(e.code==='KeyM'){if($('#mapov').classList.contains('hide'))openMap();else closeMap();}
+  else if(e.code==='KeyG'){if($('#savem').classList.contains('hide'))openSaves();else{$('#savem').classList.add('hide');last=performance.now();}}
+  else if(e.code==='Escape'){if(!$('#mapov').classList.contains('hide'))closeMap();else if(!$('#savem').classList.contains('hide'))$('#savem').classList.add('hide');else if(!$('#phone').classList.contains('hide'))closePhone();else if(DL)closeDlg();}
 });
 addEventListener('keyup',e=>{keys[e.code]=0;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=0;});
@@ -865,6 +966,7 @@ function buildCreator(){
 }
 buildCreator();
 $('#go').onclick=()=>{PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
+$('#loadb').onclick=()=>openSaves('title');
 $('#how').onclick=()=>toast('Obiettivi: app → accredito → workshop (ven) → speech (sab/dom) → contatti → stand → Offworld.',5000);
 
 /* ============================================================ titolo */

@@ -139,6 +139,24 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 .hero{border-radius:8px!important;border:2px solid #2a3566}
 #phone .btn.ghost{background:#1d2650!important;color:#fff!important;border-color:#2a3566!important}
 #phone .ring::before{background:#0c1124!important}#phone .ring b{color:#fff!important}
+
+#mapov,#savem{position:fixed;inset:0;z-index:22;display:grid;place-items:center;background:rgba(2,4,10,.82);backdrop-filter:blur(4px);padding:10px}
+#mapov .mbox{width:min(1180px,100%);height:min(760px,calc(100vh - 20px));background:#0c1124;border:2px solid #2a3566;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+#mapov .mh{display:flex;gap:10px;align-items:center;padding:10px 14px;background:#121936;border-bottom:2px solid #ff6a3d}
+#mapov .mh b{font-family:'Press Start 2P',monospace;font-weight:400;font-size:11px;flex:1}
+.mfl{display:flex;gap:6px}.mfl button,.mx{padding:8px 12px;border-radius:8px;background:#1d2650;border:1px solid #2a3566;font-size:12px}.mfl button.on{background:#ff6a3d;color:#1a0a04;font-weight:700}
+#mapov .mbody{flex:1;display:flex;min-height:0}
+#mapcv2{flex:1;min-width:0;min-height:0;background:#090b16;image-rendering:pixelated;touch-action:none;cursor:pointer}
+#plist{width:300px;overflow:auto;padding:10px;border-left:2px solid #2a3566;touch-action:pan-y}
+#plist h4{font-family:'Press Start 2P',monospace;font-weight:400;font-size:9px;color:#ff6a3d;margin:10px 0 6px}
+#plist button{display:block;width:100%;text-align:left;padding:8px 10px;margin-bottom:5px;border-radius:8px;background:#151c3a;border:2px solid #2a3566;font-size:13px}
+#plist button small{display:block;color:#9fb0d8;font-size:11px}#plist button.on{border-color:#ff6a3d}#plist button.dst{background:#3a2a1c}
+@media(max-width:760px){#mapov .mbody{flex-direction:column}#plist{width:auto;height:40%;border-left:0;border-top:2px solid #2a3566}.mh b{font-size:9px}}
+#savem .box{width:min(560px,100%);max-height:calc(100vh - 20px);overflow:auto;padding:18px;background:#0c1124;border:2px solid #2a3566;border-radius:14px;touch-action:pan-y}
+#savem h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:13px;color:#ff6a3d;margin-bottom:10px}
+.sv{display:flex;gap:8px;align-items:center;padding:10px;border:2px solid #2a3566;border-radius:10px;margin-bottom:8px;background:#151c3a;flex-wrap:wrap}
+.sv .i{flex:1;min-width:150px}.sv b{display:block;font-size:14px}.sv small{color:#9fb0d8;font-size:11.5px}
+.sv button{padding:8px 11px;border-radius:8px;background:#1d2650;border:1px solid #2a3566;font-size:12px}.sv button.go{background:#ff6a3d;color:#1a0a04;font-weight:700}
 /* schermate */
 #title{position:fixed;inset:0;z-index:25;overflow:auto;display:grid;place-items:center;padding:20px;background:radial-gradient(1100px 600px at 70% -10%,#4a2030 0,transparent 60%),radial-gradient(900px 600px at 0% 100%,#0d2f45 0,transparent 60%),#05060d;touch-action:pan-y}
 #title .in{width:min(900px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center}
@@ -167,13 +185,15 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 <canvas id="cv"></canvas>
 <div id="hud" class="hide">
   <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small></div>
-  <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bSnd" title="Audio">🔊</button></div>
+  <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bMap" title="Mappa (M)">🗺</button><button class="glass" id="bSave" title="Salva / Carica (G)">💾</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bSnd" title="Audio">🔊</button></div>
   <div id="prompt" class="glass hide"></div>
   <div id="stg" class="glass hide"><div class="nm" id="sN"></div><div class="rl" id="sR"></div><div class="tx" id="sT"></div><div class="ch" id="sC"></div></div>
   <div id="dlg" class="glass hide"><canvas id="por" width="28" height="28"></canvas><div><div class="nm" id="dN"></div><div class="rl" id="dR"></div><div class="tx" id="dT"></div><div class="ch" id="dC"></div></div></div>
   <div id="pad"><i id="padi"></i></div><div id="act">E</div>
 </div>
 <div id="phone" class="hide"><div class="box"><div class="hd"><span>MW26 · APP</span><button id="phX">✕</button></div><div class="tabs" id="phT"></div><div class="body" id="phB"></div></div></div>
+<div id="mapov" class="hide"><div class="mbox"><div class="mh"><b>Mappa del Palacongressi</b><div class="mfl"><button id="mfl0">Piano terra</button><button id="mfl1">Primo piano</button></div><button id="mapX" class="mx">✕</button></div><div class="mbody"><canvas id="mapcv2"></canvas><div id="plist"></div></div></div></div>
+<div id="savem" class="hide"><div class="box" id="saveB"></div></div>
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
@@ -183,10 +203,10 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
       <h1>RIMINI<br><span>3 GIORNI</span></h1>
       <p class="lead">Crea il tuo personaggio e gira per il Palacongressi di Rimini: ritira l’accredito, segui i workshop del venerdì e gli speech del weekend, chiacchiera con chi incontri, scopri gli stand e non perderti l’Offworld la sera.</p>
       <div class="glass pn" id="cc" style="margin:14px 0"><label class="lbl" style="margin-top:0">Il tuo nome</label><input id="pname" maxlength="16" placeholder="Come ti chiami?" autocomplete="off" spellcheck="false" class="srch2"><label class="lbl">Personaggio</label><div class="chips3" id="cg"><button data-g="m">Maschio</button><button data-g="f">Femmina</button></div><label class="lbl">Maglia</label><div class="sw2" id="cs"></div><label class="lbl">Capelli</label><div class="sw2" id="ch"></div><label class="lbl">Carnagione</label><div class="sw2" id="cskin"></div></div>
-      <div class="row2"><button class="btn" id="go">Entra a Rimini</button><button class="btn ghost" id="how">Come si gioca</button></div>
+      <div class="row2"><button class="btn" id="go">Entra a Rimini</button><button class="btn ghost" id="how">Come si gioca</button><button class="btn ghost" id="loadb">Carica partita</button></div>
       <p class="disc"><b style="color:var(--ink)">Realizzato da Olivieri Domenico usando Claude Code.</b><br>Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers.<br>Fan project non ufficiale, senza alcun legame con l’organizzazione. Le informazioni sull’evento vengono da pagine pubbliche; la pianta riprende le planimetrie ufficiali del Palacongressi di Rimini (piano terra e primo piano), semplificate e non in scala. Speech, workshop e partecipanti sono inventati.</p>
     </div>
-    <div class="glass pn"><canvas id="tcv" width="260" height="170"></canvas><div class="small" style="color:var(--dim);font-size:12px;margin-top:10px;line-height:1.5"><b style="color:var(--ink)">Muoviti</b> con WASD o frecce · <b style="color:var(--ink)">E</b> o Spazio per parlare e interagire · <b style="color:var(--ink)">+ / −</b> o rotellina zoom · <b style="color:var(--ink)">T</b> salta 15 minuti · <b style="color:var(--ink)">P</b> telefono · <b style="color:var(--ink)">F</b> foto ricordo. Da telefono: stick a sinistra e pulsante a destra.</div></div>
+    <div class="glass pn"><canvas id="tcv" width="260" height="170"></canvas><div class="small" style="color:var(--dim);font-size:12px;margin-top:10px;line-height:1.5"><b style="color:var(--ink)">Muoviti</b> con WASD o frecce · <b style="color:var(--ink)">E</b> o Spazio per parlare e interagire · <b style="color:var(--ink)">+ / −</b> o rotellina zoom · <b style="color:var(--ink)">T</b> salta 15 minuti · <b style="color:var(--ink)">M</b> mappa · <b style="color:var(--ink)">G</b> salva/carica · <b style="color:var(--ink)">P</b> telefono · <b style="color:var(--ink)">F</b> foto ricordo. Da telefono: stick a sinistra e pulsante a destra.</div></div>
   </div>
 </div>
 <script src="rimini/data.js"></script>
