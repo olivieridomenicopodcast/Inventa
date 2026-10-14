@@ -118,7 +118,7 @@ const CM_METPOST=['Oggi ho conosciuto {me} al #MW26, {job}: bellissima chiacchie
 const CM_COMPOSE=['Sono a Rimini per il #MW26: chi c’è?','Che energia al Palacongressi! #MW26','Primo workshop fatto: spunti a pioggia.','Consiglio del giorno: scrivete tutto nel taccuino.','Cerco qualcuno con cui parlare di {job} all’Area networking.','Silent Stage provata: strana ma bellissima.','Sto cercando di capire come si arriva al primo piano. Consigli?','Una sola cosa da portare a casa oggi: scelgo quella che segno per ultima.'];
 
 const cmT=()=>G.day*1440+Math.floor(G.min);
-function cmInit(){return{liked:{},posts:[],cm:{},metT:{},seenT:0,notifT:0,pid:0};}
+function cmInit(){return{liked:{},posts:[],cm:{},metT:{},seenT:0,notifT:0,pid:0,lv:1};}
 function cmEnsure(){if(!G.comm)G.comm=cmInit();return G.comm;}
 function cmMetNote(name){cmEnsure().metT[name]=cmT();}
 function cmRel(a,T){const d=T-a;if(d<1)return 'adesso';if(d<60)return Math.floor(d)+' min fa';if(d<1440)return Math.floor(d/60)+' h fa';const g=Math.floor(d/1440);return g===1?'ieri':g+' g fa';}
@@ -232,7 +232,50 @@ function cmNotify(){
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
 let cmOpen={},cmMine=false,cmAlbum=false,cmNotif=false,cmPin=null,cmHi=null,cmPerson=null;
-const cmAv=m=>faceImg(m.pal&&m.pal.hair?m.pal:facePal(m.name||'?',m.gender||'m'),'cav');
+/* ---------- punti e livelli di Marketers Pro: 1 Mi piace ricevuto = 1 punto; tutti partono dal livello 1 ---------- */
+const CM_LV=['Osservatore','Apprendista','Iniziato','Custode','Mentore','Sciamano','Profeta','Alchimista','Oracolo illuminato'];
+const CM_TH=[0,6,14,26,42,66,100,150,220];            // punti per raggiungere i livelli 1..9 (fasce piccole)
+const CM_T0=495,CM_TEND=2*1440+1400;
+const cmRamp=T=>Math.pow(Math.max(0,Math.min(1,(T-CM_T0)/(CM_TEND-CM_T0))),.65);
+function cmLvOf(pt){let l=0;for(let i=0;i<CM_TH.length;i++)if(pt>=CM_TH[i])l=i;return l+1;}
+function cmLikesLite(p,T){const r=mulberry32(hashStr(G.seed+'|lk|'+p.id)),cap=4+Math.floor(r()*40);return Math.min(cap,Math.floor(Math.max(0,T-p.at)/25*(1+r())));}
+function cmInfl(key){const r=mulberry32(hashStr(G.seed+'|infl|'+key)),x=r();return x<.3?.25+r()*.35:x<.75?.7+r()*.8:x<.93?1.8+r()*1.4:3.5+r()*3;}
+function cmPtsMap(T){
+  if(G._cmPt&&G._cmPt.T===T&&G._cmPt.s===G.seed)return G._cmPt.v;
+  const ramp=cmRamp(T),v={},sums={};
+  for(const p of cmPool())if(p.at<=T)sums[p.m.id]=(sums[p.m.id]||0)+cmLikesLite(p,T);
+  for(const m of cmMembers()){const r=mulberry32(hashStr(G.seed+'|base|'+m.id));v[m.id]=Math.floor((((sums[m.id]||0))+Math.floor(r()*r()*18))*cmInfl(m.id)*ramp);}
+  G._cmPt={T,s:G.seed,v};return v;
+}
+function cmMyPts(T){const C=cmEnsure(),key=T+'|'+C.posts.length+'|'+Object.keys(C.liked).length+'|'+G.seed;if(G._cmMy&&G._cmMy.k===key)return G._cmMy.v;let n=0;for(const p of C.posts)n+=cmView({id:p.id,at:p.at,mine:true,kind:'mine',m:{me:true}},T).likes;G._cmMy={k:key,v:n};return n;}
+function cmPtsOf(w,T){
+  if(!w)return 0;if(w.me)return cmMyPts(T);
+  const M=cmPtsMap(T);if(w.id&&M[w.id]!=null)return M[w.id];
+  const key='x'+hashStr(w.name||'?');return Math.floor(Math.floor((mulberry32(hashStr(G.seed+'|base|'+key))()*14))*cmInfl(key)*cmRamp(T));
+}
+const cmLevel=(w,T)=>cmLvOf(cmPtsOf(w,T==null?cmT():T));
+function cmLevelInfo(pt){const l=cmLvOf(pt);return{l,name:CM_LV[l-1],pt,next:l<9?CM_TH[l]:null,left:l<9?CM_TH[l]-pt:0};}
+function cmTop(T,n){return cmMembers().map(m=>({m,pt:cmPtsOf(m,T)})).sort((a,b)=>b.pt-a.pt).slice(0,n);}
+function cmLevelWatch(){
+  if(!G||!G.comm)return;const C=cmEnsure(),l=cmLvOf(cmMyPts(cmT()));
+  if(C.lv==null){C.lv=l;return;}
+  if(l>C.lv){C.lv=l;A.stamp();toast('🏅 Sei salito al livello '+l+' di Marketers Pro: '+CM_LV[l-1]+'!',3600);}
+}
+let cmHow=false;
+function levelCard(T){
+  const me=cmLevelInfo(cmMyPts(T));
+  return `<div class="lvc"><div class="lvh"><b>Livello ${me.l} · ${CM_LV[me.l-1]}</b><small>${me.pt} ${me.pt===1?'punto':'punti'}${me.next!=null?' · ancora '+me.left+' per il livello '+(me.l+1):' · livello massimo!'}</small></div><div class="lvbar"><i style="width:${me.next!=null?Math.round((me.pt-CM_TH[me.l-1])/(me.next-CM_TH[me.l-1])*100):100}%"></i></div><button class="lvq" id="cmHow">Come funzionano i punti?</button></div>`;
+}
+function howRender(B,T){
+  const top=cmTop(T,5);
+  B.innerHTML=`<div class="back" id="hwBack">‹ Indietro</div><h3 class="h3">Come funzionano i punti?</h3>
+   <div class="hwh">1 Mi piace = 1 punto</div><div class="note" style="margin:0 0 12px">Per ogni Mi piace che ricevi su un post guadagni un punto. Questo incentiva a dare contributi di qualità e a premiare gli altri mettendo Mi piace ai loro post.</div>
+   <div class="hwh">Livelli</div><div class="note" style="margin:0 0 8px">Accumulando punti sali di livello da 1 a 9. Il livello è visibile sull’avatar; qui sotto vedi i punti necessari. Tutti partono dal livello 1.</div>
+   ${CM_LV.map((n,i)=>`<div class="lvrow"><span class="lvb2">${i+1}</span><b>${n}</b><small>${CM_TH[i]}+ punti</small></div>`).join('')}
+   <div class="hwh" style="margin-top:12px">I più in alto adesso</div>${top.map((x,i)=>`<div class="lvrow">${cmAv(x.m)}<b>${esc(x.m.name)}</b><small>${x.pt} pt · liv. ${cmLvOf(x.pt)}</small></div>`).join('')}`;
+  $('#hwBack').onclick=()=>{cmHow=false;renderPhone();};
+}
+const cmAv=m=>{const l=cmLevel(m);return `<span class="lvw">${faceImg(m.pal&&m.pal.hair?m.pal:facePal(m.name||'?',m.gender||'m'),'cav')}<i class="lvb">${l}</i></span>`;};
 function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>gxf(cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}),PLAYER.gender,PLAYER.gender));}
 function renderComm(B){
   const C=cmEnsure(),T=cmT();
@@ -240,15 +283,17 @@ function renderComm(B){
   const fil=`<div class="cfil"><button data-f="all" class="${cmMine||cmAlbum||cmNotif?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine&&!cmAlbum&&!cmNotif?'on':''}">✎ I miei post (${nMine})</button><button data-f="notif" class="${cmNotif?'on':''}">🔔 Notifiche${nUn?' <i class="nbd">'+nUn+'</i>':''}</button><button data-f="album" class="${cmAlbum?'on':''}">📷 Album (${nAlb})</button></div>`;
   const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmNotif=b.dataset.f==='notif';cmMine=b.dataset.f==='mine';cmPin=null;cmHi=null;cmPerson=null;renderPhone();});
   const av=cmAv;
+  if(cmHow){howRender(B,T);return;}
   if(cmAlbum){albumRender(B,fil);bindFil();return;}
   if(cmPerson){personRender(B,T);return;}
   if(cmNotif){notifRender(B,fil,T);bindFil();return;}
-  B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>
+  B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>${levelCard(T)}
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+
    fil+
    (feed.length?feed.map(p=>{const v=cmView(p,T),open=!!cmOpen[p.id],liked=!!C.liked[p.id];
      return `<div class="cp ${p.mine?'mine':''}" data-pid="${p.id}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(gxf(p.text,p.m.gender||'m'))}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
       (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''} ${c.id===cmHi?'hi':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(gxf(c.text,(c.who&&c.who.gender)||'m'))}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
+  $('#cmHow').onclick=()=>{cmHow=true;renderPhone();};
   const ta=$('#cmT');ta.oninput=()=>{$('#cmN').textContent=ta.value.length+'/160';};
   bindFil();
   if(cmPin){const el=B.querySelector('[data-pid="'+cmPin+'"]');if(el)setTimeout(()=>el.scrollIntoView({block:'center'}),30);cmPin=null;}
@@ -308,7 +353,7 @@ function personRender(B,T){
   const rows=[...posts.map(p=>({at:p.at,html:`<button class="nt" data-pp="${esc(p.id)}">${faceImg(pal,'cav')}<div><div><b>${esc(name)}</b> ha pubblicato</div><div class="nq">${cmHL(gxf(p.text,gender))}</div><small>${cmRel(p.at,T)}</small></div></button>`})),
    ...acts.map(a=>({at:a.at,html:`<button class="nt" data-nid="${esc(a.pid)}|${esc(a.id)}">${faceImg(pal,'cav')}<div><div><b>${esc(name)}</b> ${a.type==='comment'?'ha commentato il tuo post':'ha risposto al tuo commento su'} «${esc(cut(a.ptext))}»</div><div class="nq">${cmHL(gxf(a.text,gender))}</div><small>${cmRel(a.at,T)}</small></div></button>`}))].sort((a,b)=>b.at-a.at);
   const pe=typeof personFor==='function'?personFor(ct):null;
-  B.innerHTML=`<div class="pcard ct" style="margin-bottom:10px"><div class="ctb" style="display:flex;gap:10px;align-items:center">${faceImg(pal,'avi2')}<div class="pi"><b>${esc(name)}</b><small>${esc(ct.role||'')}</small></div></div><div class="crow2" style="margin-top:8px"><button class="pb" id="pfMt">Proponi un meeting</button><button class="pb ghost" id="pfBack">‹ Torna ai contatti</button></div></div>`+
+  B.innerHTML=`<div class="pcard ct" style="margin-bottom:10px"><div class="ctb" style="display:flex;gap:10px;align-items:center">${faceImg(pal,'avi2')}<div class="pi"><b>${esc(name)}</b><small>${esc(ct.role||'')}</small><small>${(()=>{const w={id:'k'+hashStr(name),name,me:false},i=cmLevelInfo(cmPtsOf(w,T));return '🏅 Livello '+i.l+' · '+i.name+' · '+i.pt+' pt';})()}</small></div></div><div class="crow2" style="margin-top:8px"><button class="pb" id="pfMt">Proponi un meeting</button><button class="pb ghost" id="pfBack">‹ Torna ai contatti</button></div></div>`+
    (rows.length?`<div class="note" style="margin:0 0 8px">Cosa ha scritto e commentato ${esc(name.split(' ')[0])} su Marketers Pro. Tocca per aprire il post.</div>`+rows.map(r=>r.html).join(''):`<div class="note">Per ora ${esc(name.split(' ')[0])} non ha scritto né commentato nulla su Marketers Pro. Pubblica un post: chi hai incontrato può risponderti.</div>`);
   $('#pfBack').onclick=()=>{cmPerson=null;phoneTab='net';netTab='con';renderPhone();};
   $('#pfMt').onclick=()=>{cmPerson=null;if(pe)askMeeting(pe.id);};

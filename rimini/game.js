@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=85;
+const BUILD=86;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -1170,7 +1170,7 @@ function questWatch(){
   if(G.qq&&G.qq.length&&!t.classList.contains('show')&&!DL&&!G.watching&&!G.react){const n=G.qq.shift();A.stamp();toast('🎯 Obiettivo completato: '+n,3600);}
 }
 function phClock(){document.body.classList.toggle('phone-open',!$('#phone').classList.contains('hide'));const el=$('#phClk');if(el&&G)setT(el,'pk',['VEN','SAB','DOM'][G.day]+' '+hm(Math.floor(G.min))+(G.sandbox?' · SBX':''));}
-function hud(){phClock();goal();if(G.flags&&mode==='play')questWatch();{const u=G.flags.app?cmUnread(cmT()):0,bc=$('#bCommN');if(bc){const v=u?String(u):'';if(bc.textContent!==v)bc.textContent=v;bc.style.display=u?'':'none';}}if(G.flags.app)cmNotify();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
+function hud(){phClock();goal();if(G.flags&&mode==='play'){questWatch();if(typeof cmLevelWatch==='function')cmLevelWatch();}{const u=G.flags.app?cmUnread(cmT()):0,bc=$('#bCommN');if(bc){const v=u?String(u):'';if(bc.textContent!==v)bc.textContent=v;bc.style.display=u?'':'none';}}if(G.flags.app)cmNotify();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr+(G.sandbox?' · SANDBOX':''));
   const nx=nextAgenda(),p=progress();
