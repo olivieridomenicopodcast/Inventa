@@ -22,7 +22,18 @@ const FAMILY=[
   {id:'vittorio',name:'Vittorio Civinini',role:'Insegnante nei corsi Marketers Pro',facts:['Compare tra i docenti dei corsi Marketers Pro.'],hair:'#2a2420',shirt:'#4a3a6a',skin:'#e0b085',where:{f:0,x:575,y:240}},
   {id:'mastella',name:'Luca Mastella',role:'Growth hacker nel team Marketers',facts:['È entrato a far parte del team Marketers come growth hacker.'],hair:'#7a5a2a',shirt:'#2a6a8a',skin:'#e8b98a',where:{f:0,x:250,y:672}},
   {id:'bottoni',name:'Andrea Bottoni',role:'Marketers Family Member',facts:['Viene presentato come membro della Marketers Family.'],hair:'#3a2a20',shirt:'#6a3a2a',skin:'#e4b288',where:{f:0,x:330,y:676}},
-  {id:'elio',name:'Elio Amato',role:'Insegnante del corso Business Alchemy',facts:['Tra gli insegnanti del corso Business Alchemy.'],hair:'#25201c',shirt:'#5a2a5a',skin:'#dcae82',where:{f:0,x:920,y:230}}
+  {id:'elio',name:'Elio Amato',role:'Insegnante del corso Business Alchemy',facts:['Tra gli insegnanti del corso Business Alchemy.'],hair:'#25201c',shirt:'#5a2a5a',skin:'#dcae82',where:{f:0,x:920,y:230}},
+  {id:'ilaria',name:'Ilaria Foresti',role:'PRO Product Specialist di Marketers',facts:['Cura Marketers PRO. Nel programma di venerdì ospita lo spazio «MK PRO».'],hair:'#3a2418',shirt:'#c0508a',skin:'#e8b98a',where:{f:0,x:520,y:420}},
+  {id:'simone',name:'Simone Bergamini',role:'Controller di Marketers',facts:['Compare nel programma dell’evento come «Controller di Marketers».'],hair:'#2a2018',shirt:'#3a6a5a',skin:'#dfae80',where:{f:0,x:520,y:420}},
+  {id:'mattia',name:'Mattia Bonetti',role:'CCO e Event Director di Marketers',facts:['Compare nel programma dell’evento come «CCO e Event Director di Marketers».'],hair:'#1a1a20',shirt:'#2a4a8a',skin:'#e8b98a',where:{f:0,x:520,y:420}},
+  {id:'irene',name:'Irene Bosi',role:'Event Director e Head of Partnership',facts:['Compare nel programma dell’evento come «Event Director e Head of Partnership».'],hair:'#4a2a18',shirt:'#8a4a2a',skin:'#f0c8a0',where:{f:0,x:520,y:420}},
+  {id:'vittoria',name:'Vittoria Vecchio',role:'Adv & Communication Manager di Marketers',facts:['Compare nel programma dell’evento come «Adv & Communication Manager di Marketers».'],hair:'#2a1d14',shirt:'#6a3a8a',skin:'#e0b085',where:{f:0,x:520,y:420}},
+  {id:'pierpaolo',name:'Pierpaolo Tomaselli',role:'Growth Manager di Yoga Academy',facts:['Compare nel programma dell’evento come «Growth Manager di Yoga Academy».'],hair:'#3a2a1c',shirt:'#2a7a6a',skin:'#dcae82',where:{f:0,x:520,y:420}},
+  {id:'federico',name:'Federico Capuano',role:'Copywriter Specialist di Yoga Academy',facts:['Compare nel programma dell’evento come «Copywriter Specialist di Yoga Academy».'],hair:'#1f1810',shirt:'#8a6a2a',skin:'#e4b288',where:{f:0,x:520,y:420}},
+  {id:'grieco',name:'Marco Grieco',role:'Growth Manager di Marketers Company',facts:['Compare nel programma dell’evento come «Growth Manager di Marketers Company».'],hair:'#2a2420',shirt:'#4a4a7a',skin:'#e8b98a',where:{f:0,x:520,y:420}},
+  {id:'pierdo',name:'Pierdomenico Amodei',role:'Technical Support Specialist di Marketers',facts:['Compare nel programma dell’evento come «Technical Support Specialist di Marketers».'],hair:'#25201c',shirt:'#3a5a2a',skin:'#dfae80',where:{f:0,x:520,y:420}},
+  {id:'valentino',name:'Valentino Migliaro',role:'Head of Partnerships e Head of Education',facts:['Compare nel programma dell’evento come «Head of Partnerships e Head of Education».'],hair:'#5a4630',shirt:'#7a2a4a',skin:'#e0b085',where:{f:0,x:520,y:420}},
+  {id:'jo',name:'Jo Dunica',role:'Conduce la Riattivazione sul Main Stage',facts:['Compare nel programma dell’evento come «Conduce la Riattivazione sul Main Stage».'],hair:'#3a2a20',shirt:'#4aa87a',skin:'#f0c8a0',where:{f:0,x:520,y:420}}
 ];
 
 /* Speaker annunciati per il 2026 secondo una fonte pubblica (da verificare con il programma ufficiale). */

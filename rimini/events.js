@@ -190,20 +190,28 @@ function famTick(){
 }
 const trWhen=at=>at==null?'—':DAYNAMES[Math.min(2,Math.floor(at/1440))]+' '+hm(((at%1440)+1440)%1440);
 const trAll=()=>lsGet('rimini.trophies',{});
-function trophyFound(n){
-  if(!n||n.kind!=='family')return;G.trophies=G.trophies||{};if(G.trophies[n.id])return;
-  G.trophies[n.id]={at:cmT(),place:(typeof albumPlace==='function'?albumPlace():'')};const all=trAll();all[n.id]=true;lsSet('rimini.trophies',all);
-  const c=Object.keys(G.trophies).length;A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);
-  toast('Trofeo sbloccato: '+n.name+' ('+c+'/'+FAMILY.length+')',4200);
-  if(c===FAMILY.length)setTimeout(()=>toast('Hai incontrato tutta la Marketers Family!',4800),2200);
+const TR_G={fam:'Marketers Family',fr:'Amici del gruppo'};
+function trophyDefs(){
+  const L=FAMILY.map(f=>({id:f.id,g:'fam',name:f.name,role:f.role,pal:{shirt:f.shirt,pants:'#232a44',skin:f.skin,hair:f.hair,badge:'#ffd24d'}}));
+  if(typeof extrasTrophies==='function')L.push(...extrasTrophies());return L;
 }
-function trophyCount(){return Object.keys(G.trophies||{}).length;}
-function trophyQuest(){const c=trophyCount();return[{t:'Incontra tutta la Marketers Family',s:'Girano per il Palacongressi, cercali: hanno un puntino dorato sopra la testa ('+c+'/'+FAMILY.length+')',ok:c>=FAMILY.length}];}
+const trophyTotal=g=>trophyDefs().filter(d=>!g||d.g===g).length;
+function trophyFound(n){
+  if(!n||!(n.kind==='family'||n.friend||n.id==='denise'))return;G.trophies=G.trophies||{};if(G.trophies[n.id])return;
+  G.trophies[n.id]={at:cmT(),place:(typeof albumPlace==='function'?albumPlace():'')};const all=trAll();all[n.id]=true;lsSet('rimini.trophies',all);
+  const c=trophyCount(),T=trophyTotal();A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);
+  toast('Trofeo sbloccato: '+n.name+' ('+c+'/'+T+')',4200);
+  const d=trophyDefs().find(x=>x.id===n.id),g=d&&d.g;if(g&&trophyDefs().filter(x=>x.g===g).every(x=>G.trophies[x.id]))setTimeout(()=>toast(g==='fam'?'Hai incontrato tutta la Marketers Family!':'Hai incontrato tutti gli amici del gruppo!',4800),2200);
+}
+function trophyCount(){const ids=new Set(trophyDefs().map(d=>d.id));return Object.keys(G.trophies||{}).filter(i=>ids.has(i)).length;}
+function trophyGroupDone(g){return trophyDefs().filter(d=>d.g===g).every(d=>(G.trophies||{})[d.id]);}
+function trophyQuest(){const D=trophyDefs().filter(d=>d.g==='fam'),c=D.filter(d=>(G.trophies||{})[d.id]).length;return[{t:'Incontra tutta la Marketers Family',s:'Girano per il Palacongressi, cercali: hanno un puntino dorato sopra la testa ('+c+'/'+D.length+')',ok:c>=D.length}];}
 function trophyHtml(){
-  const got=G.trophies||{},all=trAll(),c=trophyCount(),tot=lsGet('rimini.trophies',{});
-  const card=f=>{const g=got[f.id],pal={shirt:f.shirt,pants:'#232a44',skin:f.skin,hair:f.hair,badge:'#ffd24d'};
-    const n=NPC.find(x=>x.id===f.id),hint=n&&n.zn?'Oggi: '+(n.f===1?'primo piano':'piano terra')+', '+n.zn:'';
-    return g?`<div class="trc got">${faceImg(pal,'avi2')}<b>${esc(f.name)}</b><small>${esc(f.role)}</small><em>Incontrato: ${trWhen(g.at)}${g.place?' · '+esc(g.place):''}</em></div>`
-      :`<div class="trc"><div class="trq">${faceImg(pal,'avi2')}</div><b>???</b><small>${all[f.id]?'Già incontrato in un’altra partita: '+esc(f.name):'Non ancora incontrato'}</small><em>${esc(hint)}</em></div>`;};
-  return `<div class="back" data-go="home">‹ Home</div><h3 class="h3">Trofei · Marketers Family</h3><div class="note" style="margin:0 0 10px">Trova in giro per la mappa tutti i membri della Marketers Family: quando ne incontri uno, il suo trofeo compare qui. In questa partita: <b>${c}/${FAMILY.length}</b> · in tutte le partite: <b>${Object.keys(tot).length}/${FAMILY.length}</b>. Cerca il puntino dorato sopra la testa.</div><div class="trg">${FAMILY.map(card).join('')}</div>`;
+  const got=G.trophies||{},all=trAll(),D=trophyDefs(),tot=lsGet('rimini.trophies',{}),ids=new Set(D.map(d=>d.id));
+  const card=f=>{const g=got[f.id];
+    return g?`<div class="trc got">${faceImg(f.pal,'avi2')}<b>${esc(f.name)}</b><small>${esc(f.role)}</small><em>Incontrato: ${trWhen(g.at)}${g.place?' · '+esc(g.place):''}</em></div>`
+      :`<div class="trc"><div class="trq">${faceImg(f.pal,'avi2')}</div><b>???</b><small>${all[f.id]?'Già incontrato in un’altra partita':'Non ancora incontrato'}</small></div>`;};
+  const groups=Object.keys(TR_G).filter(g=>D.some(d=>d.g===g));
+  return `<div class="back" data-go="home">‹ Home</div><h3 class="h3">Trofei</h3><div class="note" style="margin:0 0 10px">Trova in giro per la mappa le persone speciali del Marketers World: quando ne incontri una, il suo trofeo compare qui. In questa partita: <b>${trophyCount()}/${D.length}</b> · in tutte le partite: <b>${Object.keys(tot).filter(i=>ids.has(i)).length}/${D.length}</b>. Chi fa parte della Marketers Family ha un puntino dorato sopra la testa.</div>`+
+    groups.map(g=>{const L=D.filter(d=>d.g===g),n=L.filter(d=>got[d.id]).length;return `<div class="sec">// ${esc(TR_G[g].toUpperCase())} · ${n}/${L.length}</div><div class="trg">${L.map(card).join('')}</div>`;}).join('');
 }
