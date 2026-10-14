@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=83;
+const BUILD=84;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -149,7 +149,7 @@ function buildGround(){
   RK(L,470,240,362,350,CARP('#2b3358','#323c66'),[{s:'n',a:600,b:700},{s:'s',a:510,b:580},{s:'s',a:640,b:700},{s:'w',a:380,b:450},{s:'e',a:380,b:450}]);
   stage(L,k(520),k(250),k(262),k(46),'MARKETERS WORLD');
   for(let r=0;r<20;r++){const yy=k(330)+r*13;for(let i=0;i<14;i++){chair(c,k(480)+i*11,yy,'#9a2a3a');chair(c,k(672)+i*11,yy,'#9a2a3a');}}
-  solid(L,k(478),k(325),k(155),k(250));solid(L,k(670),k(325),k(155),k(250));
+  txt(c,'SIEDITI E PARTECIPA',k(651),k(318),'#ffd24d',8);
   c.fillStyle='rgba(255,255,255,.1)';c.fillRect(k(640),k(318),k(30),k(262));
   txt(c,'SALA DELLA PIAZZA',k(651),k(312),'#c9d0ff',8);
   desk(L,k(790),k(420),24,18,'#3a3a46','CAM');
@@ -340,6 +340,9 @@ function interactables(){
   if(f===0){
     STANDS.forEach(s=>I(s.x,s.y+30,20,'Guarda lo stand «'+s.label+'»',()=>standTalk(s)));
     roomSpot(['Main stage silent','Sala della Piazza','Main Stage'],651,470,50,'Palco principale');
+    {const px=G.p.x/K,py=G.p.y/K,inS=py>=325&&py<=575&&((px>=478&&px<=633)||(px>=670&&px<=825));
+     if(inS){const MS=['Main stage silent','Sala della Piazza','Main Stage'],e=activeAt(MS),nx=nextAt(MS);
+      out.push({x:G.p.x,y:G.p.y,r:k(30),label:e?'🪑 Siediti e partecipa: «'+(e.title.length>26?e.title.slice(0,25)+'…':e.title)+'»':'🪑 Posti a sedere'+(nx?' · prossima alle '+nx.t:' · nessuna sessione ora'),fn:()=>{if(e&&!G.sandbox)enterSession(e);else openRoom(MS,'Palco principale');}});}}
     ['Silent Stage 1','Silent Stage 2','Silent Stage 3','Silent Stage 4'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,24,n));
     roomSpot(['Sala Castello'],920,255,40,'Sala Castello');
     I(457,308,18,'Un caffè al bar',coffee);I(815,308,18,'Un caffè al bar',coffee);
