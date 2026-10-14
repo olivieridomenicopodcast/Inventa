@@ -665,7 +665,7 @@ function renderPhone(){
      <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
      <div class="sec">// ULTIMO ANNUNCIO</div><div class="ann"><small>13 OTT · 18:00</small><b>Benvenuti a Rimini!</b><span>Ritira il badge fuori dall’Ingresso A e scarica l’app: dentro trovi programma, workshop e networking.</span></div>
      <div class="spread"><b>Fai sapere che ci sarai</b><span>La tua card per le storie e LinkedIn, pronta in un tocco.</span><button id="card">Crea la tua card</button></div>
-     <div class="note">Realizzato da Olivieri Domenico usando Claude Code. Fan project non ufficiale. I workshop del venerdì vengono dal programma pubblico; speech del weekend, partecipanti e contenuti delle slide sono inventati.</div>`;
+     <div class="note">Realizzato da Olivieri Domenico usando Claude Code. Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers. Fan project non ufficiale. I workshop del venerdì vengono dal programma pubblico; speech del weekend, partecipanti e contenuti delle slide sono inventati.</div>`;
     const hc=$('#heroc').getContext('2d');hc.imageSmoothingEnabled=false;hc.drawImage(FL[0].cv,k(470),k(600),k(330),k(160),0,0,400,190);hc.fillStyle='rgba(10,16,50,.55)';hc.fillRect(0,0,400,190);
     $('#card').onclick=()=>{closePhone();photo();};
     bind();
@@ -730,7 +730,7 @@ function endGame(){
   $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div>
    <div class="kv"><div>Contatti<b>${G.contacts.length}</b></div><div>Workshop<b>${F.ws}</b></div><div>Speech<b>${F.talk}</b></div><div>Stand<b>${Object.keys(F.stands).length}</b></div><div>Spunti<b>${G.tips.length}</b></div><div>Offworld<b>${F.off}</b></div></div>
    <div class="row2"><button class="btn" id="eAgain">Rigioca</button><button class="btn ghost" id="eBack">Torna al gioco</button></div>
-   <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Realizzato da Olivieri Domenico usando Claude Code. Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
+   <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Realizzato da Olivieri Domenico usando Claude Code. Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers. Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
   $('#end').classList.remove('hide');
   $('#eAgain').onclick=()=>{$('#end').classList.add('hide');startGame();};
   $('#eBack').onclick=()=>{$('#end').classList.add('hide');G.done=false;};
