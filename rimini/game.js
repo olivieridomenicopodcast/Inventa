@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=111;
+const BUILD=112;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -718,7 +718,7 @@ function drawReact(){
   ctx.font='700 '+Math.round(Math.min(W,520)/20)+'px "Press Start 2P",monospace';ctx.fillStyle='#ffd24d';ctx.textAlign='center';ctx.fillText(pose.toUpperCase(),W/2,H*.3+hs*16);
   ctx.font='600 '+Math.round(Math.min(W,520)/26)+'px "Space Grotesk",sans-serif';ctx.fillStyle='#bcd';ctx.fillText('Riattivazione con Jo Dunica · respira a tempo',W/2,H*.08);}
   // corsie
-  const lw=Math.min(W/3.2,150),x0=W/2-lw*1.5,top=H*.42,hit=H*.86;
+  const lw=Math.min(W/3.2,190),x0=W/2-lw*1.5,top=H*.42,hit=H*.86;
   const cols=['#4dd0ff','#ff6a3d','#7ad37a'],keys=['A / ←','S / ↓','D / →'];
   for(let l=0;l<3;l++){ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(x0+l*lw+4,top,lw-8,hit-top+30);
     ctx.strokeStyle=cols[l];ctx.lineWidth=3;ctx.beginPath();ctx.arc(x0+l*lw+lw/2,hit,lw*.28,0,7);ctx.stroke();
@@ -1155,6 +1155,7 @@ function draw(){
   for(const it of list){
     if(it.me)person(ctx,G.p.x,G.p.y,G.p.dir,G.p.step,NIKY);
     else{const n=it.n;if(n.pet)drawPet(ctx,n);else if(n.seated){ctx.save();ctx.beginPath();ctx.rect(Math.round(n.x)-14,Math.round(n.y)-44,28,34);ctx.clip();person(ctx,n.x,n.y,n.dir,0,n.p);ctx.restore();}else person(ctx,n.x,n.y,n.dir,n.step,n.p);
+      if(n.friend&&!(G.bmu&&G.bmu[n.friend])&&Math.hypot(n.x-G.p.x,n.y-G.p.y)<k(150)){const ph=G.t*3+n.x,sx=Math.round(n.x),sy=Math.round(n.y)-33;ctx.fillStyle='#4dd0ff';ctx.fillRect(sx-1,sy-(Math.sin(ph)>0?1:0),3,3);ctx.fillRect(sx-4,sy+3,1,1);ctx.fillRect(sx+4,sy+2,1,1);ctx.fillStyle='#fff';ctx.fillRect(sx,sy+1-(Math.sin(ph)>0?1:0),1,1);}
       if(n.kind==='family'){const b=Math.sin(G.t*4+n.x)>0?0:1;ctx.fillStyle='#ffd24d';ctx.fillRect(Math.round(n.x)-1,Math.round(n.y)-31+b,3,3);}
       if(near&&near.npc===n){txt(ctx,n.name,Math.round(n.x),Math.round(n.y)-34,'#fff',5);}}
   }
@@ -1264,7 +1265,7 @@ pad.addEventListener('pointerdown',e=>{padId=e.pointerId;pad.setPointerCapture(e
 pad.addEventListener('pointermove',e=>{if(e.pointerId===padId)padMove(e);});
 const padEnd=e=>{if(e.pointerId===padId){padId=null;touch.x=touch.y=0;padi.style.transform='';}};
 pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
-cv.addEventListener('pointerdown',e=>{if(G&&G.react){reactHit(Math.min(2,Math.floor(e.clientX/(W/3))));}});
+cv.addEventListener('pointerdown',e=>{if(G&&G.react){const lw=Math.min(W/3.2,190);reactHit(Math.max(0,Math.min(2,Math.floor((e.clientX-(W/2-lw*1.5))/lw))));}});
 $('#act').addEventListener('pointerdown',e=>{e.preventDefault();act();});
 $('#prompt').addEventListener('pointerdown',e=>{e.preventDefault();act();});
 const getProfiles=()=>lsGet('rimini.profiles',[]);

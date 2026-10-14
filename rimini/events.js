@@ -205,7 +205,9 @@ function trophyFound(n){
 }
 function trophyCount(){const ids=new Set(trophyDefs().map(d=>d.id));return Object.keys(G.trophies||{}).filter(i=>ids.has(i)).length;}
 function trophyGroupDone(g){return trophyDefs().filter(d=>d.g===g).every(d=>(G.trophies||{})[d.id]);}
-function trophyQuest(){const D=trophyDefs().filter(d=>d.g==='fam'),c=D.filter(d=>(G.trophies||{})[d.id]).length;return[{t:'Incontra tutta la Marketers Family',s:'Girano per il Palacongressi, cercali: hanno un puntino dorato sopra la testa ('+c+'/'+D.length+')',ok:c>=D.length}];}
+function trophyQuest(){const D=trophyDefs().filter(d=>d.g==='fam'),c=D.filter(d=>(G.trophies||{})[d.id]).length;const q=[{t:'Incontra tutta la Marketers Family',s:'Girano per il Palacongressi, cercali: hanno un puntino dorato sopra la testa ('+c+'/'+D.length+')',ok:c>=D.length}];
+  if(typeof bmuTotal==='function')q.push({t:'Trova gli amici del gruppo',s:'Quando ti avvicini a uno di loro compare una scintilla azzurra sopra la testa ('+bmuCount()+'/'+bmuTotal()+')',ok:bmuCount()>=bmuTotal()});
+  return q;}
 function trophyHtml(){
   const got=G.trophies||{},all=trAll(),D=trophyDefs(),tot=lsGet('rimini.trophies',{}),ids=new Set(D.map(d=>d.id));
   const card=f=>{const g=got[f.id];

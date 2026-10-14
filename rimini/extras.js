@@ -40,7 +40,7 @@ const FR_BYE=['A dopo! Se mi cerchi sono quello con le cuffie.','Ci vediamo in g
 
 function extrasNPC(add,pk){
   /* amici: sparsi tra Palacongressi e Village, in ordine dato dal seme */
-  const zones=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[300,540,900,740,2],[140,590,420,700,2],[920,300,1200,460,2]];
+  const zones=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[560,640,700,740,0],[330,300,470,720,0],[300,540,900,740,2]];
   FRIENDS.forEach((f,i)=>{
     const r=pk(zones),x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);
     const q=add({id:'fr_'+f.id,kind:'att',friend:f.id,name:f.name,role:f.job,f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:f.name.split(' ')[0],job:f.job,fam:f.fam});
