@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=51;
+const BUILD=52;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -328,7 +328,7 @@ function interactables(){
     I(180,356,30,'Ingresso B',()=>info('Ingresso B','Dall’Ingresso B si arriva al lato ovest, verso i negozi e il Bistrot.'));
     I(918,460,30,'Ingresso C',()=>info('Ingresso C','L’Ingresso C è sul lato est, verso il parcheggio.'));
   }else{
-    I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(590)));
+    I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(640)));
     I(635,775,70,'Sala dell’Anfiteatro',()=>info('Sala dell’Anfiteatro',FACTS.anfi+' Qui oggi non ci sono sessioni: gli speech sono in Sala della Piazza, al piano terra.'));
     ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,30,n.replace('Sala Real Estate by Building Production','Sala Real Estate')));
     I(770,578,35,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
@@ -428,7 +428,8 @@ function quiz(e){
 function coffee(){G.flags.coffee++;toast(pickFrom(['Un caffè al volo: ora sei carico.','Il caffè del Palacongressi: fa il suo dovere.','Doppio espresso: pronto per il prossimo speech!']));A.blip();}
 function rest(){G.min+=15;toast('Ti siedi 15 minuti sul divano a controllare l’app.');}
 function addTip(t,src){if(!G.tips.some(x=>x.t===t))G.tips.push({t,src});}
-function goFloor(f,x,y){G.fade=1;setTimeout(()=>{G.f=f;G.p.x=x;G.p.y=y;if(f===1)G.flags.anfi=true;A.blip();},120);}
+function freeSpot(f,x,y){if(!hits(FL[f],x,y))return[x,y];for(let r=4;r<k(120);r+=4)for(let a=0;a<16;a++){const nx=x+Math.cos(a*Math.PI/8)*r,ny=y+Math.sin(a*Math.PI/8)*r;if(!hits(FL[f],nx,ny))return[nx,ny];}return[x,y];}
+function goFloor(f,x,y){G.fade=1;setTimeout(()=>{G.f=f;[G.p.x,G.p.y]=freeSpot(f,x,y);if(f===1)G.flags.anfi=true;A.blip();},120);}
 function roomSched(names,day){return PROGRAMMA.filter(e=>e.d===day&&names.includes(e.room)&&e.kind!=='lounge').sort((a,b)=>a.start-b.start);}
 function openRoom(names,title){
   const e=activeAt(names),nx=nextAt(names),today=roomSched(names,G.day);
@@ -851,12 +852,12 @@ function drawDest(){
   if(d.f!==G.f){tx=k(630);ty=k(610);lab='Scale mobili → '+(d.f===1?'primo piano':'piano terra')+' → '+d.n;}
   const dist=Math.hypot(tx-G.p.x,ty-G.p.y);
   if(dist<k(26)){if(d.f!==G.f){/* arrivato alle scale */}else{toast('Sei arrivato: '+d.n,2600);G.dest=null;return;}}
-  const a=Math.atan2(ty-G.p.y,tx-G.p.x),sx=W/2+(G.p.x-G.cam.x)*Z,sy=H/2+(G.p.y-G.cam.y)*Z,r=Math.min(W,H)*.22;
+  const a=Math.atan2(ty-G.p.y,tx-G.p.x),vc=G.vc||G.cam,sx=W/2+(G.p.x-vc.x)*Z,sy=H/2+(G.p.y-vc.y)*Z,r=Math.min(W,H)*.22;
   ctx.save();ctx.translate(sx+Math.cos(a)*r,sy+Math.sin(a)*r);ctx.rotate(a);ctx.fillStyle='#ffd24d';ctx.strokeStyle='rgba(0,0,0,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-9,10);ctx.lineTo(-4,0);ctx.lineTo(-9,-10);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
   ctx.save();ctx.font='700 12px "Space Grotesk",sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineWidth=4;const m=Math.round(dist/K*.19),txt=lab+' · ~'+m+' m';
   const lx=sx+Math.cos(a)*(r+30),ly=sy+Math.sin(a)*(r+30);ctx.strokeText(txt,lx,ly);ctx.fillText(txt,lx,ly);ctx.restore();
   // pallino sul bersaglio se visibile
-  if(d.f===G.f){const bx=W/2+(tx-G.cam.x)*Z,by=H/2+(ty-G.cam.y)*Z;if(bx>0&&bx<W&&by>0&&by<H){ctx.fillStyle='#ffd24d';ctx.beginPath();ctx.arc(bx,by-18,6,0,7);ctx.fill();ctx.strokeStyle='#000';ctx.stroke();}}
+  if(d.f===G.f){const bx=W/2+(tx-vc.x)*Z,by=H/2+(ty-vc.y)*Z;if(bx>0&&bx<W&&by>0&&by<H){ctx.fillStyle='#ffd24d';ctx.beginPath();ctx.arc(bx,by-18,6,0,7);ctx.fill();ctx.strokeStyle='#000';ctx.stroke();}}
 }
 
 /* ============================================================ salvataggi (più slot) */
@@ -945,7 +946,7 @@ function draw(){
   if(G.react){drawReact();return;}
   const L=FL[G.f],vw=W/Z,vh=H/Z,cam=G.cam;
   let cx=vw>=WW?WW/2:clamp(cam.x,vw/2,WW-vw/2),cy=vh>=WH?WH/2:clamp(cam.y,vh/2,WH-vh/2+(MOB?vh*.22:0));
-  cx=Math.round(cx*Z)/Z;cy=Math.round(cy*Z)/Z;
+  cx=Math.round(cx*Z)/Z;cy=Math.round(cy*Z)/Z;G.vc={x:cx,y:cy};
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0a0d18';ctx.fillRect(0,0,W,H);
   ctx.imageSmoothingEnabled=false;
   ctx.setTransform(DPR*Z,0,0,DPR*Z,Math.round((W/2-cx*Z)*DPR),Math.round((H/2-cy*Z)*DPR));
