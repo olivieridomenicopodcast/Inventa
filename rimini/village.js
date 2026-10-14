@@ -127,7 +127,8 @@ function nextDay(){
 function shuttleHome(){
   if(!G.sandbox&&G.min<17*60){info('Navetta per il Village','La navetta serale parte dalle 17:00. Fino ad allora il Marketers World è tutto tuo.');return;}
   const host={name:'Navetta serale',role:'Rientro al Marketers Village',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
-  say(host,{t:(G.day>=2?'È l’ultima sera: alle 22:00 all’Offworld, al Marketers Village, c’è il pigiama party finale. ':'Alle 22:00 all’Offworld, al Marketers Village, c’è la serata (karaoke). ')+'Vuoi passare direttamente alla festa o girare liberamente al Palacongressi e prendere la navetta entro le 22? Se fai tardi, alle 22 ti ritrovi al Village… e su Marketers Pro si parlerà del ritardatario!',c:[
+  say(host,{t:(G.day===0&&G.min>=19*60+30?'Stasera c’è anche il Marketers Meetup al Sunflower (navetta solo il venerdì sera). ':'')+(G.day>=2?'È l’ultima sera: alle 22:00 all’Offworld, al Marketers Village, c’è il pigiama party finale. ':'Alle 22:00 all’Offworld, al Marketers Village, c’è la serata (karaoke). ')+'Vuoi passare direttamente alla festa o girare liberamente al Palacongressi e prendere la navetta entro le 22? Se fai tardi, alle 22 ti ritrovi al Village… e su Marketers Pro si parlerà del ritardatario!',c:[
+    ...(G.day===0&&(G.min>=19*60+30||G.sandbox)&&G.min<22*60?[{t:'Al Marketers Meetup al Sunflower',n:null,act:()=>goSunflower()}]:[]),
     {t:'Passo direttamente alla festa',n:null,act:()=>rideBus(true)},{t:'Giro ancora al Palacongressi',n:null}]});
 }
 
@@ -138,3 +139,69 @@ function askNextDay(){
     {t:last?'Sì, concludi':'Sì, passa al giorno dopo',n:null,act:()=>{if(last)endGame();else nextDay();}},
     {t:'No, resto ancora un po’',n:null}]});
 }
+
+/* ============================================================ Sunflower: Marketers Meetup del venerdì sera ============================================================ */
+const SUN_TABLES=[[300,330],[480,330],[660,330],[300,470],[480,470],[660,470],[300,610],[480,610],[660,610],[900,330],[1040,330],[900,470],[1040,470],[900,610],[1040,610]];
+const SUN={door:{x:670,y:800},bar:{x:510,y:170}};
+function sunflower(c,x,y,s){c.fillStyle='#2f7a3a';c.fillRect(x-1,y,2,s*1.6);c.fillStyle='#ffd24d';for(let i=0;i<8;i++){const a=i*Math.PI/4;c.fillRect(Math.round(x+Math.cos(a)*s*.9)-2,Math.round(y+Math.sin(a)*s*.9)-2,5,5);}c.fillStyle='#6a3a14';c.fillRect(x-3,y-3,7,7);}
+function buildSunflower(){
+  const L=layer(WW,WH),c=L.c;
+  c.fillStyle='#1a1410';c.fillRect(0,0,WW,WH);
+  paintWood(c,k(80),k(70),k(1146),k(760),'#c8955a','#b8854a');
+  c.fillStyle='rgba(60,30,10,.55)';c.fillRect(k(80),k(70),k(1146),k(36));
+  // luci a festone
+  for(let i=0;i<k(1146);i+=14){c.fillStyle=['#ffd24d','#ff6a3d','#fff3b0'][(i/14)%3];c.fillRect(k(80)+i,k(76)+Math.round(Math.sin(i/40)*4)+4,4,4);}
+  txt(c,'SUNFLOWER',k(660),k(90),'#ffd24d',14);txt(c,'MARKETERS MEETUP · VENERDÌ SERA',k(660),k(130),'#fff3b0',8);
+  // bancone
+  desk(L,k(260),k(150),k(520),k(34),'#5a3a1a','BAR');
+  for(let i=0;i<9;i++){c.fillStyle='#8a2a2a';c.fillRect(k(290)+i*k(54),k(196),9,7);c.fillStyle='#e8e0c8';c.fillRect(k(290)+i*k(54)+1,k(193),7,3);}
+  c.fillStyle='#e8c8a0';for(let i=0;i<7;i++)c.fillRect(k(300)+i*k(66),k(140),8,12);   // bottiglie dietro il bancone
+  c.fillStyle='#ffd24d';for(let i=0;i<7;i++)c.fillRect(k(302)+i*k(66),k(143),4,4);
+  // DJ
+  desk(L,k(930),k(150),k(200),k(34),'#161226','DJ');c.fillStyle='#0b0d18';c.fillRect(k(910),k(140),12,k(50));c.fillRect(k(1150),k(140),12,k(50));solid(L,k(908),k(140),16,k(50));solid(L,k(1148),k(140),16,k(50));
+  L.dyn.push({k:'lights',x:k(900),y:k(112),w:k(280)});
+  // tavoli rotondi con girasoli
+  SUN_TABLES.forEach(([x,y],i)=>{table(L,k(x),k(y),k(20),i%3===0?'#fff3b0':'#f4e6c8');sunflower(c,k(x),k(y)-8,5);});
+  // divanetti e piante
+  [[130,300],[130,500],[1170,300],[1170,500]].forEach(([x,y])=>{c.fillStyle='#8a3a2a';c.fillRect(k(x)-10,k(y),k(40),k(100));c.fillStyle='#a8503a';c.fillRect(k(x)-10,k(y),6,k(100));solid(L,k(x)-10,k(y),k(40),k(100));});
+  [[120,120],[1190,120],[120,790],[1190,790],[200,420],[1100,420]].forEach(([x,y])=>{sunflower(c,k(x),k(y),10);solid(L,k(x)-6,k(y)+2,12,14);});
+  // ingresso e navetta
+  c.fillStyle='#3a2a20';c.fillRect(k(630),k(812),k(80),k(22));c.fillStyle='#e8d6a8';c.fillRect(k(640),k(814),k(60),k(14));txt(c,'USCITA · NAVETTA',k(670),k(790),'#fff3b0',8);
+  // muri
+  solid(L,0,0,WW,k(70));solid(L,0,k(834),k(628),WH-k(834));solid(L,k(712),k(834),WW-k(712),WH-k(834));solid(L,0,0,k(80),WH);solid(L,k(1226),0,WW-k(1226),WH);
+  return L;
+}
+function sunNPC(add,pickFrom,mkAtt,idx){
+  if(typeof ATT_FIRST==='undefined')return;
+  add({id:'barman',kind:'staff',name:'Barman del Sunflower',role:'Bar',f:3,x:k(510),y:k(120),p:{shirt:'#ffd24d',pants:'#232a44',skin:'#dfae80',hair:'#2a1d14',badge:'#ff6a3d'},dir:0});
+  const r=mulberry32(hashStr(G.seed+'|sun'));let n=idx;
+  // seduti ai tavoli
+  SUN_TABLES.forEach(([x,y])=>{const seats=[[x-30,y,3],[x+30,y,2],[x,y-30,0],[x,y+32,1]].sort(()=>r()-.5).slice(0,2+Math.floor(r()*2));
+    seats.forEach(s=>{mkAtt(n++,[[s[0],s[1],s[0]+1,s[1]+1,3]]);const q=NPC[NPC.length-1];q.wander=null;q.seated=true;q.x=k(s[0]);q.y=k(s[1]);q.dir=s[2];});});
+  // in piedi (bar, centro, pista)
+  const ST=[[250,215,790,290,3],[880,230,1190,640,3],[100,260,220,720,3],[240,720,620,800,3],[740,700,1180,790,3]];
+  for(let i=0;i<30;i++)mkAtt(n++,ST);
+}
+function sunSpots(I){
+  const open=!!(typeof activeAt==='function'&&activeAt(['Sunflower']))||G.sandbox;
+  I(SUN.bar.x,SUN.bar.y+14,40,'Ordina al bar del Sunflower',()=>{const nb=NPC.find(x=>x.id==='barman');if(typeof sunBar==='function')sunBar(nb);});
+  I(SUN.door.x,SUN.door.y-10,50,'Esci: navetta del Sunflower',()=>sunExit());
+}
+function sunBar(n){
+  const drinks=[['Uno spritz analcolico','Arancione e frizzante: ora sei ufficialmente al networking.'],['Un caffè lungo','Anche di sera il marketer non dorme: sei di nuovo carico.'],['Una birra artigianale','Fresca e senza fretta: la serata è ancora lunga.'],['Un’acqua tonica con limone','Semplice e sempre giusta.']];
+  say(n,{t:'Benvenuto al Sunflower! Cosa ti preparo?',c:[...drinks.map(d=>({t:d[0],n:null,act:()=>{G.flags.coffee++;A.blip();toast(d[1],2600);}})),{t:'Per ora niente, grazie',n:null}]});
+}
+function sunExit(){
+  const host={name:'Navetta del Sunflower',role:'Ritorno',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
+  say(host,{t:'La navetta riparte dal Sunflower. Alle 22:00 al Marketers Village c’è il karaoke. Dove vuoi andare?',c:[
+    {t:'Al Marketers Village (karaoke alle 22)',n:null,act:()=>{if(G.min<22*60)G.min=22*60;eveningAtVillage(false);}},
+    {t:'Torno al Palacongressi',n:null,act:()=>sunToPalace()},
+    {t:'Resto ancora un po’',n:null}]});
+}
+function sunToPalace(){
+  G.fade=1;A.blip();setTimeout(()=>{G.f=0;G.p.x=k(632);G.p.y=k(885);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.min+=12;toast('Eccoti di nuovo all’Ingresso A del Palacongressi.',2800);},250);
+}
+function goSunflower(){
+  G.fade=1;A.blip();setTimeout(()=>{G.f=3;G.p.x=k(SUN.door.x);G.p.y=k(SUN.door.y-60);[G.p.x,G.p.y]=freeSpot(3,G.p.x,G.p.y);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.min=Math.max(G.min+10,20*60);G.flags.sun=true;A.stamp();toast('Benvenuto al Marketers Meetup al Sunflower! Bar, tavoli e tante persone con cui parlare.',3800);},250);
+}
+function sunQuest(){return[{t:'Marketers Meetup al Sunflower',s:'Venerdì sera, 20:00-22:00: navetta dal Palacongressi',ok:!!(G.flags&&G.flags.sun)}];}

@@ -7,6 +7,7 @@ const MU={mus:true,timer:null,gain:null,step:0,next:0,zone:'',notes:0,
     upper:{bpm:70,root:57,sc:[0,3,5,7,10],ch:[[0,3,7],[5,8,12],[3,7,10],[7,10,14]],pad:.011,lead:'sine',lg:.011,bass:'sine',hat:false,pat:[-1,-1,2,-1,-1,-1,0,-1,-1,-1,3,-1,-1,-1,1,-1]},
     village:{bpm:76,root:60,sc:[0,2,4,7,9],ch:[[0,4,7],[7,11,14],[9,12,16],[5,9,12]],pad:.012,lead:'triangle',lg:.014,bass:'sine',hat:false,pat:[0,-1,2,-1,4,-1,3,-1,2,-1,4,-1,1,-1,-1,-1]},
     party:{bpm:124,root:55,sc:[0,3,5,7,10],lead:'square',lg:.013,bass:'sawtooth',hat:true,pat:[0,0,3,0,4,3,2,0],kick:true},
+    sun:{bpm:92,root:57,sc:[0,3,5,7,10],ch:[[0,3,7],[5,8,12],[7,10,14],[3,7,10]],pad:.012,lead:'triangle',lg:.012,bass:'triangle',hat:true,pat:[0,-1,2,-1,4,-1,2,-1,3,-1,2,-1,0,-1,-1,-1]},
     hall:{bpm:60,root:52,sc:[0,4,7],ch:[[0,7,12],[0,7,12],[-3,4,9],[-5,2,7]],pad:.01,lead:'sine',lg:.008,bass:'sine',hat:false,pat:[-1,-1,-1,-1,-1,-1,2,-1,-1,-1,-1,-1,-1,-1,-1,-1]},
     yoga:{bpm:50,root:52,sc:[0,2,4,7,9],ch:[[0,7,12],[0,7,12],[-5,2,7],[-5,2,7]],pad:.016,lead:'sine',lg:.014,bass:'sine',hat:false,pat:[-1,-1,-1,-1,2,-1,-1,-1,-1,-1,-1,-1,4,-1,-1,-1]}},
   /* parametri dinamici per i giochi di ritmo: karaoke (per canzone) e ballo/cuscinate */
@@ -21,6 +22,7 @@ const MU={mus:true,timer:null,gain:null,step:0,next:0,zone:'',notes:0,
     if(G.react){const c=G.react.cfg;return !c?'yoga':c.kind==='kar'?'kar:'+c.song.id:'dance:'+c.kind;}
     if(G.watching)return 'hall';
     if(G.f===2){const ev=(typeof activeAt==='function'&&!G.sandbox)?activeAt(['Village']):null;return ev&&G.min>=22*60-5?'party':'village';}
+    if(G.f===3)return 'sun';
     return G.f===1?'upper':'atrio';},
   note(f,t,d,type,g){const ac=A.ac;if(!ac||!this.gain)return;const o=ac.createOscillator(),v=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);v.gain.setValueAtTime(0.0001,t);v.gain.exponentialRampToValueAtTime(g,t+.01);v.gain.exponentialRampToValueAtTime(.0003,t+d);o.connect(v);v.connect(this.gain);o.start(t);o.stop(t+d+.03);this.notes++;},
   hat(t){const ac=A.ac;if(!ac||!this.gain)return;const n=Math.floor(ac.sampleRate*.04),b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=ac.createBufferSource(),v=ac.createGain();s.buffer=b;v.gain.value=.012;s.connect(v);v.connect(this.gain);s.start(t);},

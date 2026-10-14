@@ -170,6 +170,6 @@ function villageTick(){
   if(on!==_vcOn||(on&&pj!==_vcPj))villageCrowd(on,pj);
   if(G.flags.pjOn!==pj)G.flags.pjOn=pj;
   /* alle 22 chi è ancora al Palacongressi viene portato al Village: in ritardo */
-  if(G.min>=22*60&&G.eveDay!==G.day&&!G.watching&&!G.react&&!DL&&!uiOpen()){if(G.f===2)G.eveDay=G.day;else eveningAtVillage(true);}
+  if(G.min>=22*60&&G.eveDay!==G.day&&!G.watching&&!G.react&&!DL&&!uiOpen()){if(G.f===2)G.eveDay=G.day;else if(G.f===3)eveningAtVillage(false);else eveningAtVillage(true);}
   if(G.day===2&&G.items&&G.items.banner&&!G.flags.banner&&G.min>=23*60&&!G.warnB){G.warnB=true;toast('🚩 La serata sta per finire: pianta lo stendardo al pigiama party!',4200);}
 }

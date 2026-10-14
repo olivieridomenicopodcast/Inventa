@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=96;
+const BUILD=97;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -249,7 +249,7 @@ let SEED=lsGet('rimini.seed',null)||newSeed();
 
 function newGame(seed){
   G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:VILLAGE_ON?8*60+15:8*60+45,f:VILLAGE_ON?2:0,p:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y),dir:0,step:0}:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),album:[],qd:{},qq:[],sandbox:SANDBOX,meets:[],people:genPeople(seed||SEED),done:false,cam:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y)}:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
-  FL[0]=buildGround();drawShuttleStop(FL[0]);FL[1]=buildFirst();FL[2]=VILLAGE_ON?buildVillage():null;buildNPC();
+  FL[0]=buildGround();drawShuttleStop(FL[0]);FL[1]=buildFirst();FL[2]=VILLAGE_ON?buildVillage():null;FL[3]=typeof buildSunflower==='function'?buildSunflower():null;buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
 const HAIRS=['#2a1d14','#4a3322','#7a5a2a','#1a1a20','#8a3a2a','#c9a24a','#d9d2c4'],SKINS=['#e8b98a','#dfae80','#c98e62','#f0c8a0','#a8734c'];
@@ -275,6 +275,7 @@ function buildNPC(){
     const VZ=[[300,540,900,740,2],[700,700,1000,780,2],[140,590,420,700,2],[100,300,380,460,2],[920,300,1200,460,2],[430,520,880,700,2]];
     for(let i=0;i<24;i++)mkAtt(nAtt+i,VZ);
   }
+  if(typeof sunNPC==='function')sunNPC(add,pickFrom,mkAtt,nAtt+24);
   if(typeof extrasNPC==='function')extrasNPC(add,pickFrom);
 }
 
@@ -357,6 +358,7 @@ function interactables(){
     I(770,578,35,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
   }
   if(f===2&&VILLAGE_ON)villageSpots(I);
+  if(f===3&&typeof sunSpots==='function')sunSpots(I);
   if(typeof itemSpots==='function')itemSpots(f,I);
   if(typeof sqSpots==='function')sqSpots(f,I);
   for(const n of NPC)if(n.f===f)out.push({x:n.x,y:n.y,r:22,npc:n,label:'Parla con '+n.name,fn:()=>talkTo(n)});
@@ -530,6 +532,7 @@ function enterSession(e){
   if(e.kind==='party'){partySilent(e);return;}
   if(e.kind==='react'){startReact(e);return;}
   if(e.kind==='karaoke'){karaoke(e);return;}
+  if(e.kind==='meetup'){if(G.f===3){info('Marketers Meetup','Sei già al Sunflower: bar, tavoli e persone con cui parlare.');}else info('Marketers Meetup','Il Marketers Meetup è al Sunflower, venerdì dalle 20:00 alle 22:00. Prendi la navetta serale dal Palacongressi (fermata «Navetta» fuori dall’Ingresso A, dalle 19:30).');return;}
   if(!G.flags.accred){info('Varco','Serve il badge per entrare in sala.');return;}
   if(e.kind==='ws'){
     if(!G.booked.has(e.id)){
@@ -743,6 +746,7 @@ function quests(){
     {t:'Fatti firmare un libro',s:'Stand Urlico Hoepli (ven 16:00 Dario Vignali)',ok:F.sign},
     {t:'Fai la Riattivazione',s:'Micro sessione di yoga sul Main Stage, sabato e domenica',ok:F.react>0},
     {t:'Yoga Silent Party',s:'Main stage silent, venerdì 18:15',ok:F.party},
+    ...(typeof sunQuest==='function'?sunQuest():[]),
     {t:'Karaoke all’Offworld',s:'Al Marketers Village, dalle 22:00 (canta una canzone)',ok:F.kara},
     {t:'Pigiama party finale',s:'Domenica dalle 22:00, al Marketers Village',ok:!!F.pjp},
     {t:'Gioca a un Game Quiz',s:'Stand nell’atrio, venerdì',ok:F.quiz>=1},
@@ -769,7 +773,7 @@ function sessCard(e){
   else if(e.kind==='lounge'){btn='';}
   else if(past(e))btn='<button class="pb occ" disabled>Concluso</button>';
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
-  const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
+  const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',meetup:'MEETUP · SUNFLOWER',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
   return `<div class="sc ${booked?'mine':''}" data-past="${past(e)?1:0}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${e.kind==='sign'?'Firmacopie con '+esc(e.sp):esc(e.title)}</div>${e.kind==='sign'?'<div class="rm">📖 '+esc(e.title.replace(/^.*? - /,''))+'</div>':''}<div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small>${typeof spkNote==='function'?spkNote(e.sp):''}</div>`:''}<div class="tags">${forMe(e)?'<span class="tg me">★ Per te</span>':''}${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
 }
 function meetOptions(){
@@ -915,7 +919,7 @@ const mapPlaces=()=>{
   add('Sala dell’Anfiteatro',1,635,775,'Sale');add('Vuoto sulla Piazza (affaccio)',1,770,578,'Servizi');
   return P;
 };
-const FLN=['Piano terra','Primo piano','Marketers Village'];
+const FLN=['Piano terra','Primo piano','Marketers Village','Sunflower'];
 let MAPF=0,MAPSEL=null,mapRaf=0,MAPDAY=0,MZ=1,MCX=0,MCY=0;
 function mapClamp(cw,ch,sc){const vw=cw/sc,vh=ch/sc;MCX=vw>=WW?WW/2:Math.max(vw/2,Math.min(WW-vw/2,MCX));MCY=vh>=WH?WH/2:Math.max(vh/2,Math.min(WH-vh/2,MCY));}
 function mapZoom(f,px,py){const cv=$('#mapcv2');if(!mapT)return;const w=cv.width,h=cv.height;if(px==null){px=w/2;py=h/2;}const wx=(px-mapT.ox)/mapT.sc,wy=(py-mapT.oy)/mapT.sc;MZ=Math.max(1,Math.min(6,MZ*f));const sc=mapT.base*MZ;MCX=wx-(px-w/2)/sc;MCY=wy-(py-h/2)/sc;}
@@ -990,6 +994,7 @@ $('#mfl0').onclick=()=>{MAPF=0;MAPSEL=null;mapList();};$('#mfl1').onclick=()=>{M
 function viaFloor(d){
   if(G.f===2)return{x:k(VG.bus.x),y:k(VG.bus.y),lab:'Navetta per il Marketers World'};
   if(d.f===2)return{x:k(VG.shuttle.x),y:k(VG.shuttle.y),lab:'Navetta per il Village'};
+  if(d.f===3)return{x:k(VG.shuttle.x),y:k(VG.shuttle.y),lab:'Navetta per il Sunflower'};
   return{x:k(630),y:k(610),lab:'Scale mobili ('+(d.f===1?'primo piano':'piano terra')+')'};
 }
 function drawDest(){
@@ -1130,7 +1135,7 @@ function draw(){
   const near=nearest();
   for(const it of list){
     if(it.me)person(ctx,G.p.x,G.p.y,G.p.dir,G.p.step,NIKY);
-    else{const n=it.n;if(n.pet)drawPet(ctx,n);else person(ctx,n.x,n.y,n.dir,n.step,n.p);
+    else{const n=it.n;if(n.pet)drawPet(ctx,n);else if(n.seated){ctx.save();ctx.beginPath();ctx.rect(Math.round(n.x)-14,Math.round(n.y)-44,28,34);ctx.clip();person(ctx,n.x,n.y,n.dir,0,n.p);ctx.restore();}else person(ctx,n.x,n.y,n.dir,n.step,n.p);
       if(n.kind==='family'){const b=Math.sin(G.t*4+n.x)>0?0:1;ctx.fillStyle='#ffd24d';ctx.fillRect(Math.round(n.x)-1,Math.round(n.y)-31+b,3,3);}
       if(near&&near.npc===n){txt(ctx,n.name,Math.round(n.x),Math.round(n.y)-34,'#fff',5);}}
   }
