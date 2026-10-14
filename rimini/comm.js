@@ -197,6 +197,7 @@ function cmReplies(){
 function cmFeed(T,onlyMine,pin,noExtras,full){
   const C=cmEnsure(),items=[];
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
+  if(!onlyMine)items.push(...cmNoShows(T).map(n=>Object.assign({},n,{mine:false,q:false})));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
   const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:playerLook(),me:true};
@@ -219,10 +220,20 @@ function cmPostText(pid){const C=cmEnsure(),m=C.posts.find(p=>p.id===pid);if(m)r
 function cmActivity(T){
   const C=cmEnsure(),out=[];
   for(const p of C.posts)for(const c of cmComments(p,true))if(c.at<=T)out.push({id:c.id,type:'comment',at:c.at,met:c.met,who:c.who,text:c.text,pid:p.id,ptext:p.text});
+  for(const n of cmNoShows(T))out.push({id:n.id+'_a',type:'noshow',at:n.at,met:false,who:n.who,text:n.text,pid:n.id,ptext:'il meeting saltato'});
   for(const x of cmReplies())if(x.at<=T)out.push({id:x.id,type:'reply',at:x.at,met:false,who:x.who,text:x.text,pid:x.pid,ptext:cmPostText(x.pid)});
   return out;
 }
 function cmLikesNotes(T){const C=cmEnsure(),out=[];for(const p of C.posts){const n=cmView({id:p.id,at:p.at,mine:true,m:{}},T).likes;if(n>0)out.push({id:'lk_'+p.id,type:'like',at:p.at+10,count:n,pid:p.id,ptext:p.text});}return out;}
+/* meeting saltati: chi ti ha aspettato 10 minuti si lamenta su Marketers Pro */
+const CM_NOSHOW=['Ho aspettato dieci minuti all’Area networking e niente. Dare buca così non è il massimo. #MW26','Meeting fissato, meeting saltato: {me} non si è presentat{O|A}. Io ero lì con il caffè in mano. ☕','Quando dici sì a un incontro e poi sparisci… {me}, ci siamo capiti. #networking','Dieci minuti di attesa, zero messaggi. Il networking è anche rispetto del tempo degli altri.','Un consiglio a chi viene al #MW26: se accetti un meeting, presentati. Io oggi ho aspettato per niente.','Il mio meeting delle {ora} non si è presentato. Pazienza, ma lo segno. 📝','Mai dare buca a un meeting: il mondo del marketing è piccolo e le community ancora di più.','Ho trattenuto la delusione per dieci minuti, poi sono andat{o|a} via. Il meeting con {me} è saltato.'];
+function cmNoShow(m){
+  const C=cmEnsure(),pe=G.people.find(x=>x.id===m.pid);if(!pe)return;if(!C.noshow)C.noshow=[];
+  const r=mulberry32(hashStr(G.seed+'|ns|'+m.pid+'|'+m.day+'|'+m.start));
+  C.noshow.push({id:'n'+C.noshow.length+m.pid,pid:m.pid,at:cmT()+6+Math.floor(r()*14),k:Math.floor(r()*CM_NOSHOW.length),ora:hm(m.start)});
+  A.blip();toast('🙄 '+pe.name.split(' ')[0]+' ti ha aspettato dieci minuti e se n’è andat'+(pe.gender==='f'?'a':'o')+'. Potrebbe lamentarsi su Marketers Pro…',4200);
+}
+const cmNoShows=T=>(cmEnsure().noshow||[]).filter(x=>x.at<=T).map(x=>{const pe=G.people.find(p=>p.id===x.pid)||{name:'?',job:'',gender:'m'};return{id:'ns_'+x.id,at:x.at,m:pe,text:gxf(cmFill(CM_NOSHOW[x.k].replace('{ora}',x.ora)),pe.gender),kind:'noshow',who:pe};});
 const cmUnread=T=>cmActivity(T).filter(a=>a.at>cmEnsure().seenT).length;
 const cmHasMetComment=T=>cmActivity(T).some(a=>a.met);
 function cmNotify(){
@@ -337,7 +348,7 @@ function notifRender(B,fil,T){
   const C=cmEnsure(),seen=C.seenT,L=[...cmActivity(T),...cmLikesNotes(T)].sort((a,b)=>b.at-a.at);
   const cut=s=>{s=(s||'').replace(/\s+/g,' ');return s.length>60?s.slice(0,58)+'…':s;};
   B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Notifiche</b> · commenti, risposte e like ai tuoi contenuti. Tocca una notifica per aprire il post.</div>`+fil+
-   (L.length?L.map(a=>{const nw=a.type!=='like'&&a.at>seen,head=a.type==='comment'?`<b>${esc(a.who.name)}</b> ha commentato il tuo post`:a.type==='reply'?`<b>${esc(a.who.name)}</b> ha risposto al tuo commento su`:`<b>${a.count} ${a.count===1?'persona ha':'persone hanno'}</b> messo like al tuo post`;
+   (L.length?L.map(a=>{const nw=a.type!=='like'&&a.at>seen,head=a.type==='noshow'?`<b>${esc(a.who.name)}</b> ha scritto di te su Marketers Pro`:a.type==='comment'?`<b>${esc(a.who.name)}</b> ha commentato il tuo post`:a.type==='reply'?`<b>${esc(a.who.name)}</b> ha risposto al tuo commento su`:`<b>${a.count} ${a.count===1?'persona ha':'persone hanno'}</b> messo like al tuo post`;
      return `<button class="nt ${nw?'new':''}" data-nid="${esc(a.pid)}|${esc(a.id)}">${a.type==='like'?'<span class="nti">♥</span>':cmAv(a.who)}<div><div>${head} «${esc(cut(a.ptext))}»${a.met?' <span class="nmet">incontrat'+(a.who&&a.who.gender==='f'?'a':'o')+' di persona</span>':''}</div>${a.text?`<div class="nq">${cmHL2(a.text,a.who)}</div>`:''}<small>${cmRel(a.at,T)}${nw?' · NUOVA':''}</small></div></button>`;}).join(''):'<div class="note">Nessuna notifica per ora. Quando qualcuno commenta o risponde ai tuoi contenuti, lo vedi qui.</div>');
   B.querySelectorAll('[data-nid]').forEach(b=>b.onclick=()=>{const [pid,cid]=b.dataset.nid.split('|');cmAlbum=false;cmNotif=false;cmMine=!!C.posts.find(p=>p.id===pid);cmPin=pid;cmOpen[pid]=true;cmHi=cid;renderPhone();});
   C.seenT=T;

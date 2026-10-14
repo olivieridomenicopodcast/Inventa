@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=89;
+const BUILD=90;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -350,8 +350,8 @@ function interactables(){
     I(630,610,40,'Sali al primo piano (scale mobili)',()=>goFloor(1,k(630),k(590)));
     const kar=activeAt(['Village'])||(G.sandbox&&G.day===2&&G.items&&G.items.banner?PROGRAMMA.find(e=>e.d===2&&/Pigiama/.test(e.title)):null);I(1060,690,70,kar?kar.title:'Il Village',()=>kar?karaoke(kar):info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
         I(810,810,46,'Una sessione di yoga',()=>say(NPC.find(n=>n.id==='yoga'),nodeYoga()));
-    const mt=G.meets.find(m=>m.day===G.day&&G.min>=m.start-10&&G.min<m.start+40);
-    I(225,694,30,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso.'));
+    const mt=G.meets.find(m=>m.day===G.day&&G.min>=m.start-10&&G.min<m.start+10);
+    I(225,694,30,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso. Se un meeting è fissato, presentati entro 10 minuti dall’orario: dopo ti danno buca e c’è chi si lamenta su Marketers Pro.'));
     I(312,658,26,'Pausa al Bistrot',rest);
     I(651,305,36,'Leggi il cartello della sala',()=>info('Sala della Piazza',FACTS.piazza));
     I(632,770,40,'Leggi l’ingresso',()=>info(EVENT.name+' '+EVENT.year,EVENT.dates+'. '+EVENT.place+'. '+FACTS.palazzo));
@@ -1087,7 +1087,7 @@ function update(dt){
     if(m>.15){dx/=Math.max(1,m);dy/=Math.max(1,m);const sp=(keys.ShiftLeft?108:78)*dt;moveBody(p,dx*sp,dy*sp,FL[G.f]);p.step+=dt*(keys.ShiftLeft?7.5:5.3);p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);if(Math.floor(p.step*2)!==Math.floor((p.step-dt*4)*2))A.step();}else p.step=0;
   }
   {const d=NPC.find(n=>n.id==='dario'),sg=!!(activeAt(['Stand Urlico Hoepli'])&&/Vignali/.test(activeAt(['Stand Urlico Hoepli']).sp));if(d){if(sg){d.f=0;d.x=k(800);d.y=k(272);d.dir=0;}else if(d.sg){d.x=k(d.data.where.x);d.y=k(d.data.where.y);}d.sg=sg;}}
-  G.meets=G.meets.filter(m=>{const dead=(m.day<G.day)||(m.day===G.day&&G.min>m.start+40);if(dead)toast('Hai saltato un meeting.',2200);return !dead;});
+  if(!G.sandbox&&G.meets.length){const gone=G.meets.filter(m=>(m.day<G.day)||(m.day===G.day&&G.min>=m.start+10));if(gone.length){G.meets=G.meets.filter(m=>!gone.includes(m));gone.forEach(m=>{if(typeof cmNoShow==='function')cmNoShow(m);});}}
   updateNPC(dt);if(typeof petRoam==='function')petRoam(dt);
   if(typeof finaleStep==='function'){finaleStep(dt);finaleTick();}
   // fine giornata di sala: si possono scoprire i luoghi
