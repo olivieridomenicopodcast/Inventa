@@ -116,6 +116,15 @@ freelance:[
  ['Il passaparola','Chiedi una raccomandazione','Fai bene un lavoro piccolo','La maggior parte dei buoni clienti arriva da qualcuno che vi conosce. Chiedete, ringraziate e ricambiate.','Chiedi una raccomandazione dopo ogni lavoro riuscito.'],
  ['Contratti e confini','Scrivi cosa e quando','Il silenzio costa','Un accordo scritto vi protegge entrambi. Tre righe chiare valgono più di mille promesse a voce.','Metti per iscritto ogni accordo, anche piccolo.'],
  ['Evitare l’altalena','Mese pieno e mese vuoto','Costruisci un flusso costante','Il segreto del freelance tranquillo è cercare clienti anche quando è pieno di lavoro. Il momento per seminare è sempre adesso.','Cerca nuovi clienti anche quando sei pieno.']],
+copy:[
+ ['Il titolo fa metà del lavoro','Una promessa chiara, non un’idea vaga','Scrivine venti e scegli il migliore','Nove persone su dieci leggono solo il titolo. Scrivetene almeno venti versioni e buttate le prime dieci: sono quelle ovvie.','Scrivi venti titoli e scegli il migliore.'],
+ ['Parla come il cliente','Raccogli le sue parole, non le tue','Recensioni e messaggi sono oro','Le parole migliori non le inventate: le trovate nelle recensioni, nelle email e nelle chiamate. Copiate la frase che il cliente userebbe parlando con un amico.','Raccogli le frasi reali dei clienti e riusale nei testi.'],
+ ['Benefici, non caratteristiche','Cosa cambia per chi legge?','Dal “cosa è” al “cosa ci faccio”','Nessuno compra un trapano: compra un buco nel muro. Traducete ogni caratteristica in qualcosa che cambia la vita di chi legge.','Trasforma ogni caratteristica in un beneficio concreto.'],
+ ['Una call to action sola','Una sola azione per pagina','Verbo chiaro, risultato chiaro','Chi ha tre scelte non ne fa nessuna. Decidete cosa volete che accada dopo e chiedetelo una volta, in modo chiaro.','Chiedi una sola azione per pagina.'],
+ ['Rispondi alle obiezioni','Costa troppo? Funziona davvero?','Prevedile dentro il testo','Il lettore ha dei dubbi e voi non siete lì per rispondere. Scrivete le domande che farebbe e rispondete prima che le faccia.','Scrivi le obiezioni del cliente e rispondi dentro il testo.'],
+ ['Prova sociale vera','Numeri, nomi, storie precise','Una recensione vale mille slogan','“Clienti soddisfatti” non dice nulla. “Marta ha dimezzato i tempi in due settimane” sì. Siate specifici e verificabili.','Usa prove specifiche: numeri, nomi, risultati.'],
+ ['Struttura di una pagina di vendita','Problema, soluzione, prova, invito','Il lettore scorre, aiutalo','Una buona pagina racconta: ecco il problema, ecco come lo risolviamo, ecco chi ce l’ha fatta, ecco cosa fare adesso. Fine.','Segui la sequenza problema, soluzione, prova, invito.'],
+ ['Tono e lunghezza','Lungo se serve, corto se basta','Taglia ogni parola che non lavora','Non esiste un testo troppo lungo: esiste un testo noioso. Controllate ogni frase e chiedetevi cosa succede se la tolgo.','Taglia ogni frase che non spinge il lettore avanti.']],
 community:[
  ['Un luogo, una regola','Dai alle persone una casa','Poche regole, scritte chiare','Una community senza regole diventa rumore. Una con troppe regole diventa silenzio. Scrivetene poche e rispettatele per prime.','Dai alla community poche regole chiare.'],
  ['Il primo saluto','Accogli chi entra per nome','Chiedi cosa cerca','I primi cinque minuti decidono se resta. Un messaggio personale vale più di un benvenuto automatico.','Saluta ogni nuovo membro con un messaggio personale.'],
@@ -149,6 +158,7 @@ money:[['Prima di investire…','Costruisci un fondo di sicurezza','Compra la mo
 write:[['Come si scrive una buona prima riga?','Si parte dal beneficio per chi legge','Si saluta a lungo','Si cita una definizione','La prima riga decide se continui.'],['Dopo la prima bozza…','Si taglia','Si pubblica subito','Si allunga','Tagliare rende il testo più chiaro.']],
 data:[['Quante metriche seguire?','Poche, collegate a un’azione','Tutte quelle possibili','Nessuna','Meno numeri, più decisioni.'],['Due numeri salgono insieme. Significa che…','Può esserci o no un legame: va testato','Uno causa l’altro','Sono sbagliati','Correlazione non è causa.']],
 freelance:[['Meglio avere…','Un cliente ideale ben definito','Qualsiasi cliente','Un solo cliente','Chi sceglie, si fa scegliere.'],['Come prezzare un lavoro?','In base al valore per il cliente','Solo a ore','In base al prezzo del concorrente','Il valore giustifica il prezzo.']],
+copy:[['Cosa fa più differenza in un annuncio?','Il titolo e la promessa','Il font','La lunghezza del testo','Il titolo è ciò che si legge per primo.'],['Dove trovi le parole migliori per un testo?','Nelle parole dei clienti','Nel dizionario','Nei testi dei concorrenti','Chi compra parla in modo naturale.'],['Quante azioni chiedi in una pagina?','Una sola','Cinque, per sicurezza','Nessuna','Una scelta sola aumenta le probabilità.']],
 community:[['Una community cresce quando…','Le persone parlano tra loro','Parli solo tu','Ci sono mille regole','Il tuo ruolo è far parlare.'],['Il primo messaggio a un nuovo membro è…','Personale e con una domanda','Un modulo automatico','Un listino prezzi','I primi minuti contano.']]
 };
 const TKQG=[['Alla fine di un evento, cosa conta di più?','Una sola azione fatta entro 48 ore','Il numero di appunti presi','Quante persone hai incontrato','Le idee senza azione svaniscono.'],['Per migliorare qualcosa devi prima…','Misurare il punto di partenza','Comprare uno strumento nuovo','Chiedere a un esperto','Senza partenza non vedi il progresso.'],['Un feedback duro è…','Una informazione utile','Un attacco personale','Da ignorare','Ascoltalo fino in fondo, poi decidi.'],['Cosa rende un processo semplice?','Si spiega in tre frasi','Ha molti passaggi','Serve un manuale','Se è lungo da spiegare, è lungo da fare.']];
@@ -182,7 +192,9 @@ const TKTOPIC=[
  ['startup',/impresa|startup|fondar|imprendi|business|azienda|scalare|exit|soci|idea/i],
  ['mindset',/mindset|mente|abitudin|produttiv|focus|energia|riattiv|yoga|equilibr|benessere|successo|ribell|divergent|coraggio|cambiar|paura|motiv/i],
  ['money',/econom|soldi|finanz|invest|rendit|immobil|real estate|tass|fisco|cripto|budget|patrimon|risparm/i],
- ['write',/scriv|copy|storytelling|narraz|racconto|newsletter|email|libro|testo|parole/i],
+
+ ['copy',/copy|copywrit|headline|slogan|call to action|cta|pagina di vendita|landing|testi che vendono|persuas/i],
+ ['write',/scriv|storytelling|narraz|racconto|newsletter|email|libro|testo|parole/i],
  ['data',/dati|analytic|metric|report|misur|kpi|numeri/i],
  ['freelance',/freelance|partita iva|consulen|agenzia|clienti ideali|autonom/i],
  ['community',/community|gruppo|tribù|membri|eventi/i]];
