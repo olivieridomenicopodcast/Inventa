@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=52;
+const BUILD=53;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -65,7 +65,8 @@ function person(c,x,y,dir,step,p){
   if(p.cap){c.fillStyle=p.cap;c.fillRect(x-5,y-24-bob,10,3);if(dir===0)c.fillRect(x-5,y-22-bob,10,1);}
 }
 const SHIRTS=['#ff7a3d','#3da5d9','#6bc46d','#b57bff','#e86a8a','#ffd24d'],HAIRC=['#2a1d14','#6a4a2a','#c9a24a','#1a1a20','#8a3a2a','#d9d2c4'],SKINC=['#f0c8a0','#e8b98a','#c98e62','#a8734c'];
-let PLAYER=Object.assign({name:'Ospite',gender:'m',si:0,hi:0,ki:1},lsGet('rimini.player',{}));
+let PLAYER=Object.assign({name:'Ospite',gender:'m',si:0,hi:0,ki:1,job:''},lsGet('rimini.player',{}));
+let _me=null;const ME=()=>{const j=PLAYER.job||'';if(!_me||_me.src!==j)_me=Object.assign({src:j},jobProfile(j));return _me;};
 function playerLook(){const f=PLAYER.gender==='f';return{shirt:SHIRTS[PLAYER.si%6],pants:f?'#3a3f66':'#26304f',skin:SKINC[PLAYER.ki%4],hair:HAIRC[PLAYER.hi%6],long:f,skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff'};}
 const NIKY=new Proxy({},{get:(_,k)=>playerLook()[k]});
 const pname=()=>(PLAYER.name||'Ospite').trim()||'Ospite';
@@ -239,7 +240,7 @@ function buildFirst(){
 /* ============================================================ stato */
 let FL=[null,null],G=null,NPC=[],mode='title';
 const keys={};let touch={x:0,y:0};
-const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0};
+const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 const RNG=()=>(G&&G.rng)?G.rng():Math.random();
@@ -261,12 +262,13 @@ function buildNPC(){
   SPEAKERS.forEach(s=>add({id:'sp_'+s.name,kind:'speaker',name:s.name,role:'Speaker annunciata/o (da verificare col programma)',f:s.where.f,x:k(s.where.x),y:k(s.where.y),p:randPal(),dir:2}));
   add({id:'accred',kind:'staff',name:'Staff accrediti',role:'Ritiro badge',f:0,x:k(520),y:k(805)+2,p:{shirt:'#ff6a3d',pants:'#232a44',skin:'#e8b98a',hair:'#3a2a1c',badge:'#fff'},dir:0});
   add({id:'info',kind:'staff',name:'Assistenza app',role:'Info point',f:0,x:k(745),y:k(805)+2,p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'},dir:0});
+  add({id:'scout',kind:'staff',name:pickFrom(ATT_FIRST)+' '+pickFrom(ATT_LAST),role:'Talent scout',f:-1,x:k(262),y:k(668),p:{shirt:'#1ea0e8',pants:'#232a44',skin:'#e8b98a',hair:'#2a1f18',badge:'#ffd24d',long:RNG()<.5},dir:0});
   add({id:'yoga',kind:'staff',name:'Insegnante di yoga',role:'Sessione sul prato',f:0,x:k(810),y:k(780),p:{shirt:'#7ad37a',pants:'#e8e8f0',skin:'#e0b085',hair:'#4a3322',badge:'#7ad37a',long:true},dir:0});
   add({id:'dj',kind:'staff',name:'Host Offworld',role:'Karaoke e DJ set',f:0,x:k(985)+75,y:k(600)+96,p:{shirt:'#161226',pants:'#232a44',skin:'#e8b98a',hair:'#c9a24a',badge:'#ff6a3d',cap:'#ff6a3d'},dir:0});
   // partecipanti inventati che girano: numero, aspetto e zone cambiano a ogni seme
   const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0]];
   const nAtt=12+Math.floor(RNG()*9);
-  for(let i=0;i<nAtt;i++){const r=pickFrom(ZONES);const fn=pickFrom(ATT_FIRST),ln=pickFrom(ATT_LAST);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:pickFrom(ATT_JOBS)+' · '+pickFrom(ATT_CITY),f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});}
+  for(let i=0;i<nAtt;i++){const r=pickFrom(ZONES);const fn=pickFrom(ATT_FIRST),ln=pickFrom(ATT_LAST);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);}
 }
 
 /* ============================================================ movimento e collisioni */
@@ -297,12 +299,16 @@ function nextEvent(){return PROGRAMMA.find(e=>e.d===G.day&&e.kind!=='lounge'&&e.
 function overlaps(a,b){return a.d===b.d&&a.start<b.e&&b.start<a.e;}
 function conflictWith(s){return [...G.booked].some(id=>id!==s.id&&overlaps(BYID[id],s))||G.meets.some(m=>overlaps({d:m.day,start:m.start,e:m.start+30},s));}
 function genPeople(seed){
-  const r=mulberry32(hashStr(seed+'|people')),used=new Set(),out=[];
-  const tag=['Potrebbe trovare utile quello che fai','Offre la sua esperienza','Cerca collaborazioni','Vuole confrontarsi sul tuo settore'];
+  const r=mulberry32(hashStr(seed+'|people')),used=new Set(),me=ME(),raw=[];
+  const tagHi=['Lavora in un campo molto vicino al tuo','Potrebbe collaborare con te','Cerca proprio qualcuno come te'],tagMid=['Potrebbe trovare utile quello che fai','Vuole confrontarsi sul tuo settore','Offre la sua esperienza'],tagLo=['Un punto di vista diverso dal tuo','Può aprirti un mondo nuovo','Cerca collaborazioni'];
   for(let i=0;i<14;i++){let nm;do{nm=ATT_FIRST[Math.floor(r()*ATT_FIRST.length)]+' '+ATT_LAST[Math.floor(r()*ATT_LAST.length)];}while(used.has(nm));used.add(nm);
-    out.push({id:'p'+i,name:nm,job:ATT_JOBS[Math.floor(r()*ATT_JOBS.length)],city:ATT_CITY[Math.floor(r()*ATT_CITY.length)],compat:Math.round(96-i*3.4-r()*5),tag:tag[Math.floor(r()*tag.length)],pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5'][i%6],pants:'#2b3350',skin:SKINS[i%SKINS.length],hair:HAIRS[i%HAIRS.length],long:i%3===0,badge:'#ff6a3d'}});}
-  return out;
+    const jb=JOBS[Math.floor(r()*JOBS.length)],a=aff(me.fam,jb[1]),tr=jobTraits(jb[0]),ov=tr.filter(t=>me.traits.includes(t)).length;
+    const compat=Math.max(48,Math.min(98,Math.round(44+46*a+ov*3+r()*7)));
+    raw.push({name:nm,job:jb[0],fam:jb[1],city:ATT_CITY[Math.floor(r()*ATT_CITY.length)],compat,tr,a,tag:pickBy(r,a>=.75?tagHi:a>=.62?tagMid:tagLo)});}
+  raw.sort((x,y)=>y.compat-x.compat);
+  return raw.map((o,i)=>Object.assign(o,{id:'p'+i,pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5'][i%6],pants:'#2b3350',skin:SKINS[i%SKINS.length],hair:HAIRS[i%HAIRS.length],long:i%3===0,badge:'#ff6a3d'}}));
 }
+function pickBy(r,a){return a[Math.floor(r()*a.length)];}
 function interactables(){
   const out=[],f=G.f,I=(x,y,r,label,fn)=>out.push({x:k(x),y:k(y),r:k(r),label,fn});
   const seen=new Set();
@@ -374,6 +380,7 @@ function talkTo(n){
   }else if(n.id==='accred')say(n,nodeAccred());
   else if(n.id==='info')say(n,nodeInfo());
   else if(n.id==='yoga')say(n,nodeYoga());
+  else if(n.id==='scout')say(n,nodeScout());
   else if(n.id==='dj')say(n,{t:'Benvenuto all’Offworld! '+FACTS.off+' Passa la sera: si canta.',c:[{t:'Ci vediamo stasera!',n:null}]});
   else attendee(n);
 }
@@ -392,15 +399,40 @@ function nodeInfo(){
 function nodeYoga(){
   return{t:'Ciao! Ogni tanto tra una sessione e l’altra ci si ferma a respirare. Vuoi provare tre respiri profondi?',c:[{t:'Sì, respiriamo',n:{t:'Inspira… espira… Meglio! Ti senti più leggero.',c:[{t:'Grazie',n:null,act:()=>{if(!G.flags.yoga){G.flags.yoga=true;A.stamp();toast('Yoga fatto!');}}}]}},{t:'Magari dopo',n:null}]};
 }
+const tipFor=fam=>pickFrom(TIPS[pickFrom((JOBFAM[fam]||JOBFAM.strat).tip)]);
+/* risposte coerenti con il mestiere del personaggio: cambiano in base all'affinità con la famiglia di chi hai davanti */
+function jobChoices(n,onMet){
+  const me=ME(),nf=JOBFAM[n.fam||'strat'],a=aff(me.fam,n.fam||'strat'),hi=a>=.75,mid=a>=.62,tr=me.traits[hashStr('t|'+n.id)%me.traits.length];
+  const meet=()=>{G.flags.jobTalk++;if(a>=.7)G.flags.hot++;onMet();};
+  const reply=hi?'Ma dai, '+me.job+'! Io sto dalla parte '+nf.lato+': siamo complementari, ci sarebbero mille cose da fare insieme. '
+    :mid?me.job+', interessante! Io sono più dalla parte '+nf.lato+'. Magari c’è qualcosa da fare insieme. '
+    :'Wow, '+me.job+': un mondo diverso dal mio, che sta dalla parte '+nf.lato+'. Mi incuriosisce molto. ';
+  const ch=[
+    {t:'Sono '+pname()+', '+me.job,n:{t:reply+'Scambiamoci i contatti?',c:[
+      {t:'Volentieri',n:null,act:meet},
+      {t:'Ti spiego cosa faccio',n:{t:'Ti ascolto!',c:[{t:JOBFAM[me.fam].pitch,n:{t:hi?'Bellissimo, è proprio quello che cerco: '+nf.cerca+'. Ci sentiamo dopo l’evento!':'Chiarissimo, grazie! Io cerco '+nf.cerca+'. Teniamoci in contatto.',c:[{t:'Contatti!',n:null,act:meet}]}}]}},
+      {t:'Dopo',n:null}]}},
+    {t:'('+TRAITS[tr].n+') '+TRAITS[tr].q,n:{t:'Bella domanda, '+pname()+'! Io sto cercando '+nf.cerca+'. '+(mid?'Direi che ci capiamo.':'Siamo diversi, ma proprio per questo può funzionare.'),c:[{t:'Scambiamoci i contatti',n:null,act:meet},{t:'Dopo',n:null}]}}
+  ];
+  return ch;
+}
 function attendee(n){
   const first=n.name.split(' ')[0],met=G.met[n.id];
   if(met)return say(n,{t:'Ci siamo già presentati! Ci sentiamo dopo l’evento, ok?',c:[{t:'Certo!',n:null}]});
-  const tip=pickFrom(TIPS[pickFrom(TIPKEYS)]);
+  const tip=tipFor(n.fam||'strat');
   say(n,{t:'Ciao! Sono '+first+', '+n.role.replace(' · ',' di ')+'. Tu?',c:[
-    {t:'Sono '+pname()+', piacere!',n:{t:'Piacere! Io sto cercando proprio di capire come migliorare la mia comunicazione. Scambiamoci i contatti?',c:[{t:'Volentieri',n:null,act:()=>{G.met[n.id]=1;addContact(n);}},{t:'Dopo',n:null}]}},
+    ...jobChoices(n,()=>{G.met[n.id]=1;addContact(n);}),
     {t:'Che workshop consigli?',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{G.met[n.id]=1;addContact(n);addTip(tip,'consiglio di '+first);}}]}},
     {t:'Ciao, devo scappare!',n:null}
   ]});
+}
+function nodeScout(){
+  const F=G.flags,me=ME(),n=NPC.find(x=>x.id==='scout');
+  if(F.offer)return{t:'Ci sentiamo dopo l’evento per i dettagli, '+pname()+'. È stato un piacere!',c:[{t:'A presto!',n:null}]};
+  if(G.contacts.length>=3&&F.hot>=1)return{t:'Ciao '+pname()+'! Ho sentito parlare di te in giro. '+JOBFAM[me.fam].scout,c:[
+    {t:'Mi interessa!',n:{t:'Perfetto! Ti scrivo dopo l’evento con i dettagli. Segnati il mio nome: '+n.name+'.',c:[{t:'A presto!',n:null,act:()=>{F.offer=true;addContact(n);A.stamp();toast('Proposta di collaborazione ricevuta!',3500);}}]}},
+    {t:'Ci devo pensare',n:{t:'Certo, io sono qui anche domani. Pensaci.',c:[{t:'Ok',n:null}]}}]};
+  return{t:'Ciao! Sono '+n.name+', talent scout. Cerco persone in gamba nel tuo campo ('+me.job+'). Prima gira un po’: serve fare rete con qualcuno vicino al tuo mestiere. Contatti '+G.contacts.length+'/3, incontri affini '+F.hot+'/1.',c:[{t:'Ricevuto, torno dopo',n:null}]};
 }
 function standTalk(s){
   const first=!G.flags.stands[s.id];G.flags.stands[s.id]=1;
@@ -559,10 +591,10 @@ function karaoke(e){
 }
 function kDone(){G.flags.kara=true;G.flags.off++;G.min+=50;A.stamp();toast('Karaoke al Village vissuto!');}
 function meetNow(m){
-  const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att'};
-  const tip=pickFrom(TIPS[pickFrom(TIPKEYS)]);
+  const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att',job:pe.job,fam:pe.fam};
+  const tip=tipFor(pe.fam);
   say(n,{t:'Ciao '+pname()+'! Che bello incontrarti di persona. Allora, di cosa ti occupi?',c:[
-    {t:'Ti racconto cosa faccio',n:{t:'Wow! Io faccio '+pe.job+'. Penso che potremmo collaborare: sentiamoci dopo l’evento.',c:[{t:'Volentieri!',n:null,act:()=>doneMeet(m,n)}]}},
+    ...jobChoices(n,()=>doneMeet(m,n)),
     {t:'Parliamo di come cresce un business',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{addTip(tip,'meeting con '+pe.name);doneMeet(m,n);}}]}},
     {t:'Scusa, devo scappare',n:null}]});
 }
@@ -632,6 +664,8 @@ function quests(){
     {t:'Segui un workshop del venerdì',s:'Prenotalo nell’app e vai nella sala giusta',ok:F.ws>=1},
     {t:'Segui 2 speech dal palco',s:'Sabato o domenica, Sala della Piazza ('+F.talk+'/2)',ok:F.talk>=2},
     {t:'Fai un meeting dall’app',s:'Scheda Networking, poi Area networking ('+F.meet+'/1)',ok:F.meet>=1},
+    {t:'Fai rete nel tuo settore',s:'Incontra 3 persone vicine al tuo mestiere ('+Math.min(3,F.hot)+'/3)',ok:F.hot>=3},
+    {t:'Ricevi una proposta di collaborazione',s:'Dalla talent scout, da sabato vicino all’Area networking',ok:F.offer},
     {t:'Scambia 5 contatti',s:'Parla con le persone ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
     {t:'Incontra Dario e Luca',s:'Vicino al palco principale',ok:F.dario&&F.luca},
@@ -644,10 +678,11 @@ function quests(){
   ];
 }
 function progress(){const q=quests();return{done:q.filter(x=>x.ok).length,tot:q.length};}
-let phoneTab='home',progDay=null,progMine=false;
+let phoneTab='home',progDay=null,progMine=false,progFor=false;
 function openPhone(tab){if(!G.flags.app){toast('L’app dell’evento (nel gioco) si attiva all’Assistenza app, fuori dall’Ingresso A.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
 function closePhone(){$('#phone').classList.add('hide');}
 const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
+const forMe=e=>(e.tags||[]).some(t=>JOBFAM[ME().fam].tags.includes(t));
 const tagH=t=>`<span class="tg"><i style="background:${TAGC[t]||'#888'}"></i>${esc(t)}</span>`;
 const EXTRAROOM={'Area networking':{f:0,x:225,y:694}};
 function roomPos(r){return (typeof ROOMS!=='undefined'&&ROOMS[r])||EXTRAROOM[r]||null;}
@@ -661,7 +696,7 @@ function sessCard(e){
   else if(e.kind==='lounge'){btn='';}
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
   const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
-  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small></div>`:''}<div class="tags">${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
+  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small></div>`:''}<div class="tags">${forMe(e)?'<span class="tg me">★ Per te</span>':''}${(e.tags||[]).map(tagH).join('')}</div>${btn}${goBtn(e.room)}</div>`;
 }
 function meetOptions(){
   const out=[];
@@ -698,7 +733,7 @@ function renderPhone(){
   if(phoneTab==='home'){
     const nw=[...G.booked].filter(id=>BYID[id].kind==='ws'&&!G.seen.has(id)&&(BYID[id].d>G.day||(BYID[id].d===G.day&&BYID[id].e>G.min))).length,p=progress();
     const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
-    B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
+    B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2><small style="opacity:.85">${esc(ME().job)}</small></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
      <div class="bn" data-go="prog:0">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
      <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
@@ -711,16 +746,16 @@ function renderPhone(){
     bind();
   }else if(phoneTab==='prog'){
     if(progDay==null)progDay=G.day;
-    const list=PROGRAMMA.filter(e=>e.d===progDay&&e.kind!=='lounge'&&(!progMine||G.booked.has(e.id)||G.saved.has(e.id)));
-    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button></div>`+'<div class="note" style="margin:0 0 8px">Titoli, speaker, sale e orari vengono dal programma dell’app; i contenuti delle slide sono inventati per il gioco.</div>'+(list.length?list.map(sessCard).join(''):'<div class="note">Niente da mostrare.</div>');
-    B.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{progDay=+b.dataset.d;renderPhone();});$('#mine').onclick=()=>{progMine=!progMine;renderPhone();};bind();
+    const list=PROGRAMMA.filter(e=>e.d===progDay&&e.kind!=='lounge'&&(!progMine||G.booked.has(e.id)||G.saved.has(e.id))&&(!progFor||forMe(e)));
+    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button><button id="forme" class="${progFor?'on':''}">★ Per te</button></div>`+'<div class="note" style="margin:0 0 8px">Titoli, speaker, sale e orari vengono dal programma dell’app; i contenuti delle slide sono inventati per il gioco.</div>'+(list.length?list.map(sessCard).join(''):'<div class="note">Niente da mostrare.</div>');
+    B.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{progDay=+b.dataset.d;renderPhone();});$('#mine').onclick=()=>{progMine=!progMine;renderPhone();};$('#forme').onclick=()=>{progFor=!progFor;renderPhone();};bind();
   }else if(phoneTab==='agenda'){
     const items=[...G.booked,...G.saved].map(id=>BYID[id]);
     const ms=G.meets.map(m=>({d:m.day,start:m.start,e:m.start+30,title:'Meeting con '+G.people.find(p=>p.id===m.pid).name,room:'Area networking',kind:'meet',tags:[],sp:'',role:''}));
     const all=[...items,...ms].sort((a,b)=>a.d-b.d||a.start-b.start);
     B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`:`<div class="sc ${G.booked.has(e.id)&&!G.seen.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}${G.seen.has(e.id)?' <span class="kt">CONCLUSO ✓</span>':''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';bind();
   }else if(phoneTab==='net'){
-    B.innerHTML=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base a cosa fai e cosa cerchi. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('')+(G.contacts.length?`<div class="sec">// I TUOI CONTATTI</div>`+G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'');
+    B.innerHTML=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('')+(G.contacts.length?`<div class="sec">// I TUOI CONTATTI</div>`+G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'');
     bind();
   }else if(phoneTab==='speak'){
     const seen=new Map();PROGRAMMA.filter(e=>e.sp&&e.kind!=='talk').forEach(e=>{if(!seen.has(e.sp))seen.set(e.sp,e);});
@@ -746,7 +781,7 @@ function showQR(){
   const B=$('#phB'),n=21;let g='';const r=mulberry32(hashStr('niky-badge'));
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){const f=(x<7&&y<7)||(x>=n-7&&y<7)||(x<7&&y>=n-7);let on=r()<.5;if(f){const lx=x%(n-7)>=0?x:x,ex=(x<7?x:x-(n-7)),ey=(y<7?y:y-(n-7));on=(ex===0||ex===6||ey===0||ey===6||(ex>=2&&ex<=4&&ey>=2&&ey<=4));}
     if(on)g+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;}
-  B.innerHTML=`<div class="back" id="bk">‹ Indietro</div><div class="qrc"><svg viewBox="0 0 ${n} ${n}" width="200" height="200" shape-rendering="crispEdges" fill="#111"><rect width="${n}" height="${n}" fill="#fff"/>${g}</svg><b>${esc(pname())}</b><span>Biglietto · Marketers World 2026</span><small>QR decorativo del gioco, non valido.</small></div>`;
+  B.innerHTML=`<div class="back" id="bk">‹ Indietro</div><div class="qrc"><svg viewBox="0 0 ${n} ${n}" width="200" height="200" shape-rendering="crispEdges" fill="#111"><rect width="${n}" height="${n}" fill="#fff"/>${g}</svg><b>${esc(pname())}</b><span>${esc(ME().job)}</span><span>Biglietto · Marketers World 2026</span><small>QR decorativo del gioco, non valido.</small></div>`;
   $('#bk').onclick=renderPhone;
 }
 function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#0a0d18';c.fillRect(0,0,cvm.width,cvm.height);c.drawImage(FL[f].cv,0,0,WW,WH,0,0,cvm.width,cvm.width*WH/WW);
@@ -907,7 +942,7 @@ function photo(){
 function endGame(){
   if(G.done)return;G.done=true;const p=progress(),F=G.flags;
   const title=p.done>=p.tot?'Partecipante leggendario':p.done>=8?'Networker del Palacongressi':p.done>=5?'Partecipante attivo':'Turista di Rimini';
-  $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div>
+  $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini come <b style="color:var(--ink)">${esc(ME().job)}</b>: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:8px">${F.offer?'<b style="color:var(--ink)">Hai ricevuto una proposta di collaborazione.</b> ':''}${esc(JOBFAM[ME().fam].epi)}</div>
    <div class="kv"><div>Contatti<b>${G.contacts.length}</b></div><div>Workshop<b>${F.ws}</b></div><div>Speech<b>${F.talk}</b></div><div>Stand<b>${Object.keys(F.stands).length}</b></div><div>Spunti<b>${G.tips.length}</b></div><div>Offworld<b>${F.off}</b></div></div>
    <div class="row2"><button class="btn" id="eAgain">Rigioca</button><button class="btn ghost" id="eBack">Torna al gioco</button><button class="btn ghost" id="eMenu">Menu principale</button></div>
    <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Realizzato da Olivieri Domenico usando Claude Code. Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers. Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
@@ -918,7 +953,7 @@ function endGame(){
 }
 
 /* ============================================================ ciclo */
-function startGame(st){goalFor='';const sd=st&&st.seed?st.seed:SEED;newGame(sd);if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
+function startGame(st){goalFor='';if(st&&st.player){PLAYER=Object.assign(PLAYER,st.player);}const sd=st&&st.seed?st.seed:SEED;newGame(sd);if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
   if(!st){openHow();}else toast('Partita caricata.',1800);last=performance.now();}
 let last=performance.now();
 function update(dt){
@@ -973,7 +1008,7 @@ function draw(){
   if(G.dest)drawDest();
   if(G.fade>0){ctx.fillStyle='rgba(5,6,13,'+G.fade+')';ctx.fillRect(0,0,W,H);}
 }
-const HOW=[["L’obiettivo", "<div class=\"stp\"><i>1</i><div><b>Attiva l’app dell’evento</b><span>È una finta app, <b>dentro il gioco</b>: non devi scaricare né installare nulla. Fuori dall’Ingresso A vai dall’<b>Assistenza app</b> (a destra): il personaggio fa l’accesso e così ottiene il QR del biglietto.</span></div></div><div class=\"stp\"><i>2</i><div><b>Mostra il QR</b><span>Dallo <b>Staff accrediti</b> (a sinistra) mostri il QR e ritiri il badge: solo così si apre il varco.</span></div></div><div class=\"stp\"><i>3</i><div><b>Entra e vivi l’evento</b><span>Workshop del venerdì, speech di sabato e domenica, stand, networking, party e karaoke. Gli obiettivi stanno nel telefono (scheda Obiettivi).</span></div></div><p>Il riquadro <b>OBIETTIVO</b> in alto a sinistra e la freccia arancione ti guidano nei primi passi.</p>"], ["Muoversi e interagire", "<h3>COMPUTER</h3><div class=\"kb\"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o frecce</span><span>muoverti</span><span><kbd>E</kbd> o <kbd>Spazio</kbd></span><span>parlare, entrare, usare ciò che hai davanti</span><span><kbd>E</kbd> / <kbd>1</kbd>…<kbd>4</kbd></span><span>andare avanti nei dialoghi / scegliere la risposta con quel numero</span><span><kbd>Esc</kbd></span><span>chiudere menu e finestre</span></div><h3>SMARTPHONE</h3><div class=\"kb\"><span>Stick a sinistra</span><span>muoverti</span><span>Pulsante <kbd>E</kbd></span><span>interagire</span><span>Tocco su risposte</span><span>scegliere nei dialoghi</span></div><p>Quando vicino a qualcuno o qualcosa compare un suggerimento: premi <b>E</b> (o il pulsante) per usarlo.</p>"], ["Tempo, zoom e pulsanti", "<p>Il tempo scorre da solo: <b>1 minuto di gioco ogni 4 secondi</b>, dalle 8:45 alle 23:30. Si ferma quando apri telefono, mappa, salvataggi o stai parlando.</p><div class=\"kb\"><span><kbd>T</kbd> o ⏩</span><span>salta 15 minuti</span><span><kbd>+</kbd> <kbd>−</kbd> o rotellina</span><span>zoom del gioco (anche i pulsanti ± in alto a destra)</span><span><kbd>M</kbd> o 🗺</span><span>mappa</span><span><kbd>P</kbd> o 📱</span><span>telefono / app</span><span><kbd>G</kbd> o 💾</span><span>salva e carica</span><span><kbd>F</kbd> o 📷</span><span>foto ricordo</span><span>🔊</span><span>audio on/off</span></div><p>Sullo smartphone i pulsanti sono in alto a destra. Il riquadro in alto a sinistra mostra giorno, ora e la prossima sessione.</p>"], ["Il telefono (app)", "<p>Si apre con 📱 o <b>P</b>, ma solo dopo aver fatto l’accesso all’Assistenza. In basso trovi le schede:</p><div class=\"kb\"><span><b>Home</b></span><span>riassunto, agenda e persone da conoscere; da qui anche Speaker, Annunci, Aziende, Offworld, Obiettivi</span><span><b>Programma</b></span><span>tutte le sessioni per giorno (Ven/Sab/Dom); “I miei” filtra le tue</span><span><b>Agenda</b></span><span>prenotazioni, sessioni salvate e meeting</span><span><b>Networking</b></span><span>persone consigliate: proponi un meeting e scegli l’orario</span><span><b>▣ (centro)</b></span><span>il tuo QR del biglietto</span></div><p>Nel Programma tocca <b>Prenota</b> per i workshop (non si prenota se l’orario è passato o si sovrappone a un altro), <b>Salva in agenda</b> per il resto, e <b>★ Portami qui</b> per far comparire la freccia verso la sala.</p>"], ["La mappa", "<p>Con 🗺 o <b>M</b>. Si cambia piano con i due pulsanti in alto; <b>Tu sei qui</b> è il punto arancione.</p><div class=\"kb\"><span>Pizzico / rotellina / doppio tocco</span><span>zoom</span><span>Trascina</span><span>sposta la mappa</span><span><kbd>+</kbd> <kbd>−</kbd> <kbd>◎</kbd></span><span>zoom e “centra su di me”</span><span>Tocca un punto o una voce dell’elenco</span><span>scheda del luogo con descrizione e programma della sala (per giorno)</span></div><p>Nella scheda usa <b>★ Portami qui</b>: una freccia arancione sul gioco indica la strada, anche tra i due piani (passa dalle scale mobili).</p>"], ["Sale, workshop e speech", "<p>Avvicinati a una sala e premi <b>E</b>: si apre una finestra con la sessione in corso, la prossima e il programma di oggi. Scegli tu se <b>Entrare ora</b>.</p><p>Dentro vedi gli speech come slide: <b>E / Spazio / tocco</b> per avanzare, <b>N</b> per prendere appunti, <b>1 2 3</b> (o tocco) per rispondere all’esercizio, <b>Esc</b> per uscire.</p><p>Le sessioni iniziano all’ora indicata: puoi arrivare cinque minuti prima. I workshop del venerdì vanno prenotati dall’app. Le Silent Stage (cuffie) stanno a sinistra, vicino al Main Stage.</p>"], ["Persone e minigiochi", "<p>Parla con chi incontri: ogni persona può finire nei tuoi contatti. Dall’app proponi un <b>meeting</b> e presentati all’<b>Area networking</b> all’ora scelta.</p><p><b>Riattivazione</b> (micro yoga sul Main Stage): minigioco di ritmo, premi <b>A S D</b> quando il respiro arriva al cerchio; sullo smartphone tocca le tre corsie.</p><p>Poi: firmacopie allo stand Hoepli, Game Quiz, Silent Party e karaoke al Village la sera. Qualche sorpresa è nascosta nel programma.</p>"], ["Salvataggi e partita", "<p>Con 💾 o <b>G</b> salvi in uno dei tuoi slot (fino a 15) e puoi caricare o cancellare le partite. C’è anche un salvataggio automatico ogni due minuti.</p><p>Il <b>seme</b> nel menu iniziale decide chi incontri: stesso seme, stesse persone; con il dado 🎲 ne generi uno nuovo.</p><p>Titoli, speaker, sale e orari delle sessioni vengono dal programma dell’app (venerdì, sabato e domenica). Sono inventati i contenuti delle slide, le persone che incontri e i titoli ancora “in arrivo”. Buon divertimento!</p>"]];
+const HOW=[["L’obiettivo", "<div class=\"stp\"><i>1</i><div><b>Attiva l’app dell’evento</b><span>È una finta app, <b>dentro il gioco</b>: non devi scaricare né installare nulla. Fuori dall’Ingresso A vai dall’<b>Assistenza app</b> (a destra): il personaggio fa l’accesso e così ottiene il QR del biglietto.</span></div></div><div class=\"stp\"><i>2</i><div><b>Mostra il QR</b><span>Dallo <b>Staff accrediti</b> (a sinistra) mostri il QR e ritiri il badge: solo così si apre il varco.</span></div></div><div class=\"stp\"><i>3</i><div><b>Entra e vivi l’evento</b><span>Workshop del venerdì, speech di sabato e domenica, stand, networking, party e karaoke. Gli obiettivi stanno nel telefono (scheda Obiettivi).</span></div></div><p>Il riquadro <b>OBIETTIVO</b> in alto a sinistra e la freccia arancione ti guidano nei primi passi.</p>"], ["Muoversi e interagire", "<h3>COMPUTER</h3><div class=\"kb\"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o frecce</span><span>muoverti</span><span><kbd>E</kbd> o <kbd>Spazio</kbd></span><span>parlare, entrare, usare ciò che hai davanti</span><span><kbd>E</kbd> / <kbd>1</kbd>…<kbd>4</kbd></span><span>andare avanti nei dialoghi / scegliere la risposta con quel numero</span><span><kbd>Esc</kbd></span><span>chiudere menu e finestre</span></div><h3>SMARTPHONE</h3><div class=\"kb\"><span>Stick a sinistra</span><span>muoverti</span><span>Pulsante <kbd>E</kbd></span><span>interagire</span><span>Tocco su risposte</span><span>scegliere nei dialoghi</span></div><p>Quando vicino a qualcuno o qualcosa compare un suggerimento: premi <b>E</b> (o il pulsante) per usarlo.</p>"], ["Tempo, zoom e pulsanti", "<p>Il tempo scorre da solo: <b>1 minuto di gioco ogni 4 secondi</b>, dalle 8:45 alle 23:30. Si ferma quando apri telefono, mappa, salvataggi o stai parlando.</p><div class=\"kb\"><span><kbd>T</kbd> o ⏩</span><span>salta 15 minuti</span><span><kbd>+</kbd> <kbd>−</kbd> o rotellina</span><span>zoom del gioco (anche i pulsanti ± in alto a destra)</span><span><kbd>M</kbd> o 🗺</span><span>mappa</span><span><kbd>P</kbd> o 📱</span><span>telefono / app</span><span><kbd>G</kbd> o 💾</span><span>salva e carica</span><span><kbd>F</kbd> o 📷</span><span>foto ricordo</span><span>🔊</span><span>audio on/off</span></div><p>Sullo smartphone i pulsanti sono in alto a destra. Il riquadro in alto a sinistra mostra giorno, ora e la prossima sessione.</p>"], ["Il telefono (app)", "<p>Si apre con 📱 o <b>P</b>, ma solo dopo aver fatto l’accesso all’Assistenza. In basso trovi le schede:</p><div class=\"kb\"><span><b>Home</b></span><span>riassunto, agenda e persone da conoscere; da qui anche Speaker, Annunci, Aziende, Offworld, Obiettivi</span><span><b>Programma</b></span><span>tutte le sessioni per giorno (Ven/Sab/Dom); “I miei” filtra le tue</span><span><b>Agenda</b></span><span>prenotazioni, sessioni salvate e meeting</span><span><b>Networking</b></span><span>persone consigliate: proponi un meeting e scegli l’orario</span><span><b>▣ (centro)</b></span><span>il tuo QR del biglietto</span></div><p>Nel Programma tocca <b>Prenota</b> per i workshop (non si prenota se l’orario è passato o si sovrappone a un altro), <b>Salva in agenda</b> per il resto, e <b>★ Portami qui</b> per far comparire la freccia verso la sala.</p>"], ["La mappa", "<p>Con 🗺 o <b>M</b>. Si cambia piano con i due pulsanti in alto; <b>Tu sei qui</b> è il punto arancione.</p><div class=\"kb\"><span>Pizzico / rotellina / doppio tocco</span><span>zoom</span><span>Trascina</span><span>sposta la mappa</span><span><kbd>+</kbd> <kbd>−</kbd> <kbd>◎</kbd></span><span>zoom e “centra su di me”</span><span>Tocca un punto o una voce dell’elenco</span><span>scheda del luogo con descrizione e programma della sala (per giorno)</span></div><p>Nella scheda usa <b>★ Portami qui</b>: una freccia arancione sul gioco indica la strada, anche tra i due piani (passa dalle scale mobili).</p>"], ["Sale, workshop e speech", "<p>Avvicinati a una sala e premi <b>E</b>: si apre una finestra con la sessione in corso, la prossima e il programma di oggi. Scegli tu se <b>Entrare ora</b>.</p><p>Dentro vedi gli speech come slide: <b>E / Spazio / tocco</b> per avanzare, <b>N</b> per prendere appunti, <b>1 2 3</b> (o tocco) per rispondere all’esercizio, <b>Esc</b> per uscire.</p><p>Le sessioni iniziano all’ora indicata: puoi arrivare cinque minuti prima. I workshop del venerdì vanno prenotati dall’app. Le Silent Stage (cuffie) stanno a sinistra, vicino al Main Stage.</p>"], ["Persone e minigiochi", "<p>Il <b>mestiere</b> che scegli nel menu iniziale cambia le tue risposte nei dialoghi, la compatibilità con le persone nel Networking, le sessioni segnate “★ Per te” e la trama: dal sabato una <b>talent scout</b> vicino all’Area networking ti fa una proposta, se hai fatto rete con persone affini.</p><p>Parla con chi incontri: ogni persona può finire nei tuoi contatti. Dall’app proponi un <b>meeting</b> e presentati all’<b>Area networking</b> all’ora scelta.</p><p><b>Riattivazione</b> (micro yoga sul Main Stage): minigioco di ritmo, premi <b>A S D</b> quando il respiro arriva al cerchio; sullo smartphone tocca le tre corsie.</p><p>Poi: firmacopie allo stand Hoepli, Game Quiz, Silent Party e karaoke al Village la sera. Qualche sorpresa è nascosta nel programma.</p>"], ["Salvataggi e partita", "<p>Con 💾 o <b>G</b> salvi in uno dei tuoi slot (fino a 15) e puoi caricare o cancellare le partite. C’è anche un salvataggio automatico ogni due minuti.</p><p>Nel menu iniziale puoi <b>salvare il profilo</b> (nome, aspetto e mansione) e ricaricarlo in un attimo, o copiare un <b>codice</b> per usarlo su un altro dispositivo.</p><p>Il <b>seme</b> nel menu iniziale decide chi incontri: stesso seme, stesse persone; con il dado 🎲 ne generi uno nuovo.</p><p>Titoli, speaker, sale e orari delle sessioni vengono dal programma dell’app (venerdì, sabato e domenica). Sono inventati i contenuti delle slide, le persone che incontri e i titoli ancora “in arrivo”. Buon divertimento!</p>"]];
 let howI=0;
 function howShow(){const [t,b]=HOW[howI];$('#howT').textContent=t;$('#howN').textContent=(howI+1)+'/'+HOW.length;$('#howB').innerHTML=b;$('#howB').parentNode.scrollTop=0;$('#howD').innerHTML=HOW.map((_,i)=>'<i class="'+(i===howI?'on':'')+'"></i>').join('');$('#howP').style.visibility=howI?'visible':'hidden';$('#howNx').textContent=howI===HOW.length-1?'Ho capito':'Avanti ›';}
 function openHow(){howI=0;howShow();$('#howm').classList.remove('hide');}
@@ -1005,7 +1040,7 @@ function drawGate(){
     c.fillStyle='#0c1124';c.fillRect(x0+w/2-34,y0-20,68,12);c.fillStyle='#ff4d5a';c.font='700 7px "Press Start 2P",monospace';c.textAlign='center';c.fillText('CHIUSO',x0+w/2,y0-11);
   }else{c.fillStyle='#4dff9a';c.fillRect(x0+w/2-2,y0-6,5,4);}
 }
-function hud(){goal();
+function hud(){goal();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr);
   const nx=nextEvent(),p=progress();
@@ -1059,12 +1094,33 @@ const padEnd=e=>{if(e.pointerId===padId){padId=null;touch.x=touch.y=0;padi.style
 pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
 cv.addEventListener('pointerdown',e=>{if(G&&G.react){reactHit(Math.min(2,Math.floor(e.clientX/(W/3))));}});
 $('#act').addEventListener('pointerdown',e=>{e.preventDefault();act();});
+const getProfiles=()=>lsGet('rimini.profiles',[]);
+function jobUI(){
+  const inp=$('#pjob');if(document.activeElement!==inp)inp.value=PLAYER.job||'';
+  const q=inp.value,sug=jobSuggest(q),box=$('#jobl');box.innerHTML='';
+  sug.forEach(j=>{const b=document.createElement('button');b.textContent=j[0];b.onmousedown=e=>e.preventDefault();b.onclick=()=>{PLAYER.job=j[0];lsSet('rimini.player',PLAYER);inp.value=j[0];jobUI();};box.appendChild(b);});
+  const alt=document.createElement('button');alt.className='alt';alt.textContent=q.trim()&&!jobFind(q)?'Altro: «'+q.trim()+'»':'Altro (scrivo la mia)';alt.onmousedown=e=>e.preventDefault();alt.onclick=()=>{inp.focus();};box.appendChild(alt);
+  const pr=jobProfile(q);
+  $('#jobsum').innerHTML=q.trim()?(pr.listed?'':'<b>Altro</b>: non è in lista, ti assegno uno stile in base alle parole. ')+'<b>Stile:</b> '+esc(pr.famN)+' · <b>Tratti:</b> '+pr.traits.map(t=>TRAITS[t].n).join(', ')+'. Cambia come parli, chi ti consiglia l’app e cosa ti propone la trama.':'Scegli un suggerimento o scrivi la tua mansione: cambia come parli, chi ti consiglia l’app e cosa ti propone la trama.';
+}
+function profList(){
+  const L=getProfiles(),box=$('#prl');box.innerHTML='';
+  L.forEach(pf=>{const d=document.createElement('div');d.className='pri';const b=document.createElement('button');b.textContent=(pf.name||'Senza nome')+' · '+pf.job;b.onclick=()=>{Object.assign(PLAYER,{name:pf.name,gender:pf.gender,si:pf.si,hi:pf.hi,ki:pf.ki,job:pf.job});lsSet('rimini.player',PLAYER);buildCreator();toast('Profilo caricato: '+(pf.name||pf.job),1600);};
+    const x=document.createElement('button');x.textContent='✕';x.onclick=()=>{lsSet('rimini.profiles',getProfiles().filter(o=>o.id!==pf.id));profList();};d.appendChild(b);d.appendChild(x);box.appendChild(d);});
+}
+function profCode(){const pf={name:PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,job:PLAYER.job};return 'RIM1:'+btoa(unescape(encodeURIComponent(JSON.stringify(pf))));}
+function profFromCode(s){try{s=(s||'').trim();if(!s.startsWith('RIM1:'))return null;const o=JSON.parse(decodeURIComponent(escape(atob(s.slice(5)))));if(typeof o!=='object'||!o)return null;return{name:String(o.name||'').slice(0,16),gender:o.gender==='f'?'f':'m',si:+o.si||0,hi:+o.hi||0,ki:+o.ki||0,job:jobNorm(o.job).slice(0,40)};}catch(e){return null;}}
 function buildCreator(){
   const nm=$('#pname');nm.value=PLAYER.name==='Ospite'?'':PLAYER.name;
   nm.oninput=()=>{PLAYER.name=nm.value;lsSet('rimini.player',PLAYER);};
+  const jb=$('#pjob');jb.oninput=()=>{PLAYER.job=jobNorm(jb.value);lsSet('rimini.player',PLAYER);jobUI();};jb.onfocus=()=>jb.select&&0;
   const sw=(id,arr,key)=>{const el=$(id);el.innerHTML='';arr.forEach((c,i)=>{const b=document.createElement('button');b.style.background=c;b.className=PLAYER[key]%arr.length===i?'on':'';b.onclick=()=>{PLAYER[key]=i;lsSet('rimini.player',PLAYER);buildCreator();};el.appendChild(b);});};
   sw('#cs',SHIRTS,'si');sw('#ch',HAIRC,'hi');sw('#cskin',SKINC,'ki');
   document.querySelectorAll('#cg button').forEach(b=>{b.className=b.dataset.g===PLAYER.gender?'on':'';b.onclick=()=>{PLAYER.gender=b.dataset.g;lsSet('rimini.player',PLAYER);buildCreator();};});
+  jobUI();profList();
+  $('#prSave').onclick=()=>{const L=getProfiles().filter(o=>!(o.name===PLAYER.name&&o.job===PLAYER.job));L.unshift({id:'pf'+Date.now(),name:PLAYER.name==='Ospite'?'':PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,job:PLAYER.job||jobProfile('').job});lsSet('rimini.profiles',L.slice(0,10));profList();toast('Profilo salvato.',1500);};
+  $('#prCopy').onclick=()=>{const c=profCode();(navigator.clipboard?navigator.clipboard.writeText(c).then(()=>toast('Codice profilo copiato. Incollalo su un altro dispositivo.',2600),()=>prompt('Copia questo codice:',c)):Promise.reject()).catch(()=>prompt('Copia questo codice:',c));};
+  $('#prPaste').onclick=()=>{const s=prompt('Incolla il codice profilo (inizia con RIM1:)');if(s==null)return;const o=profFromCode(s);if(!o){toast('Codice non valido.',2200);return;}Object.assign(PLAYER,o);lsSet('rimini.player',PLAYER);buildCreator();toast('Profilo caricato.',1600);};
 }
 buildCreator();
 $('#sd').value=SEED;$('#sd').oninput=e=>{SEED=(e.target.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10)||SEED;lsSet('rimini.seed',SEED);};$('#sdd').onclick=()=>{SEED=newSeed();$('#sd').value=SEED;lsSet('rimini.seed',SEED);};
