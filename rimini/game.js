@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=49;
+const BUILD=50;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -874,12 +874,17 @@ function saveTo(id,name){const a=getSaves();const now=Date.now();const ent={id:i
   const i=a.findIndex(x=>x.id===ent.id);if(i>=0){ent.name=name||a[i].name;a[i]=ent;}else a.unshift(ent);putSaves(a.slice(0,15));return ent;}
 function autoSave(){if(!G||mode!=='play'||G.done)return;try{saveTo('auto','Autosalvataggio');}catch(e){}}
 let autoT=0;
+function toMenu(){autoSave();SEED=G.seed||SEED;G.watching=null;G.react=null;['#stg','#dlg','#prompt','#goal'].forEach(s=>{const e=$(s);if(e)e.classList.add('hide');});
+  ['#savem','#phone','#mapov','#end'].forEach(s=>$(s).classList.add('hide'));cancelAnimationFrame(mapRaf);DL=null;
+  mode='title';$('#hud').classList.add('hide');$('#title').classList.remove('hide');$('#sd').value=SEED;refreshLoadBtn();window.scrollTo(0,0);}
 function openSaves(from){
   const inGame=from!=='title'&&G&&mode==='play';
   const box=$('#saveB'),a=getSaves();
-  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
+  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
   $('#savem').classList.remove('hide');
   $('#svx').onclick=()=>{$('#savem').classList.add('hide');last=performance.now();};
+  const rs=$('#svrs');if(rs)rs.onclick=()=>{if(!confirm('Ricominciare da capo con lo stesso seme? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;autoSave();SEED=G.seed;$('#savem').classList.add('hide');closePhone();startGame();};
+  const mn=$('#svmenu');if(mn)mn.onclick=()=>{if(!confirm('Tornare al menu principale? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;toMenu();};
   const n=$('#svnew');if(n)n.onclick=()=>{const e=saveTo(null,$('#svname').value.trim());toast('Salvato: '+e.name,1800);openSaves(from);};
   box.querySelectorAll('[data-ow]').forEach(b=>b.onclick=()=>{saveTo(b.dataset.ow);toast('Salvataggio aggiornato.',1500);openSaves(from);});
   box.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{putSaves(getSaves().filter(x=>x.id!==b.dataset.dl));openSaves(from);});
@@ -903,10 +908,11 @@ function endGame(){
   const title=p.done>=p.tot?'Partecipante leggendario':p.done>=8?'Networker del Palacongressi':p.done>=5?'Partecipante attivo':'Turista di Rimini';
   $('#endB').innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:var(--dim);font-size:13px;line-height:1.55;margin-bottom:6px">Tre giorni a Rimini: hai completato <b style="color:var(--ink)">${p.done}</b> obiettivi su ${p.tot}.</div>
    <div class="kv"><div>Contatti<b>${G.contacts.length}</b></div><div>Workshop<b>${F.ws}</b></div><div>Speech<b>${F.talk}</b></div><div>Stand<b>${Object.keys(F.stands).length}</b></div><div>Spunti<b>${G.tips.length}</b></div><div>Offworld<b>${F.off}</b></div></div>
-   <div class="row2"><button class="btn" id="eAgain">Rigioca</button><button class="btn ghost" id="eBack">Torna al gioco</button></div>
+   <div class="row2"><button class="btn" id="eAgain">Rigioca</button><button class="btn ghost" id="eBack">Torna al gioco</button><button class="btn ghost" id="eMenu">Menu principale</button></div>
    <p class="disc" style="font-size:11px;color:var(--dim);margin-top:12px">Realizzato da Olivieri Domenico usando Claude Code. Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers. Fan project non ufficiale, senza legami con l’organizzazione del Marketers World.</p>`;
   $('#end').classList.remove('hide');
   $('#eAgain').onclick=()=>{$('#end').classList.add('hide');startGame();};
+  $('#eMenu').onclick=toMenu;
   $('#eBack').onclick=()=>{$('#end').classList.add('hide');G.done=false;};
 }
 
