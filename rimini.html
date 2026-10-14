@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#05060d">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<meta name="darkreader-lock">
 <title>Inventa · Rimini 3 giorni</title>
 <meta name="description" content="Un giochino 2D: gira per il Palacongressi di Rimini durante tre giorni di evento, ritira l’accredito, segui workshop e speech, incontra persone. Fan project non ufficiale ispirato al Marketers World.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2305060d'/%3E%3Ccircle cx='32' cy='24' r='10' fill='%23e8b98a'/%3E%3Crect x='20' y='36' width='24' height='18' rx='4' fill='%23ff6a3d'/%3E%3C/svg%3E">
@@ -184,6 +187,7 @@ body.rhythm #hud,body.rhythm #goal,body.rhythm #toast{display:none!important}
 .scbox{margin:6px 0 12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid #2a3566}.sct{font-family:'Press Start 2P',monospace;font-size:9px;color:#9fb0d8}.scn{font-family:'Press Start 2P',monospace;font-size:26px;color:#ffd24d;margin:6px 0}.scr{color:#7ad37a;font-weight:700;font-size:14px}.scs{color:#9fb0d8;font-size:12.5px;line-height:1.5}.scl{margin-top:8px;font-size:12.5px}.scl div{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid #1b2240;color:#cfd8ee}.scl b{color:#fff}.scl b.neg{color:#ff6a6a}
 .epi p{font-size:13px;line-height:1.55;color:#cfd8ee;margin:6px 0}.epi b{color:#fff}
 .trg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.trc{padding:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid #2a3566;display:flex;flex-direction:column;gap:3px;align-items:flex-start}.trc.got{border-color:#ffd24d;background:rgba(255,210,77,.08)}.trc b{color:#fff;font-size:13px}.trc small{color:#9fb0d8;font-size:11.5px;line-height:1.35}.trc em{color:#7ad37a;font-style:normal;font-size:11px}.trc:not(.got) em{color:#ffd24d}.trq img{filter:brightness(0) opacity(.5)}.trc img{width:46px;height:46px;border-radius:50%;image-rendering:pixelated;background:#1b2240}
+:root{color-scheme:dark}.sw2 button,.btn,.chips3 button{forced-color-adjust:none}
 #end{position:fixed;inset:0;z-index:26;display:grid;place-items:center;background:rgba(2,4,10,.8);backdrop-filter:blur(5px);padding:14px}
 #end .box{width:min(560px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px;background:#0c1020;border:1px solid var(--line);border-radius:18px}
 #end h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:15px;line-height:1.5;margin-bottom:8px;color:var(--ac)}
@@ -262,7 +266,7 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="107">build</div>
+<div id="bld" data-b="109">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>
