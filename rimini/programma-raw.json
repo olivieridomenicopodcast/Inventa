@@ -1,6 +1,6 @@
 {
- "fonte": "screenshot dell'app ufficiale inviati dall'utente (batch 1 di 10 immagini; giorno da confermare)",
- "note": "sale: Silent Stage 1-4 e Main stage silent; Sala della Marina/Parco/Borgo (primo piano), Sala Castello (piano terra); orari 10:00-10:50 e 11:20-12:10",
+ "fonte": "screenshot dell'app ufficiale inviati dall'utente (batch 1-2; sono i workshop di VENERDÌ 16 ottobre)",
+ "note": "sale: Silent Stage 1-4 e Main stage silent; Sala della Marina/Parco/Borgo (primo piano), Sala Castello (piano terra); orari 10:00-10:50 e 11:20-12:10 | Altri tipi: MK PRO con Ilaria Foresti (ingresso libero, MK PRO = prodotto Marketers), Game Quiz (Ve.Ma Game 13:30-14:00, Ergonet game 12:00-12:30). Venerdì è giorno di workshop.",
  "sessioni": [
   {
    "ora": "11:20-12:10",
@@ -234,6 +234,225 @@
    "ruolo": "",
    "temi": [],
    "stato": "ingresso libero senza prenotazione"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "AI + Growth: fare scaling up del tuo business con l’aiuto dell’AI",
+   "sala": "Sala della Marina",
+   "speaker": "Massimo Pascale",
+   "ruolo": "Growth Manager at Arya Training",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Come gestire un team che cresce: 3 procedure per smettere di essere il collo di bottiglia della tua azienda",
+   "sala": "Silent Stage 1",
+   "speaker": "Sara Compagni",
+   "ruolo": "Ceo & Founder Da Paura Srl",
+   "temi": [
+    "Business",
+    "Mindset & Lifestyle"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "Tasse e contributi senza panico: 3 step per orientarti tra persona, impresa e previdenza",
+   "sala": "Sala del Borgo",
+   "speaker": "Manuel Verde",
+   "ruolo": "Founder, Responsabile Area Tax e Te…",
+   "temi": [
+    "Economics",
+    "Business"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "13:30-14:00",
+   "titolo": "Ve.Ma Game",
+   "sala": "Game Quiz",
+   "speaker": "",
+   "ruolo": "",
+   "temi": [],
+   "stato": "game quiz"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "La trappola dell'MVP: quando il provvisorio diventa definitivo (e come uscirne)",
+   "sala": "Sala by Active Powered",
+   "speaker": "Mirko Morfino",
+   "ruolo": "Consulente marketing automation e …",
+   "temi": [
+    "Business"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "Momento Ambassador",
+   "sala": "MK PRO con Ilaria Foresti",
+   "speaker": "",
+   "ruolo": "",
+   "temi": [],
+   "stato": "ingresso libero"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "Costruisci in 10 minuti l'AI che monitora il tuo mercato, a prova di hacker.",
+   "sala": "Silent Stage 3",
+   "speaker": "Pietro Virgillito",
+   "ruolo": "Hacker & Cybersecurity Expert",
+   "temi": [
+    "AI",
+    "Business"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "I Pilastri del Benessere. Ritrovare l'equilibrio nei contesti ad alta intensità",
+   "sala": "Sala della Marina",
+   "speaker": "Stefania Corrado",
+   "ruolo": "Food & Wellbeing Strategist · Giornali…",
+   "temi": [
+    "Mindset & Lifestyle"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "Come facciamo advertising per generare leads & clienti anche grazie all'AI in Marketers",
+   "sala": "Silent Stage 1",
+   "speaker": "Pierpaolo Tomaselli",
+   "ruolo": "Growth Manager at Yoga Academy",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "Costruire un Go-to-Market che rafforza il brand: l'esperienza di Qonto",
+   "sala": "Sala Castello",
+   "speaker": "Lorenzo Zatini",
+   "ruolo": "Marketing Manager Italia",
+   "temi": [
+    "Brand & Comunicazione",
+    "Growth & Advertising"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "BEFORE YOU SHOOT – How to build a visual world before pressing REC",
+   "sala": "Main stage silent",
+   "speaker": "Marco Ferrero aka Iconize",
+   "ruolo": "Art director, Videomaker e Influencer",
+   "temi": [],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "Brand out of the box. Come rompere le scatole a tutti con la tua marca.",
+   "sala": "Silent Stage 4",
+   "speaker": "Maurizio Cascio",
+   "ruolo": "Founder & Creative Director ONLAB",
+   "temi": [
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "ABC della finanza: la catena, i costi e cosa puoi fare da solo",
+   "sala": "Sala del Parco",
+   "speaker": "Enrico Maria Colombini",
+   "ruolo": "CEO & Founder Novagroup",
+   "temi": [
+    "AI",
+    "Economics"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "12:40-13:30",
+   "titolo": "AI e Designer - Se tutti sono designer noi che facciamo?",
+   "sala": "Silent Stage 2",
+   "speaker": "Riccardo Breccia",
+   "ruolo": "Designer & Co-Founder Caffè Design",
+   "temi": [
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:45-12:10",
+   "titolo": "Dal Politecnico di Milano allo space tech: la storia di Noemi Gottardi",
+   "sala": "MK PRO con Ilaria Foresti",
+   "speaker": "Noemi Gottardi",
+   "ruolo": "Design strategist",
+   "temi": [],
+   "stato": "ingresso libero"
+  },
+  {
+   "ora": "12:00-12:30",
+   "titolo": "Ergonet game",
+   "sala": "Gamification",
+   "speaker": "",
+   "ruolo": "",
+   "temi": [],
+   "stato": "game quiz"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "Umano per scelta, Digitale per vocazione: La Formula Relazionale perfetta per spaccare sul web",
+   "sala": "Silent Stage 2",
+   "speaker": "Mr Nobody",
+   "ruolo": "YouTuber, Autore, podcaster e Viaggi…",
+   "temi": [
+    "Brand & Comunicazione",
+    "Social & Creator"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "WhatsApp & Voice Marketing: un laboratorio pratico per costruire il tuo flusso con l'AI",
+   "sala": "Sala Castello",
+   "speaker": "Maria Fornell… (cognome non leggibile)",
+   "ruolo": "Global … Manager @Spoki",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "Marketer Full Stack AI: come costruire un agente che fa marketing al posto tuo",
+   "sala": "Sala by Active Powered",
+   "speaker": "Alessandro Baglieri",
+   "ruolo": "Co-owner & CMO Active Powered",
+   "temi": [
+    "AI"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "11:20-12:10",
+   "titolo": "STRATEG-IA: Come costruire un sistema di lavoro AI-First in 5 step",
+   "sala": "Silent Stage 3",
+   "speaker": "Antonio Guadagno",
+   "ruolo": "Ingegnere informatico, consulente e …",
+   "temi": [
+    "AI"
+   ],
+   "stato": "prenota"
   }
  ]
 }
