@@ -141,7 +141,7 @@ function petTalk(n){
     {t:'Fai un selfie insieme',n:null,act:()=>selfie(n)},
     {t:'Vai per la tua strada',n:null}]});
 }
-/* ---------- oggetti nascosti e indossabili: due per giorno (ven: i due occhiali; sab e dom: cappellino, spilla, sacca a caso;
+/* ---------- oggetti nascosti e indossabili: due per giorno, distribuiti a caso dal seme (due venerdì, due sabato, uno domenica);
    lo stendardo è sempre di domenica e va piantato al pigiama party). Quelli non trovati entro il giorno dopo vanno persi. ---------- */
 const ITEMS={
  cyclops:{n:'Occhiali da ciclope',desc:'Visiera futuristica: ti senti un X-Man del marketing.',slot:'face'},
@@ -151,8 +151,9 @@ const ITEMS={
  bag:{n:'Sacca con cordellini',desc:'La sacca dei marketer: al posto dello zaino, logo incluso.',slot:'back'},
  banner:{n:'Stendardo del Marketers World',desc:'Un vero stendardo: portalo al pigiama party e piantalo!',slot:'carry'}};
 function itemDays(){
-  if(!G.itemDays){const r=mulberry32(hashStr(G.seed+'|itemdays')),L=['cap','pin','bag'],sun=L[Math.floor(r()*3)];
-    G.itemDays={cyclops:0,pixel:0,banner:2};L.forEach(id=>{G.itemDays[id]=id===sun?2:1;});}
+  if(!G.itemDays){const r=mulberry32(hashStr(G.seed+'|itemdays')),L=['cyclops','pixel','cap','pin','bag'];
+    for(let i=L.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[L[i],L[j]]=[L[j],L[i]];}
+    G.itemDays={banner:2};L.forEach((id,i)=>{G.itemDays[id]=i<2?0:i<4?1:2;});}
   return G.itemDays;
 }
 const itemsOfDay=d=>Object.keys(ITEMS).filter(id=>itemDays()[id]===d);
