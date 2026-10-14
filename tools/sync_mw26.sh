@@ -1,6 +1,7 @@
 #!/bin/sh
 # Sincronizza Rimini 3 giorni da Inventa al repo MW26: copia IDENTICA di tutti i file (script, font, stile), con le sole differenze volute
-# (nessun collegamento a Inventa/hub, titolo MW26, didascalia foto senza "· Inventa").
+# (nessun collegamento a Inventa/hub, titolo MW26, didascalia foto senza "· Inventa"; in più, solo per MW26, senza
+# rimini/programma-raw.json e senza il campo "mine" in data.js).
 #
 # Uso:   tools/sync_mw26.sh [cartella-di-MW26] [--check] [--push]
 #   (senza opzioni)  copia i file e mostra cosa è cambiato; non fa commit
@@ -33,6 +34,16 @@ g=g.replace(' · Inventa','')
 open(tmp+'/rimini/game.js','w',encoding='utf-8').write(g)
 PY
 
+# solo per MW26: niente file di appunti con i dati personali e niente campo "mine" (le tue prenotazioni) nel programma
+rm -f "$TMP/rimini/programma-raw.json"
+python3 - "$TMP" <<'PY'
+import re,sys
+p=sys.argv[1]+'/rimini/data.js'
+d=open(p,encoding='utf-8').read()
+d2=re.sub(r',"mine":(true|false)','',d)
+open(p,'w',encoding='utf-8').write(d2)
+PY
+
 # il numero di build è proprio di MW26: lo lasciamo com'è nel repo di destinazione
 BUILD="$(sed -n 's/^const BUILD=\([0-9]*\);.*/\1/p' "$DST/rimini/game.js" | head -1)"
 DB="$(sed -n 's/.*id="bld" data-b="\([0-9]*\)".*/\1/p' "$DST/index.html" | head -1)"
@@ -46,7 +57,7 @@ for f in "$TMP"/rimini/*; do b=$(basename "$f"); cmp -s "$f" "$DST/rimini/$b" ||
 for f in "$DST"/rimini/*; do b=$(basename "$f"); [ -e "$TMP/rimini/$b" ] || { echo "da rimuovere: rimini/$b"; CH=1; }; done
 for f in "$TMP"/fonts/*; do b=$(basename "$f"); cmp -s "$f" "$DST/fonts/$b" || { echo "da aggiornare: fonts/$b"; CH=1; }; done
 if [ -d "$DST/fonts" ]; then for f in "$DST"/fonts/*; do b=$(basename "$f"); [ -e "$TMP/fonts/$b" ] || { echo "da rimuovere: fonts/$b"; CH=1; }; done; fi
-if [ $CH -eq 0 ]; then echo "MW26 è già identico a Inventa (tranne titolo, intestazione, didascalia foto e numero di build)."; exit 0; fi
+if [ $CH -eq 0 ]; then echo "MW26 è già allineato a Inventa (differenze volute: titolo, intestazione, didascalia foto, numero di build, senza programma-raw.json e senza il campo mine)."; exit 0; fi
 [ $CHECK -eq 1 ] && { echo "MW26 NON è allineato."; exit 2; }
 
 # copia
