@@ -296,7 +296,8 @@ function alpaGuide(n){
     {t:'Il gioco: dubbi e consigli',n:()=>gioco()},
     {t:'Dove devo andare?',n:()=>luoghi()},
     {t:'Programma e sessioni',n:()=>prog()},
-    {t:'Altro…',n:()=>altroMenu()}]);
+    {t:'Altro…',n:()=>altroMenu()},
+    {t:'Grazie, a dopo!',n:null}]);
   say(n,main());
 }
 
