@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=47;
+const BUILD=48;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -248,7 +248,7 @@ const newSeed=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let t='';for(let i
 let SEED=lsGet('rimini.seed',null)||newSeed();
 
 function newGame(seed){
-  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),meets:[],people:genPeople(seed||SEED),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
+  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),done:new Set(),done:new Set(),saved:new Set(),seen:new Set(),meets:[],people:genPeople(seed||SEED),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
   FL[0]=buildGround();FL[1]=buildFirst();buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
@@ -490,7 +490,7 @@ function advance(){
 function leaveTheatre(complete){
   const w=G.watching;if(!w)return;G.watching=null;stg.classList.add('hide');
   G.min=complete?Math.max(G.min,w.e.e):G.min+15;
-  if(complete){if(w.where==='work'){G.flags.ws++;const n=NPC.filter(x=>x.kind==='att'&&!G.met[x.id])[0];if(n){G.met[n.id]=1;addContact(n);}}else G.flags.talk++;
+  if(complete){G.seen.add(w.e.id);if(w.where==='work'){G.flags.ws++;const n=NPC.filter(x=>x.kind==='att'&&!G.met[x.id])[0];if(n){G.met[n.id]=1;addContact(n);}}else G.flags.talk++;
     toast((w.where==='work'?'Sessione':'Speech')+' conclusa: '+w.notes+' appunti nel taccuino'+(w.good?', esercizio riuscito!':'.'),4200);}
   else toast('Sei uscito prima della fine.',2500);
 }
@@ -655,7 +655,8 @@ function sessCard(e){
   const past=x=>x.d<G.day||(x.d===G.day&&x.e<=G.min);
   const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
   let btn='';
-  if(e.kind==='ws'){btn=booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
+  if(G.seen.has(e.id))btn='<button class="pb ok" disabled>Concluso ✓ · seguito</button>';
+  else if(e.kind==='ws'){btn=booked&&past(e)?'<button class="pb occ" disabled>Concluso</button>':booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
   else if(e.kind==='lounge'){btn='';}
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
   const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
@@ -694,10 +695,10 @@ function renderPhone(){
     B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
   };
   if(phoneTab==='home'){
-    const nw=[...G.booked].filter(id=>BYID[id].kind==='ws').length,p=progress();
+    const nw=[...G.booked].filter(id=>BYID[id].kind==='ws'&&!G.seen.has(id)&&(BYID[id].d>G.day||(BYID[id].d===G.day&&BYID[id].e>G.min))).length,p=progress();
     const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
     B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
-     <div class="bn" data-go="prog:0">🎟 Hai prenotato <b>${nw}</b> workshop. Scegli altri nel programma di venerdì →</div>
+     <div class="bn" data-go="prog:0">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
      <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
      <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
@@ -716,7 +717,7 @@ function renderPhone(){
     const items=[...G.booked,...G.saved].map(id=>BYID[id]);
     const ms=G.meets.map(m=>({d:m.day,start:m.start,e:m.start+30,title:'Meeting con '+G.people.find(p=>p.id===m.pid).name,room:'Area networking',kind:'meet',tags:[],sp:'',role:''}));
     const all=[...items,...ms].sort((a,b)=>a.d-b.d||a.start-b.start);
-    B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`:`<div class="sc ${G.booked.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';bind();
+    B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`:`<div class="sc ${G.booked.has(e.id)&&!G.seen.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}${G.seen.has(e.id)?' <span class="kt">CONCLUSO ✓</span>':''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';bind();
   }else if(phoneTab==='net'){
     B.innerHTML=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base a cosa fai e cosa cerchi. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('')+(G.contacts.length?`<div class="sec">// I TUOI CONTATTI</div>`+G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'');
     bind();
@@ -862,10 +863,10 @@ function drawDest(){
 const SKEY='rimini.saves';
 const getSaves=()=>lsGet(SKEY,[]);
 const putSaves=a=>lsSet(SKEY,a);
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),seen:new Set(st.seen||[]),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   Object.assign(G.p,st.p);G.cam.x=G.p.x;G.cam.y=G.p.y;zOff=st.zOff||0;applyZoom();
 }
 const summary=()=>{const p=progress();return ['Ven','Sab','Dom'][G.day]+' '+hm(Math.floor(G.min))+' · '+p.done+'/'+p.tot+' obiettivi · '+G.contacts.length+' contatti · seme '+G.seed;};
