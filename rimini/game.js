@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=61;
+const BUILD=62;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -239,9 +239,9 @@ function buildFirst(){
 }
 
 /* ============================================================ stato */
-let FL=[null,null],G=null,NPC=[],mode='title';
+let FL=[null,null,null],G=null,NPC=[],mode='title';
 const keys={};let touch={x:0,y:0};
-const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false};
+const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,pets:0,glasses:0,friends:0};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 const RNG=()=>(G&&G.rng)?G.rng():Math.random();
@@ -250,8 +250,8 @@ const newSeed=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let t='';for(let i
 let SEED=lsGet('rimini.seed',null)||newSeed();
 
 function newGame(seed){
-  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),comm:cmInit(),done:new Set(),done:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),sandbox:SANDBOX,meets:[],people:genPeople(seed||SEED),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
-  FL[0]=buildGround();FL[1]=buildFirst();buildNPC();
+  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:VILLAGE_ON?8*60+15:8*60+45,f:VILLAGE_ON?2:0,p:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y),dir:0,step:0}:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),sandbox:SANDBOX,meets:[],people:genPeople(seed||SEED),done:false,cam:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y)}:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
+  FL[0]=buildGround();drawShuttleStop(FL[0]);FL[1]=buildFirst();FL[2]=VILLAGE_ON?buildVillage():null;buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
 const HAIRS=['#2a1d14','#4a3322','#7a5a2a','#1a1a20','#8a3a2a','#c9a24a','#d9d2c4'],SKINS=['#e8b98a','#dfae80','#c98e62','#f0c8a0','#a8734c'];
@@ -269,13 +269,20 @@ function buildNPC(){
   // partecipanti inventati che girano: numero, aspetto e zone cambiano a ogni seme
   const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0],[420,780,860,860,0],[740,640,830,705,0],[960,560,1180,820,0],[330,300,470,720,0],[300,280,420,620,1],[860,300,1000,560,1],[420,560,830,680,1]];
   const nAtt=46+Math.floor(RNG()*16),usedN=new Set();
-  for(let i=0;i<nAtt;i++){const r=pickFrom(ZONES);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}}
+  const mkAtt=(i,zones)=>{const r=pickFrom(zones);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}};
+  for(let i=0;i<nAtt;i++)mkAtt(i,ZONES);
+  if(VILLAGE_ON){
+    add({id:'recep',kind:'staff',name:'Reception del Village',role:'Marketers Village',f:2,x:k(650),y:k(284),p:{shirt:'#1f2a50',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#ffd24d'},dir:0});
+    add({id:'driver',kind:'staff',name:'Autista della navetta',role:'Navetta · Marketers World',f:2,x:k(868),y:k(776),p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'},dir:2});
+    const VZ=[[300,540,900,740,2],[700,700,1000,780,2],[140,590,420,700,2],[100,300,380,460,2],[920,300,1200,460,2],[430,520,880,700,2]];
+    for(let i=0;i<24;i++)mkAtt(nAtt+i,VZ);
+  }
 }
 
 /* ============================================================ movimento e collisioni */
 function hits(L,x,y,gate){const b={x:x-4,y:y-4,w:8,h:5};
   for(const s of L.solids)if(b.x<s.x+s.w&&b.x+b.w>s.x&&b.y<s.y+s.h&&b.y+b.h>s.y)return true;
-  if(!G.flags.accred&&G.f===0&&b.x<k(705)&&b.x+b.w>k(560)&&b.y<k(722)&&b.y+b.h>k(704))return true;
+  if(!G.flags.accred&&L===FL[0]&&b.x<k(705)&&b.x+b.w>k(560)&&b.y<k(722)&&b.y+b.h>k(704))return true;
   return false;}
 function moveBody(e,dx,dy,L){const nx=e.x+dx;if(!hits(L,nx,e.y))e.x=nx;const ny=e.y+dy;if(!hits(L,e.x,ny))e.y=ny;e.x=clamp(e.x,6,WW-6);e.y=clamp(e.y,8,WH-6);}
 function updateNPC(dt){
@@ -333,13 +340,15 @@ function interactables(){
     I(651,305,36,'Leggi il cartello della sala',()=>info('Sala della Piazza',FACTS.piazza));
     I(632,770,40,'Leggi l’ingresso',()=>info(EVENT.name+' '+EVENT.year,EVENT.dates+'. '+EVENT.place+'. '+FACTS.palazzo));
     I(180,356,30,'Ingresso B',()=>info('Ingresso B','Dall’Ingresso B si arriva al lato ovest, verso i negozi e il Bistrot.'));
+    I(VG.shuttle.x,VG.shuttle.y,34,'Navetta per il Marketers Village (fine giornata)',shuttleHome);
     I(918,460,30,'Ingresso C',()=>info('Ingresso C','L’Ingresso C è sul lato est, verso il parcheggio.'));
-  }else{
+  }else if(f===1){
     I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(640)));
     I(635,775,70,'Sala dell’Anfiteatro',()=>info('Sala dell’Anfiteatro',FACTS.anfi+' Qui oggi non ci sono sessioni: gli speech sono in Sala della Piazza, al piano terra.'));
     ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,30,n.replace('Sala Real Estate by Building Production','Sala Real Estate')));
     I(770,578,35,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
   }
+  if(f===2&&VILLAGE_ON)villageSpots(I);
   for(const n of NPC)if(n.f===f)out.push({x:n.x,y:n.y,r:22,npc:n,label:'Parla con '+n.name,fn:()=>talkTo(n)});
   return out;
 }
@@ -382,6 +391,7 @@ function talkTo(n){
   else if(n.id==='info')say(n,nodeInfo());
   else if(n.id==='yoga')say(n,nodeYoga());
   else if(n.id==='scout')say(n,nodeScout());
+  else if(n.id==='recep'||n.id==='driver')say(n,{t:chPick(Math.random,n.id==='recep'?['Benvenuto al Marketers Village! La navetta per il Palacongressi è alla fermata qui davanti.','Buongiorno! Colazione al bar, poi navetta: il World comincia presto.','Se hai dimenticato qualcosa in camera, hai ancora qualche minuto prima della navetta.']:['Prossima partenza tra poco! Sali quando vuoi.','Dieci minuti di viaggio e sei al Palacongressi.','Mi raccomando: l’app serve dopo, in navetta si chiacchiera.']),c:[{t:'Grazie!',n:null}]});
   else if(n.id==='dj')say(n,{t:'Benvenuto all’Offworld! '+FACTS.off+' Passa la sera: si canta.',c:[{t:'Ci vediamo stasera!',n:null}]});
   else attendee(n);
 }
@@ -674,6 +684,7 @@ function drawReact(){
 function quests(){
   const F=G.flags,nst=Object.keys(F.stands).length;
   return[
+    ...(VILLAGE_ON?[{t:'Sali sulla navetta per il Marketers World',s:'Dal Marketers Village, alla fermata in basso',ok:F.bus}]:[]),
     {t:'Attiva l’app dell’evento (nel gioco)',s:'Fuori dall’Ingresso A, a destra',ok:F.app},
     {t:'Ritira l’accredito',s:'Fuori dall’Ingresso A, a sinistra',ok:F.accred},
     {t:'Segui un workshop del venerdì',s:'Prenotalo nell’app e vai nella sala giusta',ok:F.ws>=1},
@@ -826,12 +837,14 @@ const mapPlaces=()=>{
   for(let i=1;i<=4;i++)add('Silent Stage '+i,0,ROOMS['Silent Stage '+i].x,ROOMS['Silent Stage '+i].y,'Sale',['Silent Stage '+i]);
   add('Sala Castello',0,920,255,'Sale',['Sala Castello']);
   STANDS.forEach(st=>add(st.label,0,st.x,st.y+30,'Stand',st.id==='pro'?['MK PRO con Ilaria Foresti']:st.id==='mkt'?['Stand Urlico Hoepli']:st.id==='tool'?['Game Quiz','Gamification']:null));
-  add('Village (karaoke, party)',0,1060,690,'Fuori',['Village']);add('Prato dello yoga',0,810,810,'Fuori');
+  add('Village (karaoke, party)',0,1060,690,'Fuori',['Village']);add('Prato dello yoga',0,810,810,'Fuori');add('Fermata navetta per il Village',0,VG.shuttle.x,VG.shuttle.y,'Servizi');
+  if(VILLAGE_ON){add('Fermata della navetta',2,VG.bus.x,VG.bus.y,'Servizi');add('Reception del Village',2,VG.recep.x,VG.recep.y,'Servizi');add('Bar del Village',2,VG.cafe.x,VG.cafe.y,'Servizi');add('Bacheca del Village',2,VG.board.x,VG.board.y,'Servizi');}
   add('Scale mobili (cambia piano)',1,630,610,'Servizi');
   ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>add(n,1,ROOMS[n].x,ROOMS[n].y,'Sale',[n]));
   add('Sala dell’Anfiteatro',1,635,775,'Sale');add('Vuoto sulla Piazza (affaccio)',1,770,578,'Servizi');
   return P;
 };
+const FLN=['Piano terra','Primo piano','Marketers Village'];
 let MAPF=0,MAPSEL=null,mapRaf=0,MAPDAY=0,MZ=1,MCX=0,MCY=0;
 function mapClamp(cw,ch,sc){const vw=cw/sc,vh=ch/sc;MCX=vw>=WW?WW/2:Math.max(vw/2,Math.min(WW-vw/2,MCX));MCY=vh>=WH?WH/2:Math.max(vh/2,Math.min(WH-vh/2,MCY));}
 function mapZoom(f,px,py){const cv=$('#mapcv2');if(!mapT)return;const w=cv.width,h=cv.height;if(px==null){px=w/2;py=h/2;}const wx=(px-mapT.ox)/mapT.sc,wy=(py-mapT.oy)/mapT.sc;MZ=Math.max(1,Math.min(6,MZ*f));const sc=mapT.base*MZ;MCX=wx-(px-w/2)/sc;MCY=wy-(py-h/2)/sc;}
@@ -848,12 +861,12 @@ const PDESC={
  'Sala dell’Anfiteatro':'Grande sala con sedute fisse (1.540 posti) e palco circolare. Nel gioco non ci sono sessioni qui.','Vuoto sulla Piazza (affaccio)':'Dal primo piano si vede dall’alto la Sala della Piazza.',
  'Main Stage · Sala della Piazza':'La sala principale (circa 4.700 posti): Main stage silent il venerdì, Main Stage nel weekend. Qui anche Riattivazione e Yoga Silent Party.'};
 function mapList(){
-  $('#mfl0').className=MAPF===0?'on':'';$('#mfl1').className=MAPF===1?'on':'';
+  $('#mfl0').className=MAPF===0?'on':'';$('#mfl1').className=MAPF===1?'on':'';$('#mfl2').className=MAPF===2?'on':'';
   const P=mapPlaces(),box=$('#plist');box.innerHTML='';box.scrollTop=0;
   if(MAPSEL){const sel=MAPSEL,isDst=G.dest&&G.dest.n===sel.n&&G.dest.f===sel.f;
     const stand=STANDS.find(x=>x.label===sel.n);
     const wrap=document.createElement('div');
-    let h=`<button id="pback" class="pbk">‹ Torna all’elenco</button><div class="pt">${esc(sel.n)}</div><div class="ps">${sel.f===0?'Piano terra':'Primo piano'}${sel.f!==G.f?' · tu sei all’altro piano: ti guido alle scale mobili':''}</div><button id="godst" class="pgo">★ Portami qui</button>${G.dest?'<button id="nodst" class="pno">Togli destinazione</button>':''}`;
+    let h=`<button id="pback" class="pbk">‹ Torna all’elenco</button><div class="pt">${esc(sel.n)}</div><div class="ps">${FLN[sel.f]}${sel.f!==G.f?' · tu sei all’altro piano: ti guido alle scale mobili':''}</div><button id="godst" class="pgo">★ Portami qui</button>${G.dest?'<button id="nodst" class="pno">Togli destinazione</button>':''}`;
     const d=PDESC[sel.n]||(stand?stand.info:'');if(d)h+=`<p class="pd">${esc(d)}</p>`;
     if(sel.rooms){const sc=roomSched(sel.rooms,MAPDAY);
       h+=`<h4>PROGRAMMA DELLA SALA</h4><div class="pdays">${DAYNAMES.map((n,i)=>`<button data-md="${i}" class="${MAPDAY===i?'on':''}">${n.split(' ')[0].slice(0,3)}</button>`).join('')}</div>`+(sc.length?sc.map(x=>{const now=MAPDAY===G.day&&G.min>=x.start&&G.min<x.e;return `<div class="pr ${now?'now':''}"><b>${hm(x.start)}–${hm(x.e%1440)}${now?' ▶ in corso':''}</b>${esc(x.title)}${x.sp?'<small>'+esc(x.sp)+(x.role?' · '+esc(x.role):'')+'</small>':''}</div>`;}).join(''):'<div class="pd">Nessuna sessione in questo giorno.</div>');}
@@ -885,7 +898,7 @@ function mapLoop(){
   if(G.f===MAPF){const x=ox+G.p.x*sc,y=oy+(G.p.y-6)*sc,pu=(t*1.6)%1;c.strokeStyle='rgba(255,106,61,'+(1-pu)+')';c.lineWidth=3*dpr;c.beginPath();c.arc(x,y,(8+pu*22)*dpr,0,7);c.stroke();
     c.fillStyle='#fff';c.beginPath();c.arc(x,y,8*dpr,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(x,y,5*dpr,0,7);c.fill();
     c.font='700 '+13*dpr+'px "Space Grotesk",sans-serif';c.textAlign='center';const lb='Sei qui · '+pname();const w=c.measureText(lb).width+14*dpr;c.fillStyle='rgba(255,106,61,.95)';c.fillRect(x-w/2,y+12*dpr,w,20*dpr);c.fillStyle='#1a0a04';c.fillText(lb,x,y+27*dpr);}
-  else{c.font='700 '+13*dpr+'px "Space Grotesk",sans-serif';c.textAlign='left';c.fillStyle='rgba(255,106,61,.95)';c.fillText('Tu sei al '+(G.f===0?'piano terra':'primo piano'),12*dpr,24*dpr);}
+  else{c.font='700 '+13*dpr+'px "Space Grotesk",sans-serif';c.textAlign='left';c.fillStyle='rgba(255,106,61,.95)';c.fillText('Tu sei: '+FLN[G.f],12*dpr,24*dpr);}
   mapRaf=requestAnimationFrame(mapLoop);
 }
 let mapT=null;
@@ -902,12 +915,17 @@ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{e.preventDefault();const q=pos(e);mapZoom(e.deltaY<0?1.2:1/1.2,q[0],q[1]);},{passive:false});
 cv.addEventListener('dblclick',e=>{const q=pos(e);mapZoom(1.8,q[0],q[1]);});
 $('#mzin').onclick=()=>mapZoom(1.5);$('#mzout').onclick=()=>mapZoom(1/1.5);$('#mzc').onclick=()=>{mapReset();if(G&&G.f===MAPF){MZ=2.5;MCX=G.p.x;MCY=G.p.y;}};})();
-$('#mfl0').onclick=()=>{MAPF=0;MAPSEL=null;mapList();};$('#mfl1').onclick=()=>{MAPF=1;MAPSEL=null;mapList();};$('#mapX').onclick=closeMap;$('#bMap').onclick=openMap;
+$('#mfl0').onclick=()=>{MAPF=0;MAPSEL=null;mapList();};$('#mfl1').onclick=()=>{MAPF=1;MAPSEL=null;mapList();};$('#mfl2').onclick=()=>{MAPF=2;MAPSEL=null;mapList();};$('#mapX').onclick=closeMap;$('#bMap').onclick=openMap;
+function viaFloor(d){
+  if(G.f===2)return{x:k(VG.bus.x),y:k(VG.bus.y),lab:'Navetta per il Marketers World'};
+  if(d.f===2)return{x:k(VG.shuttle.x),y:k(VG.shuttle.y),lab:'Navetta per il Village'};
+  return{x:k(630),y:k(610),lab:'Scale mobili ('+(d.f===1?'primo piano':'piano terra')+')'};
+}
 function drawDest(){
   const d=G.dest;if(!d)return;let tx=d.x,ty=d.y,lab=d.n;
-  if(d.f!==G.f){tx=k(630);ty=k(610);lab='Scale mobili → '+(d.f===1?'primo piano':'piano terra')+' → '+d.n;}
+  if(d.f!==G.f){const v=viaFloor(d);tx=v.x;ty=v.y;lab=v.lab+' → '+d.n;}
   const dist=Math.hypot(tx-G.p.x,ty-G.p.y);
-  if(dist<k(26)){if(d.f!==G.f){/* arrivato alle scale */}else{toast('Sei arrivato: '+d.n,2600);G.dest=null;return;}}
+  if(dist<k(26)){if(d.f!==G.f){/* arrivato al passaggio */}else{toast('Sei arrivato: '+d.n,2600);G.dest=null;return;}}
   const a=Math.atan2(ty-G.p.y,tx-G.p.x),vc=G.vc||G.cam,sx=W/2+(G.p.x-vc.x)*Z,sy=H/2+(G.p.y-vc.y)*Z,r=Math.min(W,H)*.22;
   ctx.save();ctx.translate(sx+Math.cos(a)*r,sy+Math.sin(a)*r);ctx.rotate(a);ctx.fillStyle='#ffd24d';ctx.strokeStyle='rgba(0,0,0,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-9,10);ctx.lineTo(-4,0);ctx.lineTo(-9,-10);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
   ctx.save();ctx.font='700 12px "Space Grotesk",sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineWidth=4;const m=Math.round(dist/K*.19),txt=lab+' · ~'+m+' m';
@@ -924,6 +942,7 @@ function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
   Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
   Object.assign(G.p,st.p);G.cam.x=G.p.x;G.cam.y=G.p.y;zOff=st.zOff||0;applyZoom();
 }
 const summary=()=>{const p=progress();return ['Ven','Sab','Dom'][G.day]+' '+hm(Math.floor(G.min))+' · '+p.done+'/'+p.tot+' obiettivi · '+G.contacts.length+' contatti · seme '+G.seed;};
@@ -985,7 +1004,7 @@ function update(dt){
   if(!DL&&!G.react&&!uiOpen()){
     // orologio: 1 minuto di gioco ogni 4 secondi reali
     if(!G.sandbox)G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
-    if(G.min>=23*60+30){G.fade=1;if(G.day>=2){endGame();G.min=23*60+29;}else{G.day++;G.min=8*60+45;G.f=0;G.p.x=k(632);G.p.y=k(885);toast('Notte a Rimini: nuova giornata, '+DAYNAMES[G.day]+' ottobre.',3500);autoSave();}}
+    if(G.min>=23*60+30){if(G.day>=2){endGame();G.min=23*60+29;}else nextDay();}
     let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0)+touch.x,dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0)+touch.y;
     const m=Math.hypot(dx,dy);const p=G.p;
     if(m>.15){dx/=Math.max(1,m);dy/=Math.max(1,m);const sp=(keys.ShiftLeft?108:78)*dt;moveBody(p,dx*sp,dy*sp,FL[G.f]);p.step+=dt*(keys.ShiftLeft?7.5:5.3);p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);if(Math.floor(p.step*2)!==Math.floor((p.step-dt*4)*2))A.step();}else p.step=0;
@@ -1036,11 +1055,12 @@ function openHow(){howI=0;howShow();$('#howm').classList.remove('hide');}
 $('#howP').onclick=()=>{if(howI>0){howI--;howShow();}};$('#howNx').onclick=()=>{if(howI<HOW.length-1){howI++;howShow();}else $('#howm').classList.add('hide');};
 let goalFor='';
 function goal(){const F=G.flags,el=$('#goal');let t='',key='';
-  if(!F.app){key='app';t='Vai all’<u>Assistenza app</u> (a destra, fuori dall’Ingresso A) e attiva l’app (nel gioco, non devi installare niente): ti serve per avere il QR.';}
+  if(VILLAGE_ON&&!F.bus){key='bus';t='Sei al <u>Marketers Village</u>: vai alla fermata in basso e sali sulla navetta per il Marketers World.';}
+  else if(!F.app){key='app';t='Vai all’<u>Assistenza app</u> (a destra, fuori dall’Ingresso A) e attiva l’app (nel gioco, non devi installare niente): ti serve per avere il QR.';}
   else if(!F.accred){key='acc';t='Hai l’app! Ora vai dallo <u>Staff accrediti</u> (a sinistra) e mostra il QR per ritirare il badge.';}
   if(!t){el.classList.add('hide');return;}
   el.classList.remove('hide');const s='<b>OBIETTIVO</b>'+t;if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=s;}
-  if(goalFor!==key){goalFor=key;const n=NPC.find(x=>x.id===(key==='app'?'info':'accred'));if(n&&(!G.dest||G.dest.auto))G.dest={n:n.name,f:0,x:n.x,y:n.y,auto:1};}
+  if(goalFor!==key){goalFor=key;if(key==='bus'){if(!G.dest||G.dest.auto)G.dest={n:'Fermata della navetta',f:2,x:k(VG.bus.x),y:k(VG.bus.y),auto:1};}else{const n=NPC.find(x=>x.id===(key==='app'?'info':'accred'));if(n&&(!G.dest||G.dest.auto))G.dest={n:n.name,f:0,x:n.x,y:n.y,auto:1};}}
 }
 function drawGate(){
   const x0=k(560),x1=k(705),y0=k(704),y1=k(722),w=x1-x0,h=y1-y0,ok=!!G.flags.accred,c=ctx;
