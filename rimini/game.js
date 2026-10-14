@@ -1,4 +1,6 @@
 'use strict';
+const BUILD=43;
+(function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
