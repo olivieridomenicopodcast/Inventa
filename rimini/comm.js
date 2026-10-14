@@ -175,7 +175,7 @@ function cmComments(p,mine){
   for(let i=0;i<n;i++){
     t+=mine?4+Math.floor(r()*28):6+Math.floor(r()*70);
     let who,text,isMet=false;
-    if(mine&&warm[i]){who=warm[i];text=cmFill(cmPick(r,CM_WARM));isMet=true;}
+    if(mine&&warm[i]){who=warm[i];text=(typeof extrasWarm==='function'&&extrasWarm(who,r))||cmFill(cmPick(r,CM_WARM));isMet=true;}
     else{let g2=0;do{who=cmPick(r,M);}while((who===p.m||usedW.has(who.id))&&g2++<12);
       for(g2=0;g2<12;g2++){
         const x=r();
@@ -201,6 +201,7 @@ function cmFeed(T,onlyMine){
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
   const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:{shirt:'#ff6a3d'},me:true};
   for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,kind:'mine',mine:true});
+  if(typeof extrasFeed==='function'&&!onlyMine)items.push(...extrasFeed(T));
   return items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at).slice(0,onlyMine?200:40);
 }
 function cmView(p,T){

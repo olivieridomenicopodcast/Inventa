@@ -35,6 +35,7 @@ const FR_GREET={
  'Full stack human being':['Ciao! Faccio un po’ di tutto: sono full stack human being. Di solito mi fermo quando finisce il caffè.','Mi chiedono “tu cosa fai?”. Rispondo: sì.'],
  'Pilota di droni':['Ciao! Se vuoi ti riprendo dall’alto. Il drone è nello zaino (ma qui dentro è vietato, tranquillo).','Dall’alto il Palacongressi sembra un formicaio. E tu sei una formica bellissima.'],
  'Podcast coach, editor e sound designer':[]};
+const FR_SPECIAL={gabriele:['Ciao! Domanda potente: stasera facciamo baldoria?','Respira, rilassati… e poi: stasera facciamo baldoria?','Allora, stasera facciamo baldoria? Dimmi di sì.']};
 const FR_BYE=['A dopo! Se mi cerchi sono quello con le cuffie.','Ci vediamo in giro!','Teniamoci in contatto, mi raccomando.','Scrivimi su Marketers Pro, rispondo sempre!'];
 
 function extrasNPC(add,pk){
@@ -167,20 +168,22 @@ function friendTalk(n){
   const onMet=()=>{if(!G.met[n.id]){G.met[n.id]=1;addContact(n);G.flags.friends=(G.flags.friends||0)+1;}};
   const r=chRng(n,'fr');
   if(F.self){
-    return say(n,{t:'Ah, mi hai trovato! Sì, sono quello che ha costruito questo giochino. Qui dentro faccio ancora il podcast coach: se mi cerchi, sono sempre vicino a un microfono.',c:[
+    return say(n,{t:'Ah, mi hai trovato! Sì, sono quello che ha costruito questo giochino. Qui dentro faccio ancora il podcast coach: se mi cerchi, sono sempre vicino a un microfono. E sì: voglio lasciare la fabbrica!',c:[
       {t:'Complimenti per il gioco!',n:{t:'Grazie! L’ho fatto con Claude Code, un po’ di pixel e tanta pazienza. Realizzato da Olivieri Domenico, appunto.',c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'Grazie!',n:null}]}},
+      {t:'E il lavoro in fabbrica?',n:{t:'Voglio lasciare la fabbrica! Intanto faccio il podcast coach, l’editor e il sound designer: un passo alla volta.',c:[{t:'Forza, ce la fai!',n:null,act:onMet},{t:'Scambiamoci i contatti',n:null,act:onMet}]}},
       {t:'Un consiglio sul podcast?',n:{t:'«'+exPick(TIPS.pod)+'» Parola di podcast coach.',c:[{t:'Lo segno!',n:null,act:()=>{onMet();addTip(exPick(TIPS.pod),'consiglio di Domenico');}}]}},
-      {t:'Ciao!',n:null}]});
+      {t:'Ciao!',n:null}].slice(0,4)});
   }
   if(G.met[n.id])return say(n,{t:chPick(r,['Ehi, siamo già amici! Come procede?','Di nuovo tu! Ti ho scritto su Marketers Pro.','Ciao! Sempre un piacere trovarti qui.','Eccoti. Dai, facciamoci un selfie dopo!']),c:[{t:'Ciao!',n:null}]});
-  let g=exPick(FR_GREET[F.job]||FR_GREET.Copywriter).replace('{first}',first);
+  let g=exPick(FR_SPECIAL[F.id]||FR_GREET[F.job]||FR_GREET.Copywriter).replace('{first}',first);
   if(F.nick)g='Ciao! Per gli amici sono '+F.nick+' 🍊 (anche se sul badge c’è scritto '+first+'). '+exPick(FR_GREET[F.job]);
   const tp=chTopics(n,1)[0];
   say(n,{t:g,c:[
+    ...(F.id==='gabriele'?[{t:'Stasera ci sto!',n:{t:'Ecco, così si fa! Baldoria sia. 🍻',c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'A stasera!',n:null,act:onMet}]}}]:[]),
     ...jobChoices(n,onMet,false),
     topicChoice(n,tp,onMet),
     {t:'Facciamo un selfie?',n:null,act:()=>{G.flags.selfie=true;onMet();toast('Selfie con '+first+'!',2200);A.stamp();}},
-    {t:exPick(FR_BYE),n:null}]});
+    {t:exPick(FR_BYE),n:null}].slice(0,4)});
 }
 /* ---------- riferimenti: argomenti di conversazione e post ---------- */
 CH_TOPIC.push(
@@ -227,3 +230,13 @@ function extrasContent(s,c){
 }
 
 (function(){const b=FAMILY.find(f=>f.id==='bottoni');if(b&&!b.facts.includes(BOTTONI_TAG))b.facts.unshift(BOTTONI_TAG);})();
+
+/* Marketers Pro: frasi fisse di Gabriele e Domenico (commenti e post) */
+const EX_LINES={'Gabriele Lucesole':'Stasera facciamo baldoria? 🍻','Domenico Olivieri':'Voglio lasciare la fabbrica!'};
+function extrasWarm(who,r){if(EX_LINES[who.name]&&r()<.7)return EX_LINES[who.name];return null;}
+function extrasFeed(T){
+  const out=[],mk=(f,id,at,text)=>({id,at,m:{name:f,job:f==='Gabriele Lucesole'?'Coach':'Podcast coach, editor e sound designer',pal:{shirt:f==='Gabriele Lucesole'?'#6bc46d':'#2a5a8a'}},text,kind:'ex',q:false,mine:false});
+  [[0,18*60+40],[1,18*60+30],[2,17*60+50]].forEach(([d,m],i)=>out.push(mk('Gabriele Lucesole','exg'+i,d*1440+m,'Stasera facciamo baldoria? 🍻 #MW26')));
+  [[0,10*60+20],[1,13*60],[2,9*60+30]].forEach(([d,m],i)=>out.push(mk('Domenico Olivieri','exd'+i,d*1440+m,['Voglio lasciare la fabbrica! (ma prima il caffè) #MW26','Voglio lasciare la fabbrica! Intanto mi alleno: oggi microfono e due chiacchiere.','Voglio lasciare la fabbrica, ve lo dico qui così sono costretto a farlo. #MW26'][i])));
+  return out.filter(x=>x.at<=T);
+}
