@@ -130,12 +130,12 @@ function petTalk(n){
   if(n.pet==='alpaca'){alpaGuide(n);return;}
   const cat=n.pet==='cat',greet=exPick(cat?CG_GREET:AL_GREET);
   const again=(kind)=>{const pool=kind==='pet'?(cat?CG_PURR:AL_PET):kind==='adv'?(cat?CG_ADV:AL_ADV):CG_COPY;
-    return{t:exPick(pool),c:[{t:kind==='pet'?'Continua a coccolare':'Chiedi ancora',n:()=>again(kind),act:()=>{if(kind==='pet')(cat?A.purr():A.hum());}},{t:'Ok, a dopo!',n:null}]};};
+    return{t:exPick(pool),c:[{t:kind==='pet'?'Continua a coccolare':'Chiedi ancora',n:()=>again(kind),act:()=>{if(kind==='pet')(cat?A.purr():A.hum());}},...(cat&&kind==='adv'?[{t:'Fatti scrivere un copy',n:()=>again('copy')}]:[]),{t:'Ok, a dopo!',n:null}]};};
   if(cat)A.meow();else A.hum();petNote(n);
   say(n,{t:greet,c:[
     {t:cat?'Accarezza CatGPT':'Accarezza Alpachino',n:()=>again('pet'),act:()=>{cat?A.purr():A.hum();}},
     {t:'Chiedi un consiglio',n:()=>again('adv')},
-    cat?{t:'Fatti scrivere un copy',n:()=>again('copy')}:{t:'Fai un selfie insieme',n:null,act:()=>selfie(n)},
+    {t:'Fai un selfie insieme',n:null,act:()=>selfie(n)},
     {t:'Vai per la tua strada',n:null}]});
 }
 /* ---------- occhiali raccoglibili ---------- */

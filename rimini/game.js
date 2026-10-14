@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=69;
+const BUILD=70;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -363,7 +363,13 @@ function nearest(){
 
 /* ============================================================ dialoghi */
 const dlg=$('#dlg');let DL=null;
-function say(npc,node){DL={npc,node};showDlg();}
+function say(npc,node){
+  /* selfie possibile con chiunque (se c'è posto tra le 4 scelte) */
+  if(typeof selfie==='function'&&npc&&npc.name&&npc.x!=null&&npc.kind!=='pet'&&node&&Array.isArray(node.c)&&node.c.length<4&&!node.c.some(c=>/selfie/i.test(c.t))){
+    const last=node.c[node.c.length-1],sf={t:'📸 Facciamo un selfie?',n:null,act:()=>selfie(npc)};
+    if(last&&last.n===null&&!last.act)node.c.splice(node.c.length-1,0,sf);else node.c.push(sf);
+  }
+  DL={npc,node};showDlg();}
 function showDlg(){
   const {npc,node}=DL;dlg.classList.remove('hide');
   $('#dN').textContent=npc.name;$('#dR').textContent=npc.role||'';$('#dT').textContent=typeof node.t==='function'?node.t():node.t;
@@ -440,8 +446,7 @@ function attendee(n){
   const r=chRng(n,'o'),onMet=()=>{G.met[n.id]=1;addContact(n);},tp=chTopics(n,2),useTrait=r()<.5;
   say(n,{t:chGreet(n),c:[
     ...jobChoices(n,onMet,useTrait),
-    topicChoice(n,tp[0],onMet),
-    ...(useTrait?[]:[topicChoice(n,tp[1],onMet)]),
+    ...(useTrait?[]:[topicChoice(n,tp[0],onMet)]),
     {t:chPick(r,CH_BYE),n:null}
   ]});
 }
