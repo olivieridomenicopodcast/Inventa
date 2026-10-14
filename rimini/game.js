@@ -294,7 +294,7 @@ function interactables(){
     I(458,300,26,'Un caffè al bar',coffee);I(820,300,26,'Un caffè al bar',coffee);
     I(745,780,20,'Programma e info nell’app',()=>{if(!G.flags.app)say(NPC.find(n=>n.id==='info'),nodeInfo());else openPhone('home');});
     I(630,610,40,'Sali al primo piano (scale mobili)',()=>goFloor(1,k(630),k(590)));
-    const kar=activeAt(['Village']);I(1060,690,70,kar?'Karaoke al Village: microfono libero':'Il Village',()=>kar?karaoke():info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
+    const kar=activeAt(['Village']);I(1060,690,70,kar?kar.title:'Il Village',()=>kar?karaoke(kar):info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
         I(810,810,46,'Una sessione di yoga',()=>say(NPC.find(n=>n.id==='yoga'),nodeYoga()));
     const mt=G.meets.find(m=>m.day===G.day&&G.min>=m.start-10&&G.min<m.start+40);
     I(250,690,45,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso.'));
@@ -410,7 +410,7 @@ function enterSession(e){
   if(e.kind==='game'){quiz(e);return;}
   if(e.kind==='party'){partySilent(e);return;}
   if(e.kind==='react'){startReact(e);return;}
-  if(e.kind==='karaoke'){karaoke();return;}
+  if(e.kind==='karaoke'){karaoke(e);return;}
   if(!G.flags.accred){info('Varco','Serve il badge per entrare in sala.');return;}
   if(e.kind==='ws'){
     if(!G.booked.has(e.id)){
@@ -515,8 +515,9 @@ function drawTheatre(){
   ctx.restore();
   ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(w.label.toUpperCase(),x0+8,y0+8);
 }
-function karaoke(){
-  if(G.min<22*60){info('Karaoke al Village','Il Karaoke al Village è dalle 22:00 alle 24:00, «Palco - zona ristorante». Microfono libero.');return;}
+function karaoke(e){
+  if(e&&/Pigiama/.test(e.title)){say({name:'Host del Village',role:'Pigiama party finale',p:NPC.find(n=>n.id==='dj').p},{t:'L’ultima notte al Village: tutti in pigiama con la Family! Aperto a tutti i partecipanti.',c:[{t:'Mi unisco al pigiama party!',n:{t:'Si balla, si ride e si chiude in bellezza i tre giorni.',c:[{t:'Che serata!',n:null,act:kDone}]}},{t:'Dopo',n:null}]});return;}
+  if(G.min<22*60){info('Village','La sera al Village, dalle 22:00, «Palco - zona ristorante». Microfono libero.');return;}
   say({name:'Host del Village',role:'Karaoke',p:NPC.find(n=>n.id==='dj').p},{t:'Aperto a tutti i partecipanti del World. Il microfono è libero: che canzone scegli?',c:[
     {t:'Un classico italiano',n:{t:'La sala canta con te. Standing ovation!',c:[{t:'Inchino',n:null,act:kDone}]}},
     {t:'Una hit degli anni 2000',n:{t:'Dopo due stonature il pubblico ti salva cantando il ritornello. Che serata!',c:[{t:'Inchino',n:null,act:kDone}]}},
@@ -601,7 +602,7 @@ function quests(){
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
     {t:'Incontra Dario e Luca',s:'Vicino al palco principale',ok:F.dario&&F.luca},
     {t:'Fatti firmare un libro',s:'Stand Urlico Hoepli (ven 16:00 Dario Vignali)',ok:F.sign},
-    {t:'Fai la Riattivazione',s:'Micro sessione di yoga sul Main Stage, sabato',ok:F.react>0},
+    {t:'Fai la Riattivazione',s:'Micro sessione di yoga sul Main Stage, sabato e domenica',ok:F.react>0},
     {t:'Yoga Silent Party',s:'Main stage silent, venerdì 18:15',ok:F.party},
     {t:'Karaoke al Village',s:'Venerdì dalle 22:00',ok:F.kara},
     {t:'Gioca a un Game Quiz',s:'Stand nell’atrio, venerdì',ok:F.quiz>=1},
@@ -671,7 +672,7 @@ function renderPhone(){
   }else if(phoneTab==='prog'){
     if(progDay==null)progDay=G.day;
     const list=PROGRAMMA.filter(e=>e.d===progDay&&e.kind!=='lounge'&&(!progMine||G.booked.has(e.id)||G.saved.has(e.id)));
-    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button></div>`+(progDay>0?'<div class="note" style="margin:0 0 8px">Il programma di sabato e domenica non è quello ufficiale: gli speech sono inventati.</div>':'')+(list.length?list.map(sessCard).join(''):'<div class="note">Niente da mostrare.</div>');
+    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button></div>`+'<div class="note" style="margin:0 0 8px">Programma dai dati pubblici dell’app; le slide e i contenuti delle sessioni sono inventati per il gioco.</div>'+(list.length?list.map(sessCard).join(''):'<div class="note">Niente da mostrare.</div>');
     B.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{progDay=+b.dataset.d;renderPhone();});$('#mine').onclick=()=>{progMine=!progMine;renderPhone();};bind();
   }else if(phoneTab==='agenda'){
     const items=[...G.booked,...G.saved].map(id=>BYID[id]);
