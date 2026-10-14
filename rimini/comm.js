@@ -116,14 +116,14 @@ function cmReplies(){
   return out;
 }
 /* feed visibile: pool + post degli incontrati + miei */
-function cmFeed(T){
+function cmFeed(T,onlyMine){
   const C=cmEnsure(),items=[];
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
   const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:{shirt:'#ff6a3d'},me:true};
   for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,kind:'mine',mine:true});
-  return items.filter(x=>x.at<=T).sort((a,b)=>b.at-a.at).slice(0,40);
+  return items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at).slice(0,onlyMine?200:40);
 }
 function cmView(p,T){
   const C=cmEnsure(),base=p.mine?cmComments(p,true):p.kind==='met'?[]:cmComments(p,false),mine=(C.cm[p.id]||[]).map(c=>({id:c.id,at:c.at,who:{name:pname(),me:true,pal:{shirt:'#ff6a3d'}},text:c.text,me:true}));
@@ -148,18 +148,20 @@ function cmNotify(){
   if(n&&phoneTab!=='comm')toast('Marketers Pro: '+n+(n>1?' nuove interazioni':' nuova interazione')+' con i tuoi contenuti',2800);
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
-let cmOpen={};
+let cmOpen={},cmMine=false;
 function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return[0,1,2,3,4].sort(()=>r()-.5).slice(0,3).map(i=>cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}));}
 function renderComm(B){
   const C=cmEnsure(),T=cmT();C.seenT=T;
-  const sug=cmCompose(),feed=cmFeed(T);
+  const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length;
   const av=(m)=>`<div class="cav" style="background:${m.pal.shirt}">${esc(m.name.split(' ').map(x=>x[0]).join('').slice(0,2))}</div>`;
   B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+
+   `<div class="cfil"><button data-f="all" class="${cmMine?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine?'on':''}">✎ I miei post (${nMine})</button></div>`+
    (feed.length?feed.map(p=>{const v=cmView(p,T),open=!!cmOpen[p.id],liked=!!C.liked[p.id];
      return `<div class="cp ${p.mine?'mine':''}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(p.text)}</div><div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
-      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(c.text)}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>');
+      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(c.text)}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
   const ta=$('#cmT');ta.oninput=()=>{$('#cmN').textContent=ta.value.length+'/160';};
+  B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmMine=b.dataset.f==='mine';renderPhone();});
   B.querySelectorAll('[data-sg]').forEach(b=>b.onclick=()=>{ta.value=sug[+b.dataset.sg];ta.oninput();});
   $('#cmP').onclick=()=>{const t=ta.value.trim();if(!t){toast('Scrivi qualcosa prima di pubblicare.',1800);return;}C.posts.push({id:'u'+(++C.pid),text:t.slice(0,160),at:cmT()});toast('Post pubblicato su Marketers Pro.',1800);A.stamp();renderPhone();};
   B.querySelectorAll('[data-lk]').forEach(b=>b.onclick=()=>{const id=b.dataset.lk;C.liked[id]=!C.liked[id];A.blip();const y=B.scrollTop;renderPhone();B.scrollTop=y;});
