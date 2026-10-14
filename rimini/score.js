@@ -23,6 +23,8 @@ function scoreRun(){
   add('Stendardo piantato',F.banner?1:0,100);
   add('Esibizioni al karaoke',F.kn||0,20);
   add('Stelle del karaoke',F.ks||0,10);
+  add('Trofei della Family',Object.keys(G.trophies||{}).length,25);
+  add('Tutta la Family incontrata',Object.keys(G.trophies||{}).length>=FAMILY.length?1:0,100);
   add('Marketers Meetup al Sunflower',F.sun?1:0,30);
   add('Pigiama party',F.pjp?1:0,40);
   add('Giochi del pigiama party',F.pjg||0,15);

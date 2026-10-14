@@ -177,3 +177,33 @@ function importSavesFile(file,done){
 /* ---------- storico delle notifiche di gioco (con l'ora di gioco) ---------- */
 if(typeof toast==='function'){const _toast=toast;
   toast=function(t,ms){try{if(G&&G.flags&&!/^(Passano|Passa un|Musica ed|Solo effetti|Audio disattivato|Esatto|Non proprio)/.test(t)){const L=G.nlog=G.nlog||[],m=Math.floor(G.min),last=L[L.length-1];if(!(last&&last.t===t&&last.d===G.day&&last.m===m)){L.push({t:String(t),d:G.day,m});if(L.length>200)L.shift();}}}catch(e){}_toast(t,ms);};}
+
+/* ---------- la Marketers Family gira per il Palacongressi; trofei da collezionare ---------- */
+const FAM_Z=[[430,200,860,236,0,'atrio nord, tra gli stand'],[420,640,520,705,0,'atrio sud-ovest, verso i varchi'],[740,640,830,705,0,'atrio sud-est'],[300,420,395,620,0,'corridoio ovest'],[160,640,390,700,0,'zona bistrot'],[960,560,1180,820,0,'all’esterno, lato est'],[420,780,860,860,0,'fuori dall’Ingresso A'],[330,300,470,720,0,'corridoio ovest, verso le Silent Stage'],[420,560,830,680,1,'primo piano, parte centrale'],[300,280,420,620,1,'primo piano, lato ovest'],[860,300,1000,560,1,'primo piano, lato est']];
+function famPlaceOne(n){
+  const r=mulberry32(hashStr(G.seed+'|fam|'+n.id+'|'+G.day)),z=FAM_Z[Math.floor(r()*FAM_Z.length)];
+  const x0=k(z[0]),y0=k(z[1]),x1=k(z[2]),y1=k(z[3]);n.f=z[4];n.wander={x0,y0,x1,y1};let x=x0+r()*(x1-x0),y=y0+r()*(y1-y0);[x,y]=freeSpot(n.f,x,y);n.x=x;n.y=y;n.zn=z[5];n.vx=n.vy=0;n.t=0;
+}
+function famTick(){
+  if(!G||!NPC.length)return;
+  if(G._famDay!==G.day||G._famSeed!==G.seed){G._famDay=G.day;G._famSeed=G.seed;NPC.filter(n=>n.kind==='family').forEach(n=>{if(!(n.id==='dario'&&n.sg))famPlaceOne(n);});}
+}
+const trWhen=at=>at==null?'—':DAYNAMES[Math.min(2,Math.floor(at/1440))]+' '+hm(((at%1440)+1440)%1440);
+const trAll=()=>lsGet('rimini.trophies',{});
+function trophyFound(n){
+  if(!n||n.kind!=='family')return;G.trophies=G.trophies||{};if(G.trophies[n.id])return;
+  G.trophies[n.id]={at:cmT(),place:(typeof albumPlace==='function'?albumPlace():'')};const all=trAll();all[n.id]=true;lsSet('rimini.trophies',all);
+  const c=Object.keys(G.trophies).length;A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);
+  toast('Trofeo sbloccato: '+n.name+' ('+c+'/'+FAMILY.length+')',4200);
+  if(c===FAMILY.length)setTimeout(()=>toast('Hai incontrato tutta la Marketers Family!',4800),2200);
+}
+function trophyCount(){return Object.keys(G.trophies||{}).length;}
+function trophyQuest(){const c=trophyCount();return[{t:'Incontra tutta la Marketers Family',s:'Girano per il Palacongressi, cercali: hanno un puntino dorato sopra la testa ('+c+'/'+FAMILY.length+')',ok:c>=FAMILY.length}];}
+function trophyHtml(){
+  const got=G.trophies||{},all=trAll(),c=trophyCount(),tot=lsGet('rimini.trophies',{});
+  const card=f=>{const g=got[f.id],pal={shirt:f.shirt,pants:'#232a44',skin:f.skin,hair:f.hair,badge:'#ffd24d'};
+    const n=NPC.find(x=>x.id===f.id),hint=n&&n.zn?'Oggi: '+(n.f===1?'primo piano':'piano terra')+', '+n.zn:'';
+    return g?`<div class="trc got">${faceImg(pal,'avi2')}<b>${esc(f.name)}</b><small>${esc(f.role)}</small><em>Incontrato: ${trWhen(g.at)}${g.place?' · '+esc(g.place):''}</em></div>`
+      :`<div class="trc"><div class="trq">${faceImg(pal,'avi2')}</div><b>???</b><small>${all[f.id]?'Già incontrato in un’altra partita: '+esc(f.name):'Non ancora incontrato'}</small><em>${esc(hint)}</em></div>`;};
+  return `<div class="back" data-go="home">‹ Home</div><h3 class="h3">Trofei · Marketers Family</h3><div class="note" style="margin:0 0 10px">Trova in giro per la mappa tutti i membri della Marketers Family: quando ne incontri uno, il suo trofeo compare qui. In questa partita: <b>${c}/${FAMILY.length}</b> · in tutte le partite: <b>${Object.keys(tot).length}/${FAMILY.length}</b>. Cerca il puntino dorato sopra la testa.</div><div class="trg">${FAMILY.map(card).join('')}</div>`;
+}

@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=97;
+const BUILD=98;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -410,6 +410,7 @@ function talkTo(n){
   if(n.kind==='family'){
     const d=n.data;
     if(n.id==='dario'&&n.sg){firmacopie(activeAt(['Stand Urlico Hoepli']));return;}
+    if(typeof trophyFound==='function')trophyFound(n);
     if(n.id==='dario')G.flags.dario=true;if(n.id==='luca')G.flags.luca=true;
     const greet=pickFrom(['Ciao! Benvenuto al Marketers World!','Ehi, che bello vederti qui!','Buon evento! Divertiti e fai tante conoscenze.']);
     say(n,{t:greet,c:[{t:'Chi sei?',n:{t:d.facts[0]+(d.facts[1]?' '+d.facts[1]:''),c:[{t:'Parlami dell’evento',n:factNode(n)},{t:'Ciao!',n:null}]}},{t:'Parlami dell’evento',n:factNode(n)},{t:'Ciao!',n:null,act:()=>addContact(n)}]});
@@ -739,10 +740,11 @@ function quests(){
       {t:(F.pets||0)>=2?'Saluta CatGPT e Alpachino':'???? ?????? ?? ?????????',s:(F.pets||0)>=2?'Il gatto grigio e l’alpaca girano per la mappa':'Obiettivo segreto',ok:(F.pets||0)>=2},
       ...(typeof itemQuests==='function'?itemQuests():[]),
       ...(typeof sqQuests==='function'?sqQuests():[]),
+      ...(typeof trophyQuest==='function'?trophyQuest():[]),
       {t:(F.friends||0)>=5?'Incontra gli amici del gruppo':'?????? ?? ?????? ???????',s:(F.friends||0)>=5?'Persone sparse tra Palacongressi e Village':'Obiettivo segreto',ok:(F.friends||0)>=5}]:[]),
     {t:'Scambia 5 contatti',s:'Parla con le persone ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
-    {t:'Incontra Dario e Luca',s:'Vicino al palco principale',ok:F.dario&&F.luca},
+    {t:'Incontra Dario e Luca',s:'Girano per il Palacongressi: cercali (puntino dorato sopra la testa)',ok:F.dario&&F.luca},
     {t:'Fatti firmare un libro',s:'Stand Urlico Hoepli (ven 16:00 Dario Vignali)',ok:F.sign},
     {t:'Fai la Riattivazione',s:'Micro sessione di yoga sul Main Stage, sabato e domenica',ok:F.react>0},
     {t:'Yoga Silent Party',s:'Main stage silent, venerdì 18:15',ok:F.party},
@@ -817,7 +819,7 @@ function renderPhone(){
     B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>${PLAYER.gender==='f'?'Bentornata':'Bentornato'},<br><em>${esc(pname())}.</em></h2><small style="opacity:.85">${esc(ME().job)}</small></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
      ${typeof scoreCard==='function'?scoreCard():''}${typeof sqCard==='function'?sqCard():''}
      <div class="bn" data-go="prog:${G.day}">${nw?`🎟 Hai ancora <b>${nw}</b> workshop prenotat${nw>1?'i':'o'}. Scegline altri nel programma →`:'🎟 Nessun workshop in programma. Prenotane uno dal programma di venerdì →'}</div>
-     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="notes">📝<b>Appunti (${G.tips.length})</b></button><button data-go="nlog">🔔<b>Notifiche (${(G.nlog||[]).length})</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
+     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="comm">🌐<b>Marketers Pro</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="notes">📝<b>Appunti (${G.tips.length})</b></button><button data-go="nlog">🔔<b>Notifiche (${(G.nlog||[]).length})</b></button><button data-go="trophy">🏆<b>Trofei (${typeof trophyCount==='function'?trophyCount():0}/${FAMILY.length})</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
      <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
      <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
      ${typeof glassesRow==='function'?glassesRow():''}
@@ -868,6 +870,8 @@ function renderPhone(){
   }else if(phoneTab==='off'){
     const ev=PROGRAMMA.filter(e=>['party','karaoke','sign','game'].includes(e.kind)).sort((a,b)=>a.d-b.d||a.start-b.start);
     B.innerHTML=`<div class="back" data-go="home">‹ Home</div>`+ev.map(sessCard).join('');bind();
+  }else if(phoneTab==='trophy'){
+    B.innerHTML=typeof trophyHtml==='function'?trophyHtml():'';bind();
   }else if(phoneTab==='nlog'){
     const L=(G.nlog||[]).slice().reverse();
     B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="note" style="margin:0 0 10px">Storico delle notifiche di gioco, con l’ora in cui sono arrivate. Quelle di Marketers Pro sono nella scheda Marketers Pro › Notifiche.</div>`+(L.length?L.map(x=>`<div class="pg"><b>${esc(x.t)}</b><br><small style="color:var(--dim)">${['Ven','Sab','Dom'][x.d]||''} ${hm(x.m)}</small></div>`).join(''):'<div class="note">Ancora nessuna notifica.</div>');bind();
@@ -1019,10 +1023,10 @@ function putSaves(a){
     try{localStorage.setItem(SKEY,JSON.stringify(b));if(typeof toast==='function')toast('Spazio del browser quasi pieno: le foto restano solo nel salvataggio più recente.',3600);return true;}
     catch(e2){if(typeof toast==='function')toast('Impossibile salvare: spazio del browser pieno. Elimina qualche vecchio salvataggio.',4000);return false;}}
 }
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},nlog:G.nlog||[],sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},nlog:G.nlog||[],trophies:G.trophies||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},nlog:st.nlog||[],seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},nlog:st.nlog||[],trophies:st.trophies||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   G.xpeople=(st.xpeople||[]).map(p=>Object.assign({},p));G.people.push(...G.xpeople.filter(p=>!G.people.some(q=>q.id===p.id)));
   G.qd=null;
   if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
@@ -1105,11 +1109,12 @@ function update(dt){
     const m=Math.hypot(dx,dy);const p=G.p;
     if(m>.15){dx/=Math.max(1,m);dy/=Math.max(1,m);const sp=(keys.ShiftLeft?108:78)*dt;moveBody(p,dx*sp,dy*sp,FL[G.f]);p.step+=dt*(keys.ShiftLeft?7.5:5.3);p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);if(Math.floor(p.step*2)!==Math.floor((p.step-dt*4)*2))A.step();}else p.step=0;
   }
-  {const d=NPC.find(n=>n.id==='dario'),sg=!!(activeAt(['Stand Urlico Hoepli'])&&/Vignali/.test(activeAt(['Stand Urlico Hoepli']).sp));if(d){if(sg){d.f=0;d.x=k(800);d.y=k(272);d.dir=0;}else if(d.sg){d.x=k(d.data.where.x);d.y=k(d.data.where.y);}d.sg=sg;}}
+  {const d=NPC.find(n=>n.id==='dario'),sg=!!(activeAt(['Stand Urlico Hoepli'])&&/Vignali/.test(activeAt(['Stand Urlico Hoepli']).sp));if(d){if(sg){d.f=0;d.x=k(800);d.y=k(272);d.dir=0;d.wander=null;}else if(d.sg){if(typeof famPlaceOne==='function')famPlaceOne(d);else{d.x=k(d.data.where.x);d.y=k(d.data.where.y);}}d.sg=sg;}}
   if(!G.sandbox&&G.meets.length){const gone=G.meets.filter(m=>(m.day<G.day)||(m.day===G.day&&Math.floor(G.min)>=m.start+11));if(gone.length){G.meets=G.meets.filter(m=>!gone.includes(m));gone.forEach(m=>{if(typeof cmNoShow==='function')cmNoShow(m);});}}
   updateNPC(dt);if(typeof petRoam==='function')petRoam(dt);
   if(typeof finaleStep==='function'){finaleStep(dt);finaleTick();}
   if(typeof villageTick==='function')villageTick(dt);
+  if(typeof famTick==='function')famTick();
   // fine giornata di sala: si possono scoprire i luoghi
   const cam=G.cam,vw=W/Z,vh=H/Z,p=G.p;
   cam.x=lerp(cam.x,p.x,Math.min(1,dt*6));cam.y=lerp(cam.y,p.y-10+(MOB?vh*.2:0),Math.min(1,dt*6));
