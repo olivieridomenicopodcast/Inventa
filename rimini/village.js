@@ -104,3 +104,11 @@ function shuttleHome(){
   say(host,{t:G.day>=2?'È l’ultima sera: tornando al Village finisce il tuo Marketers World. Sicuro?':'Vuoi chiudere la giornata e tornare al Marketers Village? Domani si ricomincia con la navetta.',c:[
     {t:G.day>=2?'Sì, concludo il weekend':'Sì, torno al Village',n:null,act:()=>rideBus(true)},{t:'Resto ancora un po’',n:null}]});
 }
+
+/* tasto "passa al giorno dopo": chiude la giornata e riparte dal Village (domenica: conclude il weekend) */
+function askNextDay(){
+  const last=G.day>=2,host={name:last?'Fine del weekend':'Fine giornata',role:'Marketers World',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
+  say(host,{t:last?'Vuoi concludere il tuo Marketers World? Vedrai il riepilogo finale.':'Vuoi chiudere la giornata di '+DAYNAMES[G.day]+' e passare a '+DAYNAMES[G.day+1]+'? Tornerai al Marketers Village e domani si riparte con la navetta.',c:[
+    {t:last?'Sì, concludi':'Sì, passa al giorno dopo',n:null,act:()=>{if(last)endGame();else nextDay();}},
+    {t:'No, resto ancora un po’',n:null}]});
+}

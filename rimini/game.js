@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=79;
+const BUILD=80;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -246,7 +246,7 @@ function buildFirst(){
 /* ============================================================ stato */
 let FL=[null,null,null],G=null,NPC=[],mode='title';
 const keys={};let touch={x:0,y:0};
-const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,pets:0,glasses:0,friends:0};
+const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0,jobTalk:0,hot:0,offer:false,bus:false,fin:false,pets:0,glasses:0,friends:0};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 const RNG=()=>(G&&G.rng)?G.rng():Math.random();
@@ -577,6 +577,7 @@ function advance(){
 function leaveTheatre(complete){
   const w=G.watching;if(!w)return;G.watching=null;stg.classList.add('hide');
   if(!G.sandbox)G.min=complete?Math.max(G.min,w.e.e):G.min+15;
+  if(complete&&typeof finaleCheck==='function')setTimeout(()=>finaleCheck(w.e),200);
   if(complete){G.seen.add(w.e.id);if(w.where==='work'){G.flags.ws++;const n=NPC.filter(x=>x.kind==='att'&&!G.met[x.id])[0];if(n){G.met[n.id]=1;addContact(n);}}else G.flags.talk++;
     toast((w.where==='work'?'Sessione':'Speech')+' conclusa: '+w.notes+' appunti nel taccuino'+(w.good?', esercizio riuscito!':'.'),4200);}
   else toast('Sei uscito prima della fine.',2500);
@@ -805,9 +806,11 @@ function renderPhone(){
      ${typeof glassesRow==='function'?glassesRow():''}
      <div class="sec">// ULTIMO ANNUNCIO</div><div class="ann"><small>13 OTT · 18:00</small><b>Benvenuti a Rimini!</b><span>Ritira il badge fuori dall’Ingresso A e attiva l’app dell’evento all’Assistenza: dentro trovi programma, workshop e networking.</span></div>
      <div class="spread"><b>Fai sapere che ci sarai</b><span>La tua card per le storie e LinkedIn, pronta in un tocco.</span><button id="card">Crea la tua card</button></div>
+     <button class="btn ghost" id="nextDayBtn" style="width:100%;margin:10px 0">${G.day>=2?'🏁 Concludi il weekend':'🌙 Passa a '+['Sabato','Domenica'][G.day]}</button>
      <div class="note">Realizzato da Olivieri Domenico usando Claude Code. Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers. Fan project non ufficiale. Programma (titoli, speaker, sale e orari) dal programma dell’app; contenuti delle slide e partecipanti inventati.</div>`;
     const hc=$('#heroc').getContext('2d');hc.imageSmoothingEnabled=false;hc.drawImage(FL[0].cv,k(470),k(600),k(330),k(160),0,0,400,190);hc.fillStyle='rgba(10,16,50,.55)';hc.fillRect(0,0,400,190);
     $('#card').onclick=()=>{closePhone();photo();};
+    $('#nextDayBtn').onclick=()=>{closePhone();askNextDay();};
     bind();
   }else if(phoneTab==='prog'){
     if(progDay==null)progDay=G.day;
@@ -1013,9 +1016,10 @@ function toMenu(){autoSave();SEED=G.seed||SEED;G.watching=null;G.react=null;['#s
 function openSaves(from,msg,flashId){
   const inGame=from!=='title'&&G&&mode==='play';
   const box=$('#saveB'),a=getSaves();
-  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(msg?`<div class="svok" role="status">${esc(msg)}</div>`:'')+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv${e.id===flashId?' flash':''}" data-sid="${e.id}"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
+  box.innerHTML=`<h2>${inGame?'SALVA / CARICA':'CARICA PARTITA'}</h2>`+(msg?`<div class="svok" role="status">${esc(msg)}</div>`:'')+(inGame?`<div class="sv"><div class="i"><b>Nuovo salvataggio</b><small>${esc(summary())}</small><input id="svname" class="srch2" placeholder="Nome (facoltativo)" maxlength="30" style="margin-top:6px"></div><button class="go" id="svnew">Salva</button></div>`:'')+(a.length?a.map(e=>`<div class="sv${e.id===flashId?' flash':''}" data-sid="${e.id}"><div class="i"><b>${esc(e.name)}</b><small>${esc(e.sum)} · ${new Date(e.ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><button class="go" data-ld="${e.id}">Carica</button>${inGame&&e.id!=='auto'?`<button data-ow="${e.id}">Sovrascrivi</button>`:''}<button data-dl="${e.id}">✕</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessun salvataggio.</div>')+`${inGame?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="svnext">'+(G.day>=2?'🏁 Concludi il weekend':'🌙 Passa a '+['Sabato','Domenica'][G.day])+'</button><button class="btn ghost" id="svrs">↻ Ricomincia (stesso seme)</button><button class="btn ghost" id="svmenu">⌂ Menu principale / cambia seme</button></div>':''}<div style="margin-top:10px"><button class="btn ghost" id="svx" style="width:100%">Chiudi</button></div><p style="font-size:11px;color:#9fb0d8;margin-top:10px;line-height:1.5">I salvataggi restano su questo dispositivo, nel browser. Il gioco salva da solo ogni due minuti e a ogni nuovo giorno («Autosalvataggio»).</p>`;
   $('#savem').classList.remove('hide');
   $('#svx').onclick=()=>{$('#savem').classList.add('hide');last=performance.now();};
+  const nd=$('#svnext');if(nd)nd.onclick=()=>{$('#savem').classList.add('hide');last=performance.now();askNextDay();};
   const rs=$('#svrs');if(rs)rs.onclick=()=>{if(!confirm('Ricominciare da capo con lo stesso seme? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;autoSave();SEED=G.seed;$('#savem').classList.add('hide');closePhone();startGame();};
   const mn=$('#svmenu');if(mn)mn.onclick=()=>{if(!confirm('Tornare al menu principale? I progressi non salvati andranno persi (resta l’autosalvataggio).'))return;toMenu();};
   const n=$('#svnew');if(n)n.onclick=()=>{const e=saveTo(null,$('#svname').value.trim());A.stamp();openSaves(from,'✔ Partita salvata come «'+e.name+'» ('+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+')',e.id);};
@@ -1071,7 +1075,7 @@ function update(dt){
   if(G.react){updateReact(dt);return;}
   if(!DL&&!G.react&&!uiOpen()){
     // orologio: 1 minuto di gioco ogni 4 secondi reali
-    if(!G.sandbox)G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
+    if(!G.sandbox&&!G.fin)G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
     if(G.min>=23*60+30){if(G.day>=2){endGame();G.min=23*60+29;}else nextDay();}
     let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0)+touch.x,dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0)+touch.y;
     const m=Math.hypot(dx,dy);const p=G.p;
@@ -1080,6 +1084,7 @@ function update(dt){
   {const d=NPC.find(n=>n.id==='dario'),sg=!!(activeAt(['Stand Urlico Hoepli'])&&/Vignali/.test(activeAt(['Stand Urlico Hoepli']).sp));if(d){if(sg){d.f=0;d.x=k(800);d.y=k(272);d.dir=0;}else if(d.sg){d.x=k(d.data.where.x);d.y=k(d.data.where.y);}d.sg=sg;}}
   G.meets=G.meets.filter(m=>{const dead=(m.day<G.day)||(m.day===G.day&&G.min>m.start+40);if(dead)toast('Hai saltato un meeting.',2200);return !dead;});
   updateNPC(dt);if(typeof petRoam==='function')petRoam(dt);
+  if(typeof finaleStep==='function'){finaleStep(dt);finaleTick();}
   // fine giornata di sala: si possono scoprire i luoghi
   const cam=G.cam,vw=W/Z,vh=H/Z,p=G.p;
   cam.x=lerp(cam.x,p.x,Math.min(1,dt*6));cam.y=lerp(cam.y,p.y-10+(MOB?vh*.2:0),Math.min(1,dt*6));
@@ -1109,6 +1114,7 @@ function draw(){
       if(near&&near.npc===n){txt(ctx,n.name,Math.round(n.x),Math.round(n.y)-34,'#fff',5);}}
   }
   if(near){ctx.fillStyle='#ff6a3d';const bb=Math.round(Math.sin(G.t*6)*1.5);ctx.fillRect(Math.round(near.x)-1,Math.round(near.y)-40+bb-(near.npc?0:12),3,3);}
+  if(G.fin&&G.f===0&&typeof drawFinale==='function')drawFinale(ctx);
   // sera
   const hr=G.min/60;let ta=0;if(hr>=18)ta=clamp((hr-18)/3,0,1)*.45;
   if(ta>0&&G.f===0){ctx.fillStyle='rgba(12,20,70,'+ta.toFixed(3)+')';ctx.fillRect(0,0,WW,WH);}

@@ -233,6 +233,7 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 .sv.flash{animation:svfl 1.6s ease-out}@keyframes svfl{0%,60%{background:#1d4a2e;border-color:#4dff9a}100%{}}@keyframes svin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 #savem .srch2{background:#0c1124;color:#fff;border:1px solid #2a3566;border-radius:8px;padding:8px 10px;width:100%;margin-top:6px}
 #phone .hd{gap:8px}#phone .hd #phH{flex:1}.phclk{font-family:'Press Start 2P',monospace;font-size:10px;color:#ff6a3d;background:#1d2650;border:1px solid #2a3566;border-radius:8px;padding:6px 8px;white-space:nowrap}
+#finB{position:fixed;left:50%;top:max(120px,18vh);transform:translateX(-50%);z-index:12;text-align:center;pointer-events:none;animation:finin .6s ease-out}#finB b{display:block;font-family:'Press Start 2P',monospace;font-size:14px;color:#ffd24d;text-shadow:0 3px 0 #a8431f,0 0 18px rgba(255,210,77,.6);line-height:1.5}#finB span{display:block;margin-top:8px;font-size:14px;color:#fff;text-shadow:0 2px 6px #000}@keyframes finin{from{opacity:0;transform:translate(-50%,-14px) scale(.9)}to{opacity:1;transform:translateX(-50%)}}
 </style>
 </head>
 <body>
@@ -255,7 +256,7 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="79">build</div>
+<div id="bld" data-b="80">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>
@@ -276,5 +277,6 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <script src="rimini/comm.js"></script>
 <script src="rimini/game.js"></script>
 <script src="rimini/extras.js"></script>
+<script src="rimini/finale.js"></script>
 </body>
 </html>
