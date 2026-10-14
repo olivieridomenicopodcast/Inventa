@@ -8,10 +8,14 @@ const hsh=(x,y)=>{let h=Math.imul(x|0,374761393)^Math.imul(y|0,668265263);h=Math
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cv=$('#cv'),ctx=cv.getContext('2d');
 const MOB=matchMedia('(pointer:coarse)').matches||innerWidth<700;if(MOB)document.body.classList.add('mob');
-let W=0,H=0,DPR=1,Z=3;
+let W=0,H=0,DPR=1;
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
-  Z=clamp(Math.round(Math.min(W/400,H/240)),2,5);if(MOB)Z=clamp(Math.round(Math.min(W/130,H/200)),2,4);}
-addEventListener('resize',resize);resize();
+  const want=MOB?Math.min(W/250,H/380):Math.min(W/520,H/320);let bi=0;ZL.forEach((z,i)=>{if(Math.abs(z-want)<Math.abs(ZL[bi]-want))bi=i;});zBase=bi;applyZoom();}
+const ZL=[1,1.5,2,2.5,3,4,5];let zBase=2,zOff=0;let Z=2;
+function applyZoom(){Z=ZL[clamp(zBase+zOff,0,ZL.length-1)];}
+function zoomStep(d){zOff=clamp(zBase+zOff+d,0,ZL.length-1)-zBase;applyZoom();}
+resize();
+addEventListener('resize',resize);
 const PIX='"Press Start 2P",monospace';
 const K=1.2,k=v=>Math.round(v*K);
 const WW=k(1306),WH=k(900);
@@ -421,8 +425,7 @@ function enterSession(e){
   if(!G.flags.accred){info('Varco','Serve il badge per entrare in sala.');return;}
   if(e.kind==='ws'){
     if(!G.booked.has(e.id)){
-      if(e.sold){info('Sold-out','La sala è piena: «'+e.title+'» è sold-out. Prova una sessione con posti, oppure un MK PRO a ingresso libero.');return;}
-      toast('Non l’avevi prenotato, ma c’è posto: entri!',2600);
+      toast('Non l’avevi prenotato, ma entri lo stesso.',2200);
     }
   }
   startTheatre(e);
@@ -623,9 +626,10 @@ function closePhone(){$('#phone').classList.add('hide');}
 const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
 const tagH=t=>`<span class="tg"><i style="background:${TAGC[t]||'#888'}"></i>${esc(t)}</span>`;
 function sessCard(e){
+  const past=x=>x.d<G.day||(x.d===G.day&&x.e<=G.min);
   const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
   let btn='';
-  if(e.kind==='ws'){btn=booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:e.sold?'<button class="pb sold" disabled>Sold-out</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
+  if(e.kind==='ws'){btn=booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:past(e)?'<button class="pb occ" disabled>Concluso</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
   else if(e.kind==='lounge'){btn='';}
   else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
   const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
@@ -657,7 +661,7 @@ function renderPhone(){
   $('#qrb').onclick=()=>showQR();
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
-    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
+    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
     B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);renderPhone();});
     B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
     B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
@@ -720,6 +724,9 @@ function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabl
   if(f===G.f){const s=cvm.width/WW;c.fillStyle='#fff';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,5,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,3,0,7);c.fill();}}
 $('#bPhone').onclick=()=>openPhone();$('#phX').onclick=closePhone;
 $('#bPhoto').onclick=()=>photo();
+$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#bSkip').onclick=()=>skipTime();
+function skipTime(){if(!G||G.watching||G.react)return;G.min+=15;toast('Passano 15 minuti.',1200);}
+addEventListener('wheel',e=>{if(G&&mode==='play'&&!G.watching&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide'))zoomStep(e.deltaY<0?1:-1);},{passive:true});
 $('#bSnd').onclick=()=>{A.on=!A.on;$('#bSnd').textContent=A.on?'🔊':'🔇';};
 
 /* ============================================================ foto, fine, toast */
@@ -754,7 +761,7 @@ function update(dt){
   if(G.react){updateReact(dt);return;}
   if(!DL&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide')){
     // orologio: 1 secondo reale = 2 minuti di gioco
-    G.min+=dt*2;
+    G.min+=dt/4;
     if(G.min>=23*60+30){G.fade=1;if(G.day>=2){endGame();G.min=23*60+29;}else{G.day++;G.min=8*60+45;G.f=0;G.p.x=k(632);G.p.y=k(885);toast('Notte a Rimini: nuova giornata, '+DAYNAMES[G.day]+' ottobre.',3500);}}
     let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0)+touch.x,dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0)+touch.y;
     const m=Math.hypot(dx,dy);const p=G.p;
@@ -833,6 +840,9 @@ addEventListener('keydown',e=>{
   else if(/^Digit[1-4]$/.test(e.code)&&DL){const b=document.querySelectorAll('#dC button')[+e.code.slice(5)-1];if(b)b.click();}
   else if(e.code==='KeyP'){if($('#phone').classList.contains('hide'))openPhone();else closePhone();}
   else if(e.code==='KeyF')photo();
+  else if(e.code==='Equal'||e.code==='NumpadAdd'||e.key==='+')zoomStep(1);
+  else if(e.code==='Minus'||e.code==='NumpadSubtract'||e.key==='-')zoomStep(-1);
+  else if(e.code==='KeyT')skipTime();
   else if(e.code==='Escape'){if(!$('#phone').classList.contains('hide'))closePhone();else if(DL)closeDlg();}
 });
 addEventListener('keyup',e=>{keys[e.code]=0;});
