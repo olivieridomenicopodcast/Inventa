@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=43;
+const BUILD=44;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -910,8 +910,8 @@ function endGame(){
 }
 
 /* ============================================================ ciclo */
-function startGame(st){const sd=st&&st.seed?st.seed:SEED;newGame(sd);if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
-  if(!st)toast('Venerdì mattina a Rimini. Dall’Ingresso A: accrediti a sinistra, assistenza app a destra. Mappa: tasto M.',5200);else toast('Partita caricata.',1800);last=performance.now();}
+function startGame(st){goalFor='';const sd=st&&st.seed?st.seed:SEED;newGame(sd);if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
+  if(!st){$('#howm').classList.remove('hide');$('#howX').onclick=()=>$('#howm').classList.add('hide');}else toast('Partita caricata.',1800);last=performance.now();}
 let last=performance.now();
 function update(dt){
   G.t+=dt;
@@ -965,7 +965,15 @@ function draw(){
   if(G.dest)drawDest();
   if(G.fade>0){ctx.fillStyle='rgba(5,6,13,'+G.fade+')';ctx.fillRect(0,0,W,H);}
 }
-function hud(){
+let goalFor='';
+function goal(){const F=G.flags,el=$('#goal');let t='',key='';
+  if(!F.app){key='app';t='Vai all’<u>Assistenza app</u> (a destra, fuori dall’Ingresso A) e fai l’accesso: ti serve per avere il QR.';}
+  else if(!F.accred){key='acc';t='Hai l’app! Ora vai dallo <u>Staff accrediti</u> (a sinistra) e mostra il QR per ritirare il badge.';}
+  if(!t){el.classList.add('hide');return;}
+  el.classList.remove('hide');const s='<b>OBIETTIVO</b>'+t;if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=s;}
+  if(goalFor!==key){goalFor=key;const n=NPC.find(x=>x.id===(key==='app'?'info':'accred'));if(n&&(!G.dest||G.dest.auto))G.dest={n:n.name,f:0,x:n.x,y:n.y,auto:1};}
+}
+function hud(){goal();
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr);
   const nx=nextEvent(),p=progress();
@@ -1030,7 +1038,7 @@ buildCreator();
 $('#sd').value=SEED;$('#sd').oninput=e=>{SEED=(e.target.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10)||SEED;lsSet('rimini.seed',SEED);};$('#sdd').onclick=()=>{SEED=newSeed();$('#sd').value=SEED;lsSet('rimini.seed',SEED);};
 $('#go').onclick=()=>{const v=($('#sd').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);SEED=v||newSeed();lsSet('rimini.seed',SEED);PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
 $('#loadb').onclick=()=>openSaves('title');
-$('#how').onclick=()=>toast('Obiettivi: app → accredito → workshop (ven) → speech (sab/dom) → contatti → stand → Offworld.',5000);
+$('#how').onclick=()=>$('#howm').classList.remove('hide');$('#howX').onclick=()=>$('#howm').classList.add('hide');
 
 /* ============================================================ titolo */
 function drawTitle(t){

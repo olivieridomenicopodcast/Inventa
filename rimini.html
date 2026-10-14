@@ -186,6 +186,15 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 .kv b{display:block;font-family:var(--disp);font-size:18px;color:var(--ink);margin-top:2px}
 @media(max-width:640px){.top{display:none}}
 #bld{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom));font:11px/1 monospace;color:#8f9bbd;opacity:.8;z-index:5;pointer-events:none}
+#howm{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(2,4,10,.85);backdrop-filter:blur(4px);padding:10px}
+#howm .box{width:min(520px,100%);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow:auto;padding:18px;background:#0c1124;border:2px solid #2a3566;border-radius:14px;touch-action:pan-y}
+#howm h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:13px;color:#ff6a3d;margin-bottom:12px}
+#howm .stp{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #1d2650}
+#howm .stp i{flex:none;width:28px;height:28px;border-radius:8px;background:#ff6a3d;color:#1a0a04;font:700 14px/28px 'Press Start 2P',monospace;text-align:center;font-style:normal}
+#howm .stp b{display:block;color:#fff;margin-bottom:2px}#howm .stp span{color:#9fb0d8;font-size:13px;line-height:1.5}#howm .stp span b{display:inline;color:#ffd24d}
+#howm .ctl{margin:12px 0;font-size:12px;line-height:1.6;color:#9fb0d8}#howm .ctl b{color:#fff;display:block}
+#goal{left:max(12px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 62px);max-width:min(340px,calc(100vw - 24px));padding:8px 12px;font-size:12px;line-height:1.4;border-color:#ff6a3d!important}
+#goal b{color:#ff6a3d;font-family:'Press Start 2P',monospace;font-size:9px;font-weight:400;display:block;margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -193,6 +202,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 <div id="hud" class="hide">
   <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small></div>
   <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bMap" title="Mappa (M)">🗺</button><button class="glass" id="bSave" title="Salva / Carica (G)">💾</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bSnd" title="Audio">🔊</button></div>
+  <div id="goal" class="glass hide"></div>
   <div id="prompt" class="glass hide"></div>
   <div id="stg" class="glass hide"><div class="nm" id="sN"></div><div class="rl" id="sR"></div><div class="tx" id="sT"></div><div class="ch" id="sC"></div></div>
   <div id="dlg" class="glass hide"><canvas id="por" width="28" height="28"></canvas><div><div class="nm" id="dN"></div><div class="rl" id="dR"></div><div class="tx" id="dT"></div><div class="ch" id="dC"></div></div></div>
@@ -200,11 +210,18 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 </div>
 <div id="phone" class="hide"><div class="box"><div class="hd"><span>MW26 · APP</span><button id="phX">✕</button></div><div class="tabs" id="phT"></div><div class="body" id="phB"></div></div></div>
 <div id="mapov" class="hide"><div class="mbox"><div class="mh"><b>Mappa del Palacongressi</b><div class="mfl" style="flex:1"><button id="mfl0">Piano terra</button><button id="mfl1">Primo piano</button></div><div class="mfl"><button id="mzout">−</button><button id="mzin">+</button><button id="mzc" title="Centra su di me">◎</button></div><button id="mapX" class="mx">✕</button></div><div class="mbody"><canvas id="mapcv2"></canvas><div id="plist"></div></div></div></div>
+<div id="howm" class="hide"><div class="box"><h2>Come si gioca</h2>
+<div class="stp"><i>1</i><div><b>Scarica l’app</b><span>Appena sei fuori dall’Ingresso A, vai dall’<b>Assistenza app</b> (a destra) e fai l’accesso. Senza app non hai il QR del biglietto.</span></div></div>
+<div class="stp"><i>2</i><div><b>Mostra il QR</b><span>Poi vai dallo <b>Staff accrediti</b> (a sinistra): ti chiede il QR dell’app e ti dà il badge. Solo così si apre il varco.</span></div></div>
+<div class="stp"><i>3</i><div><b>Entra e gira</b><span>Dentro apri il telefono 📱 per il programma, prenota i workshop del venerdì e vai nelle sale giuste. Il 🗺 ti mostra dove sono, con “★ Portami qui”.</span></div></div>
+<div class="stp"><i>4</i><div><b>Conosci gente</b><span>Parla con chi incontri, fai meeting dall’app, visita gli stand, partecipa a speech, party e karaoke. Gli obiettivi sono nel telefono.</span></div></div>
+<div class="ctl"><b>Comandi</b> WASD o frecce per muoverti · E o Spazio per interagire · + / − zoom · T salta 15 minuti · M mappa · P telefono · G salva/carica · F foto. Da telefono: stick a sinistra e pulsante a destra.</div>
+<button class="btn" id="howX">Ho capito</button></div></div>
 <div id="savem" class="hide"><div class="box" id="saveB"></div></div>
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="43">build</div>
+<div id="bld" data-b="44">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>
