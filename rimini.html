@@ -188,6 +188,7 @@ body.rhythm #hud,body.rhythm #goal,body.rhythm #toast{display:none!important}
 .epi p{font-size:13px;line-height:1.55;color:#cfd8ee;margin:6px 0}.epi b{color:#fff}
 .trg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.trc{padding:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid #2a3566;display:flex;flex-direction:column;gap:3px;align-items:flex-start}.trc.got{border-color:#ffd24d;background:rgba(255,210,77,.08)}.trc b{color:#fff;font-size:13px}.trc small{color:#9fb0d8;font-size:11.5px;line-height:1.35}.trc em{color:#7ad37a;font-style:normal;font-size:11px}.trc:not(.got) em{color:#ffd24d}.trq img{filter:brightness(0) opacity(.5)}.trc img{width:46px;height:46px;border-radius:50%;image-rendering:pixelated;background:#1b2240}
 :root{color-scheme:dark}.sw2 button,.btn,.chips3 button{forced-color-adjust:none}
+#ckZ{position:absolute;right:6px;top:6px;border:1px solid #2a3566;background:rgba(255,255,255,.08);color:#cfd8ee;border-radius:7px;font:700 10px/1 'Space Grotesk',sans-serif;padding:4px 6px;cursor:pointer}#clock{padding-right:40px!important}body.bigck #clock{max-width:min(440px,calc(100vw - 24px))}body.bigck #clock b{font-size:15px}body.bigck #clock small{font-size:16px;white-space:normal;line-height:1.35;overflow:visible;text-overflow:clip}body.bigck #goal{top:calc(max(10px,env(safe-area-inset-top)) + 108px)}body.bigck.mob #btns{top:calc(max(10px,env(safe-area-inset-top)) + 108px)}body.bigck.mob #goal{top:calc(max(10px,env(safe-area-inset-top)) + 158px)}
 #end{position:fixed;inset:0;z-index:26;display:grid;place-items:center;background:rgba(2,4,10,.8);backdrop-filter:blur(5px);padding:14px}
 #end .box{width:min(560px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px;background:#0c1020;border:1px solid var(--line);border-radius:18px}
 #end h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:15px;line-height:1.5;margin-bottom:8px;color:var(--ac)}
@@ -249,7 +250,7 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <body>
 <canvas id="cv"></canvas>
 <div id="hud" class="hide">
-  <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small></div>
+  <div id="clock" class="glass"><b id="ck">VEN 08:45</b><small id="ckS"></small><button id="ckZ" type="button" title="Ingrandisci o riduci il testo" aria-label="Ingrandisci il testo">A+</button></div>
   <div id="btns"><button class="glass" id="bZout" title="Zoom − (tasto -)">−</button><button class="glass" id="bZin" title="Zoom + (tasto +)">+</button><button class="glass" id="bSkip" title="Salta 15 minuti (T)">⏩</button><button class="glass" id="bMap" title="Mappa (M)">🗺</button><button class="glass" id="bSave" title="Salva / Carica (G)">💾</button><button class="glass" id="bPhone" title="Telefono (P)">📱</button><button class="glass" id="bPhoto" title="Foto ricordo (F)">📷</button><button class="glass" id="bComm" title="Marketers Pro (C)" aria-label="Marketers Pro">🌐<i id="bCommN" class="bdg" style="display:none"></i></button></div>
   <button class="glass" id="bSnd" title="Audio">🔊</button>
   <div id="goal" class="glass hide"></div>
@@ -266,7 +267,7 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="109">build</div>
+<div id="bld" data-b="110">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>

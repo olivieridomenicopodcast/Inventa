@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=109;
+const BUILD=110;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -898,7 +898,8 @@ function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabl
   if(f===G.f){const s=cvm.width/WW;c.fillStyle='#fff';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,5,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,3,0,7);c.fill();}}
 $('#bPhone').onclick=()=>openPhone();$('#bComm').onclick=()=>{if($('#phone').classList.contains('hide'))openPro();else closePhone();};$('#phX').onclick=closePhone;
 $('#bPhoto').onclick=()=>photo();
-$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#clock').onclick=()=>{if(!G||!G.sandbox||G.watching||G.react||DL||uiOpen())return;{const pv=G.day;G.day=(G.day+1)%3;G.min=9*60;toast('Sandbox: '+DAYNAMES[G.day]+' mattina.',1600);const m=typeof itemsNewDay==='function'?itemsNewDay(pv):[];if(m.length)setTimeout(()=>info('Sandbox · '+DAYNAMES[G.day],m.join('\n\n')),700);}};
+$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);{const z=$('#ckZ'),ap=()=>{const on=!!lsGet('rimini.bigck',false);document.body.classList.toggle('bigck',on);if(z)z.textContent=on?'A−':'A+';};if(z)z.onclick=e=>{e.stopPropagation();lsSet('rimini.bigck',!lsGet('rimini.bigck',false));ap();};ap();}
+$('#clock').onclick=()=>{if(!G||!G.sandbox||G.watching||G.react||DL||uiOpen())return;{const pv=G.day;G.day=(G.day+1)%3;G.min=9*60;toast('Sandbox: '+DAYNAMES[G.day]+' mattina.',1600);const m=typeof itemsNewDay==='function'?itemsNewDay(pv):[];if(m.length)setTimeout(()=>info('Sandbox · '+DAYNAMES[G.day],m.join('\n\n')),700);}};
 $('#bSkip').onclick=()=>skipTime();
 function skipTime(){if(!G||G.watching||G.react)return;G.min+=G.sandbox?60:15;toast(G.sandbox?'Passa un’ora.':'Passano 15 minuti.',1200);}
 addEventListener('wheel',e=>{if(G&&mode==='play'&&!G.watching&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide'))zoomStep(e.deltaY<0?1:-1);},{passive:true});
@@ -1204,7 +1205,7 @@ function hud(){document.body.classList.toggle('rhythm',!!(G&&G.react));phClock()
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
   setT($('#ck'),'ck',dn+' '+hr+(G.sandbox?' · SANDBOX':''));
   const nx=nextAgenda(),p=progress();
-  setT($('#ckS'),'cs',(nx?(nx.d===G.day?(nx.start<=G.min?'Adesso: ':'Prossimo '+hm(nx.start)+': '):DAYNAMES[nx.d].slice(0,3)+' '+hm(nx.start)+': ')+(nx.title.length>34?nx.title.slice(0,32)+'…':nx.title):'Agenda vuota: scegli nel Programma')+' · '+p.done+'/'+p.tot+' obiettivi'+(typeof scoreNow==='function'?' · '+scoreNow()+' pt':''));
+  setT($('#ckS'),'cs',(nx?(nx.d===G.day?(nx.start<=G.min?'Adesso: ':'Prossimo '+hm(nx.start)+': '):DAYNAMES[nx.d].slice(0,3)+' '+hm(nx.start)+': ')+(nx.title.length>34&&!document.body.classList.contains('bigck')?nx.title.slice(0,32)+'…':nx.title):'Agenda vuota: scegli nel Programma')+' · '+p.done+'/'+p.tot+' obiettivi'+(typeof scoreNow==='function'?' · '+scoreNow()+' pt':''));
   if(MOB){const hide=!!(DL||G.watching||G.react);$('#pad').style.display=hide?'none':'';$('#act').style.display=hide?'none':'';}
   const n=DL||G.watching||G.react?null:nearest();const pr=$('#prompt');
   if(n){const h=`<kbd>${MOB?'●':'E'}</kbd>${esc(n.label)}`;if(cacheP!==h){cacheP=h;pr.innerHTML=h;}pr.classList.remove('hide');}else{pr.classList.add('hide');cacheP='';}

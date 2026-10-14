@@ -104,7 +104,7 @@ function sqDrawWorld(c){
 function sqTarget(){
   const q=sqActive();if(!q)return null;const s=sqState(q),g=sqNpc(q.giver),T=n=>({f:n.f,x:n.x,y:n.y,lab:n.name});
   if(q.type==='coffee'){if(!s.has){const bars=[[457,308],[815,308]].map(b=>({f:0,x:k(b[0]),y:k(b[1]),lab:'Bar'}));return G.f===0?bars.sort((a,b)=>Math.hypot(a.x-G.p.x,a.y-G.p.y)-Math.hypot(b.x-G.p.x,b.y-G.p.y))[0]:bars[0];}return T(g);}
-  if(q.type==='lost'){if(!s.has){const p=sqItemPos(q);return{f:p.f,x:p.x,y:p.y,lab:q.obj};}return T(g);}
+  if(q.type==='lost'){if(!s.has)return null;return T(g);}   /* l'oggetto smarrito non ha la freccia: bastano le indicazioni di chi lo cerca */
   return s.met?T(g):T(sqNpc(q.target));
 }
 function sqDraw(){
