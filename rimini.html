@@ -140,7 +140,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 #phone .btn.ghost{background:#1d2650!important;color:#fff!important;border-color:#2a3566!important}
 #phone .ring::before{background:#0c1124!important}#phone .ring b{color:#fff!important}
 
-#mapov,#savem{position:fixed;inset:0;z-index:22;display:grid;place-items:center;background:rgba(2,4,10,.82);backdrop-filter:blur(4px);padding:10px}
+#mapov,#savem,#roomm{position:fixed;inset:0;z-index:22;display:grid;place-items:center;background:rgba(2,4,10,.82);backdrop-filter:blur(4px);padding:10px}
 #mapov .mbox{width:min(1180px,100%);height:min(760px,calc(100vh - 20px));height:min(760px,calc(100dvh - 20px));background:#0c1124;border:2px solid #2a3566;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
 #mapov .mh{display:flex;gap:10px;align-items:center;padding:10px 14px;background:#121936;border-bottom:2px solid #ff6a3d}
 #mapov .mh b{font-family:'Press Start 2P',monospace;font-weight:400;font-size:11px;flex:1}
@@ -158,8 +158,8 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 #plist .pdays{display:flex;gap:6px;margin-bottom:8px}#plist .pdays button{width:auto;margin:0;padding:6px 11px}#plist .pdays button.on{border-color:#ff6a3d;background:#3a2a1c}
 #plist .pr{padding:8px 0;border-bottom:1px solid #2a3566;font-size:13px;line-height:1.35}#plist .pr b{display:block;font-size:12px;color:#9fb0d8}#plist .pr small{display:block;color:#9fb0d8;font-size:11.5px}#plist .pr.now{color:#ffd24d}#plist .pr.now b{color:#ffd24d}#plist button.dst{background:#3a2a1c}
 @media(max-width:760px){#mapov{padding:6px}#mapov .mbody{flex-direction:column}#mapcv2{flex:0 0 34%}#plist{width:auto;flex:1;min-height:0;border-left:0;border-top:2px solid #2a3566;padding-bottom:30px}.mh{flex-wrap:wrap;gap:6px;padding:8px 10px}.mh b{display:none}.mfl button,.mx{padding:7px 9px;font-size:12px}.mh .mfl:first-of-type{flex:1}.mx{margin-left:auto}}
-#savem .box{width:min(560px,100%);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow:auto;padding:18px;background:#0c1124;border:2px solid #2a3566;border-radius:14px;touch-action:pan-y}
-#savem h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:13px;color:#ff6a3d;margin-bottom:10px}
+#roomm .box,#savem .box{width:min(560px,100%);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow:auto;padding:18px;background:#0c1124;border:2px solid #2a3566;border-radius:14px;touch-action:pan-y}
+#roomm h2,#savem h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:13px;color:#ff6a3d;margin-bottom:10px}
 .sv{display:flex;gap:8px;align-items:center;padding:10px;border:2px solid #2a3566;border-radius:10px;margin-bottom:8px;background:#151c3a;flex-wrap:wrap}
 .sv .i{flex:1;min-width:150px}.sv b{display:block;font-size:14px}.sv small{color:#9fb0d8;font-size:11.5px}
 .sv button{padding:8px 11px;border-radius:8px;background:#1d2650;border:1px solid #2a3566;font-size:12px}.sv button.go{background:#ff6a3d;color:#1a0a04;font-weight:700}
@@ -209,6 +209,8 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 .cav{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:700 12px sans-serif;color:#1a0a04}.ct{font-size:14px;line-height:1.45;color:#e9efff;margin-bottom:8px}.hl{color:#ffd24d}
 .ca{display:flex;gap:8px}.ca button{padding:5px 10px;border-radius:99px;background:#1d2650;border:1px solid #2a3566;color:#cfd8ee;font-size:12px}.ca button.on{color:#ff6a8a;border-color:#ff6a8a}
 .cc{margin-top:8px;border-top:1px solid #2a3566;padding-top:8px}.cm{display:flex;gap:8px;margin-bottom:8px;font-size:13px;color:#cfd8ee}.cm .cav{width:26px;height:26px;font-size:10px}.cm b{color:#fff;font-size:12px;margin-right:6px}.cm.me b{color:#ff6a3d}.cin{display:flex;gap:6px;margin-top:6px}.cin input{flex:1;background:#0c1124;color:#e9efff;border:1px solid #2a3566;border-radius:8px;padding:7px;font-size:13px}
+.chips3b.on{background:#ff6a3d!important;color:#1a0a04!important;border-color:#ff6a3d!important;font-weight:700}
+#clock{cursor:default}
 </style>
 </head>
 <body>
@@ -225,17 +227,18 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 <div id="phone" class="hide"><div class="box"><div class="hd"><span>MW26 · APP</span><button id="phX">✕</button></div><div class="tabs" id="phT"></div><div class="body" id="phB"></div></div></div>
 <div id="mapov" class="hide"><div class="mbox"><div class="mh"><b>Mappa del Palacongressi</b><div class="mfl" style="flex:1"><button id="mfl0">Piano terra</button><button id="mfl1">Primo piano</button></div><div class="mfl"><button id="mzout">−</button><button id="mzin">+</button><button id="mzc" title="Centra su di me">◎</button></div><button id="mapX" class="mx">✕</button></div><div class="mbody"><canvas id="mapcv2"></canvas><div id="plist"></div></div></div></div>
 <div id="howm" class="hide"><div class="box"><div class="hh"><h2 id="howT">Come si gioca</h2><span id="howN"></span></div><div id="howB"></div><div class="hn"><button class="btn ghost" id="howP">‹ Indietro</button><div id="howD"></div><button class="btn" id="howNx">Avanti ›</button></div></div></div>
+<div id="roomm" class="hide"><div class="box" id="roomB"></div></div>
 <div id="savem" class="hide"><div class="box" id="saveB"></div></div>
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="54">build</div>
+<div id="bld" data-b="55">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>
       <h1>RIMINI<br><span>3 GIORNI</span></h1>
       <p class="lead">Crea il tuo personaggio e gira per il Palacongressi di Rimini: ritira l’accredito, segui i workshop del venerdì e gli speech del weekend, chiacchiera con chi incontri, scopri gli stand e non perderti l’Offworld la sera.</p>
-      <div class="glass pn" id="cc" style="margin:14px 0"><label class="lbl" style="margin-top:0">Il tuo nome</label><input id="pname" maxlength="16" placeholder="Come ti chiami?" autocomplete="off" spellcheck="false" class="srch2"><label class="lbl">La tua mansione</label><input id="pjob" maxlength="40" placeholder="Cerca o scrivi: podcast producer, social media strategist…" autocomplete="off" spellcheck="false" class="srch2"><div id="jobl"></div><div id="jobsum"></div><div class="prow"><button id="prSave" class="chips3b">💾 Salva profilo</button><button id="prCopy" class="chips3b">📋 Copia codice</button><button id="prPaste" class="chips3b">📥 Incolla codice</button></div><div id="prl"></div><label class="lbl">Seme (cambia chi incontri)</label><div style="display:flex;gap:8px"><input id="sd" maxlength="10" class="srch2" style="text-transform:uppercase;letter-spacing:.15em" autocomplete="off" spellcheck="false"><button class="chips3" id="sdd" style="width:44px;border-radius:10px;border:2px solid var(--line);background:rgba(255,255,255,.05);font-size:18px" title="Seme casuale">🎲</button></div><label class="lbl">Personaggio</label><div class="chips3" id="cg"><button data-g="m">Maschio</button><button data-g="f">Femmina</button></div><label class="lbl">Maglia</label><div class="sw2" id="cs"></div><label class="lbl">Capelli</label><div class="sw2" id="ch"></div><label class="lbl">Carnagione</label><div class="sw2" id="cskin"></div></div>
+      <div class="glass pn" id="cc" style="margin:14px 0"><label class="lbl" style="margin-top:0">Il tuo nome</label><input id="pname" maxlength="16" placeholder="Come ti chiami?" autocomplete="off" spellcheck="false" class="srch2"><label class="lbl">La tua mansione</label><input id="pjob" maxlength="40" placeholder="Cerca o scrivi: podcast producer, social media strategist…" autocomplete="off" spellcheck="false" class="srch2"><div id="jobl"></div><div id="jobsum"></div><div class="prow"><button id="prSave" class="chips3b">💾 Salva profilo</button><button id="prCopy" class="chips3b">📋 Copia codice</button><button id="prPaste" class="chips3b">📥 Incolla codice</button></div><div id="prl"></div><label class="lbl">Modalità di gioco</label><div class="prow" style="margin-top:0"><button id="mdT" class="chips3b">⏱ A tempo (consigliata)</button><button id="mdS" class="chips3b">🧭 Sandbox libera</button></div><div id="mdNote" class="jsum" style="margin-top:8px"></div><label class="lbl">Seme (cambia chi incontri)</label><div style="display:flex;gap:8px"><input id="sd" maxlength="10" class="srch2" style="text-transform:uppercase;letter-spacing:.15em" autocomplete="off" spellcheck="false"><button class="chips3" id="sdd" style="width:44px;border-radius:10px;border:2px solid var(--line);background:rgba(255,255,255,.05);font-size:18px" title="Seme casuale">🎲</button></div><label class="lbl">Personaggio</label><div class="chips3" id="cg"><button data-g="m">Maschio</button><button data-g="f">Femmina</button></div><label class="lbl">Maglia</label><div class="sw2" id="cs"></div><label class="lbl">Capelli</label><div class="sw2" id="ch"></div><label class="lbl">Carnagione</label><div class="sw2" id="cskin"></div></div>
       <div class="row2"><button class="btn" id="go">Entra a Rimini</button><button class="btn ghost" id="how">Come si gioca</button><button class="btn ghost" id="loadb">Carica partita</button></div>
       <p class="disc"><b style="color:var(--ink)">Realizzato da Olivieri Domenico usando Claude Code.</b><br>Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers.<br>Fan project non ufficiale, senza alcun legame con l’organizzazione. Le informazioni sull’evento vengono da pagine pubbliche; la pianta riprende le planimetrie ufficiali del Palacongressi di Rimini (piano terra e primo piano), semplificate e non in scala. Titoli, speaker, sale e orari vengono dal programma dell’app; i contenuti delle slide e i partecipanti sono inventati.</p>
     </div>

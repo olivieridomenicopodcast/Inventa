@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=54;
+const BUILD=55;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -65,6 +65,7 @@ function person(c,x,y,dir,step,p){
   if(p.cap){c.fillStyle=p.cap;c.fillRect(x-5,y-24-bob,10,3);if(dir===0)c.fillRect(x-5,y-22-bob,10,1);}
 }
 const SHIRTS=['#ff7a3d','#3da5d9','#6bc46d','#b57bff','#e86a8a','#ffd24d'],HAIRC=['#2a1d14','#6a4a2a','#c9a24a','#1a1a20','#8a3a2a','#d9d2c4'],SKINC=['#f0c8a0','#e8b98a','#c98e62','#a8734c'];
+let SANDBOX=lsGet('rimini.mode','timed')==='sandbox';
 let PLAYER=Object.assign({name:'Ospite',gender:'m',si:0,hi:0,ki:1,job:''},lsGet('rimini.player',{}));
 let _me=null;const ME=()=>{const j=PLAYER.job||'';if(!_me||_me.src!==j)_me=Object.assign({src:j},jobProfile(j));return _me;};
 function playerLook(){const f=PLAYER.gender==='f';return{shirt:SHIRTS[PLAYER.si%6],pants:f?'#3a3f66':'#26304f',skin:SKINC[PLAYER.ki%4],hair:HAIRC[PLAYER.hi%6],long:f,skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff'};}
@@ -249,7 +250,7 @@ const newSeed=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let t='';for(let i
 let SEED=lsGet('rimini.seed',null)||newSeed();
 
 function newGame(seed){
-  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),comm:cmInit(),done:new Set(),done:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),meets:[],people:genPeople(seed||SEED),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
+  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),comm:cmInit(),done:new Set(),done:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),sandbox:SANDBOX,meets:[],people:genPeople(seed||SEED),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
   FL[0]=buildGround();FL[1]=buildFirst();buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
@@ -463,7 +464,18 @@ function addTip(t,src){if(!G.tips.some(x=>x.t===t))G.tips.push({t,src});}
 function freeSpot(f,x,y){if(!hits(FL[f],x,y))return[x,y];for(let r=4;r<k(120);r+=4)for(let a=0;a<16;a++){const nx=x+Math.cos(a*Math.PI/8)*r,ny=y+Math.sin(a*Math.PI/8)*r;if(!hits(FL[f],nx,ny))return[nx,ny];}return[x,y];}
 function goFloor(f,x,y){G.fade=1;setTimeout(()=>{G.f=f;[G.p.x,G.p.y]=freeSpot(f,x,y);if(f===1)G.flags.anfi=true;A.blip();},120);}
 function roomSched(names,day){return PROGRAMMA.filter(e=>e.d===day&&names.includes(e.room)&&e.kind!=='lounge').sort((a,b)=>a.start-b.start);}
+function openRoomSandbox(names,title){
+  let day=G.day;const box=$('#roomB');
+  const draw=()=>{const L=roomSched(names,day);
+    box.innerHTML=`<h2>${esc(title)}</h2><div class="small" style="color:#9fb0d8;font-size:12px;margin-bottom:8px">Modalità sandbox: puoi entrare in qualsiasi sessione, a qualsiasi ora.</div><div class="chips2" style="display:flex;gap:6px;margin-bottom:10px">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="chips3b ${day===i?'on':''}">${n}</button>`).join('')}</div>`+
+    (L.length?L.map((x,i)=>`<div class="sv"><div class="i"><b>${esc(x.title)}</b><small>${hm(x.start)}–${hm(x.e%1440)}${x.sp?' · '+esc(x.sp.split(',')[0]):''}</small></div><button class="go" data-e="${i}">Entra</button></div>`).join(''):'<div style="color:#9fb0d8;font-size:13px;margin-bottom:10px">Nessuna sessione in questa sala quel giorno.</div>')+'<div style="margin-top:10px"><button class="btn ghost" id="roomX">Chiudi</button></div>';
+    box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{day=+b.dataset.d;draw();});
+    box.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{const e=L[+b.dataset.e];$('#roomm').classList.add('hide');last=performance.now();enterSession(e);});
+    $('#roomX').onclick=()=>{$('#roomm').classList.add('hide');last=performance.now();};};
+  draw();$('#roomm').classList.remove('hide');
+}
 function openRoom(names,title){
+  if(G.sandbox){openRoomSandbox(names,title);return;}
   const e=activeAt(names),nx=nextAt(names),today=roomSched(names,G.day);
   const host={name:title,role:'Sala · programma',p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'}};
   const ln=x=>hm(x.start)+'–'+hm(x.e%1440)+'  '+(x.title.length>44?x.title.slice(0,43)+'…':x.title)+(x.sp?' ('+x.sp.split(',')[0]+')':'');
@@ -522,7 +534,7 @@ function advance(){
 }
 function leaveTheatre(complete){
   const w=G.watching;if(!w)return;G.watching=null;stg.classList.add('hide');
-  G.min=complete?Math.max(G.min,w.e.e):G.min+15;
+  if(!G.sandbox)G.min=complete?Math.max(G.min,w.e.e):G.min+15;
   if(complete){G.seen.add(w.e.id);if(w.where==='work'){G.flags.ws++;const n=NPC.filter(x=>x.kind==='att'&&!G.met[x.id])[0];if(n){G.met[n.id]=1;addContact(n);}}else G.flags.talk++;
     toast((w.where==='work'?'Sessione':'Speech')+' conclusa: '+w.notes+' appunti nel taccuino'+(w.good?', esercizio riuscito!':'.'),4200);}
   else toast('Sei uscito prima della fine.',2500);
@@ -690,7 +702,7 @@ const EXTRAROOM={'Area networking':{f:0,x:225,y:694}};
 function roomPos(r){return (typeof ROOMS!=='undefined'&&ROOMS[r])||EXTRAROOM[r]||null;}
 function goBtn(room){const r=roomPos(room);return r?`<button class="pb ghost" data-dst="${esc(room)}">★ Portami qui</button>`:'';}
 function sessCard(e){
-  const past=x=>x.d<G.day||(x.d===G.day&&x.e<=G.min);
+  const past=x=>!G.sandbox&&(x.d<G.day||(x.d===G.day&&x.e<=G.min));
   const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
   let btn='';
   if(G.seen.has(e.id))btn='<button class="pb ok" disabled>Concluso ✓ · seguito</button>';
@@ -726,7 +738,7 @@ function renderPhone(){
   $('#qrb').onclick=()=>showQR();
   const B=$('#phB');B.scrollTop=0;
   const bind=()=>{
-    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
+    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.sandbox&&!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
     B.querySelectorAll('[data-dst]').forEach(b=>b.onclick=()=>{const n=b.dataset.dst,r=roomPos(n);if(!r)return;G.dest={n,f:r.f,x:k(r.x),y:k(r.y)};closePhone();toast('Destinazione: '+n,2200);});
     B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);renderPhone();});
     B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
@@ -792,14 +804,15 @@ function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabl
   if(f===G.f){const s=cvm.width/WW;c.fillStyle='#fff';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,5,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,3,0,7);c.fill();}}
 $('#bPhone').onclick=()=>openPhone();$('#phX').onclick=closePhone;
 $('#bPhoto').onclick=()=>photo();
-$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#bSkip').onclick=()=>skipTime();
-function skipTime(){if(!G||G.watching||G.react)return;G.min+=15;toast('Passano 15 minuti.',1200);}
+$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#clock').onclick=()=>{if(!G||!G.sandbox||G.watching||G.react||DL||uiOpen())return;G.day=(G.day+1)%3;G.min=9*60;toast('Sandbox: '+DAYNAMES[G.day]+' mattina.',1600);};
+$('#bSkip').onclick=()=>skipTime();
+function skipTime(){if(!G||G.watching||G.react)return;G.min+=G.sandbox?60:15;toast(G.sandbox?'Passa un’ora.':'Passano 15 minuti.',1200);}
 addEventListener('wheel',e=>{if(G&&mode==='play'&&!G.watching&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide'))zoomStep(e.deltaY<0?1:-1);},{passive:true});
 $('#bSnd').onclick=()=>{A.on=!A.on;$('#bSnd').textContent=A.on?'🔊':'🔇';};
 
 
 /* ============================================================ mappa consultabile */
-const uiOpen=()=>!$('#phone').classList.contains('hide')||!$('#end').classList.contains('hide')||!$('#mapov').classList.contains('hide')||!$('#savem').classList.contains('hide');
+const uiOpen=()=>!$('#phone').classList.contains('hide')||!$('#end').classList.contains('hide')||!$('#mapov').classList.contains('hide')||!$('#savem').classList.contains('hide')||!$('#roomm').classList.contains('hide');
 const mapPlaces=()=>{
   const P=[];const add=(n,f,x,y,cat,rooms)=>P.push({n,f,x,y,cat,rooms});
   add('Ingresso A (principale)',0,632,770,'Ingressi');add('Ingresso B',0,180,356,'Ingressi');add('Ingresso C',0,918,460,'Ingressi');
@@ -903,10 +916,10 @@ function drawDest(){
 const SKEY='rimini.saves';
 const getSaves=()=>lsGet(SKEY,[]);
 const putSaves=a=>lsSet(SKEY,a);
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],comm:G.comm,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],comm:G.comm,sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   Object.assign(G.p,st.p);G.cam.x=G.p.x;G.cam.y=G.p.y;zOff=st.zOff||0;applyZoom();
 }
 const summary=()=>{const p=progress();return ['Ven','Sab','Dom'][G.day]+' '+hm(Math.floor(G.min))+' · '+p.done+'/'+p.tot+' obiettivi · '+G.contacts.length+' contatti · seme '+G.seed;};
@@ -915,7 +928,7 @@ function saveTo(id,name){const a=getSaves();const now=Date.now();const ent={id:i
 function autoSave(){if(!G||mode!=='play'||G.done)return;try{saveTo('auto','Autosalvataggio');}catch(e){}}
 let autoT=0;
 function toMenu(){autoSave();SEED=G.seed||SEED;G.watching=null;G.react=null;['#stg','#dlg','#prompt','#goal'].forEach(s=>{const e=$(s);if(e)e.classList.add('hide');});
-  ['#savem','#phone','#mapov','#end'].forEach(s=>$(s).classList.add('hide'));cancelAnimationFrame(mapRaf);DL=null;
+  ['#savem','#roomm','#phone','#mapov','#end'].forEach(s=>$(s).classList.add('hide'));cancelAnimationFrame(mapRaf);DL=null;
   mode='title';$('#hud').classList.add('hide');$('#title').classList.remove('hide');$('#sd').value=SEED;refreshLoadBtn();window.scrollTo(0,0);}
 function openSaves(from){
   const inGame=from!=='title'&&G&&mode==='play';
@@ -967,7 +980,7 @@ function update(dt){
   if(G.react){updateReact(dt);return;}
   if(!DL&&!G.react&&!uiOpen()){
     // orologio: 1 minuto di gioco ogni 4 secondi reali
-    G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
+    if(!G.sandbox)G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
     if(G.min>=23*60+30){G.fade=1;if(G.day>=2){endGame();G.min=23*60+29;}else{G.day++;G.min=8*60+45;G.f=0;G.p.x=k(632);G.p.y=k(885);toast('Notte a Rimini: nuova giornata, '+DAYNAMES[G.day]+' ottobre.',3500);autoSave();}}
     let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0)+touch.x,dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0)+touch.y;
     const m=Math.hypot(dx,dy);const p=G.p;
@@ -1046,7 +1059,7 @@ function drawGate(){
 }
 function hud(){goal();if(G.flags.app)cmNotify();const sc=NPC.find(x=>x.id==='scout');if(sc)sc.f=G.day>=1?0:-1;
   const hr=fmt(G.min);const dn=['VEN','SAB','DOM'][G.day];
-  setT($('#ck'),'ck',dn+' '+hr);
+  setT($('#ck'),'ck',dn+' '+hr+(G.sandbox?' · SANDBOX':''));
   const nx=nextEvent(),p=progress();
   setT($('#ckS'),'cs',(nx?'Prossimo '+nx.t+': '+(nx.title.length>38?nx.title.slice(0,36)+'…':nx.title):'Giornata finita')+' · '+p.done+'/'+p.tot+' obiettivi');
   if(MOB){const hide=!!(DL||G.watching||G.react);$('#pad').style.display=hide?'none':'';$('#act').style.display=hide?'none':'';}
@@ -1085,7 +1098,7 @@ addEventListener('keydown',e=>{
   else if(e.code==='KeyT')skipTime();
   else if(e.code==='KeyM'){if($('#mapov').classList.contains('hide'))openMap();else closeMap();}
   else if(e.code==='KeyG'){if($('#savem').classList.contains('hide'))openSaves();else{$('#savem').classList.add('hide');last=performance.now();}}
-  else if(e.code==='Escape'){if(!$('#mapov').classList.contains('hide'))closeMap();else if(!$('#savem').classList.contains('hide'))$('#savem').classList.add('hide');else if(!$('#phone').classList.contains('hide'))closePhone();else if(DL)closeDlg();}
+  else if(e.code==='Escape'){if(!$('#mapov').classList.contains('hide'))closeMap();else if(!$('#roomm').classList.contains('hide'))$('#roomm').classList.add('hide');else if(!$('#savem').classList.contains('hide'))$('#savem').classList.add('hide');else if(!$('#phone').classList.contains('hide'))closePhone();else if(DL)closeDlg();}
 });
 addEventListener('keyup',e=>{keys[e.code]=0;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=0;});
@@ -1121,6 +1134,9 @@ function buildCreator(){
   const sw=(id,arr,key)=>{const el=$(id);el.innerHTML='';arr.forEach((c,i)=>{const b=document.createElement('button');b.style.background=c;b.className=PLAYER[key]%arr.length===i?'on':'';b.onclick=()=>{PLAYER[key]=i;lsSet('rimini.player',PLAYER);buildCreator();};el.appendChild(b);});};
   sw('#cs',SHIRTS,'si');sw('#ch',HAIRC,'hi');sw('#cskin',SKINC,'ki');
   document.querySelectorAll('#cg button').forEach(b=>{b.className=b.dataset.g===PLAYER.gender?'on':'';b.onclick=()=>{PLAYER.gender=b.dataset.g;lsSet('rimini.player',PLAYER);buildCreator();};});
+  const setMode=m=>{SANDBOX=m==='sandbox';lsSet('rimini.mode',m);$('#mdT').className='chips3b'+(SANDBOX?'':' on');$('#mdS').className='chips3b'+(SANDBOX?' on':'');
+    $('#mdNote').innerHTML=SANDBOX?'<b>Sandbox libera:</b> il tempo è fermo e puoi entrare in qualsiasi speech o workshop, in qualsiasi giorno. Non è come il gioco è stato pensato: la modalità <b>a tempo</b> è la più bella e divertente perché simula davvero l’evento.':'<b>A tempo (consigliata):</b> la giornata scorre dalle 8:45 alle 23:30, le sessioni hanno orari e sale veri, i workshop si prenotano. È l’esperienza completa.';};
+  $('#mdT').onclick=()=>setMode('timed');$('#mdS').onclick=()=>setMode('sandbox');setMode(SANDBOX?'sandbox':'timed');
   jobUI();profList();
   $('#prSave').onclick=()=>{const L=getProfiles().filter(o=>!(o.name===PLAYER.name&&o.job===PLAYER.job));L.unshift({id:'pf'+Date.now(),name:PLAYER.name==='Ospite'?'':PLAYER.name,gender:PLAYER.gender,si:PLAYER.si,hi:PLAYER.hi,ki:PLAYER.ki,job:PLAYER.job||jobProfile('').job});lsSet('rimini.profiles',L.slice(0,10));profList();toast('Profilo salvato.',1500);};
   $('#prCopy').onclick=()=>{const c=profCode();(navigator.clipboard?navigator.clipboard.writeText(c).then(()=>toast('Codice profilo copiato. Incollalo su un altro dispositivo.',2600),()=>prompt('Copia questo codice:',c)):Promise.reject()).catch(()=>prompt('Copia questo codice:',c));};
@@ -1128,7 +1144,7 @@ function buildCreator(){
 }
 buildCreator();
 $('#sd').value=SEED;$('#sd').oninput=e=>{SEED=(e.target.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10)||SEED;lsSet('rimini.seed',SEED);};$('#sdd').onclick=()=>{SEED=newSeed();$('#sd').value=SEED;lsSet('rimini.seed',SEED);};
-$('#go').onclick=()=>{const v=($('#sd').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);SEED=v||newSeed();lsSet('rimini.seed',SEED);PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
+$('#go').onclick=()=>{if(SANDBOX&&!confirm('Hai scelto la SANDBOX: non è come il gioco è stato pensato.\n\nTi consiglio prima la modalità A TEMPO, che simula davvero l’evento (orari, sale, prenotazioni) ed è molto più divertente.\n\nPremi OK per giocare comunque in sandbox, Annulla per tornare a scegliere.'))return;const v=($('#sd').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);SEED=v||newSeed();lsSet('rimini.seed',SEED);PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
 $('#loadb').onclick=()=>openSaves('title');
 $('#how').onclick=openHow;
 
