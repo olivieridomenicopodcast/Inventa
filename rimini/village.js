@@ -93,10 +93,11 @@ function rideBus(toVillage){
 }
 function nextDay(){
   if(G.day>=2){endGame();return;}
-  G.day++;G.min=8*60;G.f=VILLAGE_ON?2:0;
+  const prevDay=G.day;G.day++;G.min=8*60;G.f=VILLAGE_ON?2:0;
   if(VILLAGE_ON){G.p.x=k(VG.spawn.x);G.p.y=k(VG.spawn.y);}else{G.p.x=k(632);G.p.y=k(885);}
   G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.fade=1;
   toast('Notte al Marketers Village. Nuova giornata: '+DAYNAMES[G.day]+' ottobre, di nuovo in navetta.',3800);autoSave();
+  {const m=typeof itemsNewDay==='function'?itemsNewDay(prevDay):[];if(m.length)setTimeout(()=>info('Nuova giornata · '+DAYNAMES[G.day],m.join('\n\n')),1200);}
 }
 function shuttleHome(){
   if(!G.sandbox&&G.min<17*60){info('Navetta per il Village','La navetta serale parte dalle 17:00. Fino ad allora il Marketers World è tutto tuo.');return;}

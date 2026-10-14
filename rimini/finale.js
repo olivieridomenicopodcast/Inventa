@@ -40,3 +40,26 @@ function drawFinale(c){
   for(const j of FIN_JETS){if(F.t>1.2&&F.t<FIN_DUR-4){c.fillStyle='rgba(255,220,140,.35)';c.fillRect(k(j[0])-4,k(j[1])-6,8,6);c.fillStyle='#fff';c.fillRect(k(j[0])-1,k(j[1])-3,3,3);}}
   for(const s of F.sp){c.globalAlpha=Math.max(0,Math.min(1,s.l*1.4));c.fillStyle=s.c;c.fillRect(Math.round(s.x),Math.round(s.y),2,2);}c.globalAlpha=1;
 }
+
+/* ---------- stendardo piantato al pigiama party: titoli di coda e fine della partita ---------- */
+function plantBanner(){
+  G.flags.banner=true;wearItem('banner',false);A.stamp();setTimeout(()=>A.stamp(),350);setTimeout(()=>A.stamp(),700);
+  toast('Stendardo piantato! 🚩',2600);setTimeout(startCredits,1800);
+}
+function startCredits(){
+  let el=document.getElementById('cred');if(el)el.remove();
+  el=document.createElement('div');el.id='cred';
+  const job=(typeof ME==='function'&&ME().job)||'marketer';
+  el.innerHTML='<div class="crin" id="credIn"><canvas id="credLogo" width="110" height="100"></canvas><h1>RIMINI 3 GIORNI</h1><p class="cs">Il tuo Marketers World</p>'+
+   '<p><b>'+esc(pname())+'</b><br>'+esc(job)+'</p><p class="cs">Uno stendardo piantato<br>al pigiama party del Village</p>'+
+   '<p class="cs">Un gioco di</p><p><b>Olivieri Domenico</b></p><p class="cs">Realizzato con</p><p><b>Claude Code</b></p>'+
+   '<p class="cs">Programma</p><p>titoli, speaker, sale e orari<br>dal programma dell’app</p>'+
+   '<p class="cs">Inventati per il gioco</p><p>slide, partecipanti,<br>dialoghi e community</p>'+
+   '<p class="cs">Grazie a</p><p>tutti i marketer,<br>veri e immaginari</p>'+
+   '<p class="cs">Fan project non ufficiale<br>just for fun, privato</p><h1 style="margin-top:80px">FINE</h1></div><button id="credSkip">Salta ›</button>';
+  document.body.appendChild(el);
+  const lc=document.getElementById('credLogo').getContext('2d');lc.imageSmoothingEnabled=false;logoPx(lc,0,0,10);
+  const done=()=>{if(!document.getElementById('cred'))return;el.remove();endGame();};
+  document.getElementById('credIn').addEventListener('animationend',done);
+  document.getElementById('credSkip').onclick=done;
+}

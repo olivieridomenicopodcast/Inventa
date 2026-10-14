@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=84;
+const BUILD=85;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -63,19 +63,19 @@ function person(c,x,y,dir,step,p){
   // cuffie (Niky)
   if(p.phones){c.fillStyle='#1b1d28';c.fillRect(x-5,y-24-bob,10,1);c.fillRect(x-5,y-23-bob,1,5);c.fillRect(x+4,y-23-bob,1,5);c.fillStyle=p.badge||'#ff6a3d';c.fillRect(x-6,y-20-bob,2,4);c.fillRect(x+4,y-20-bob,2,4);}
   if(p.cap){c.fillStyle=p.cap;c.fillRect(x-5,y-24-bob,10,3);if(dir===0)c.fillRect(x-5,y-22-bob,10,1);}
-  if(p.glasses&&typeof drawGlasses==='function')drawGlasses(c,x,y,dir,bob,p.glasses);
+  if(p.gear&&typeof drawGear==='function')drawGear(c,x,y,dir,bob,p.gear);
 }
 const SHIRTS=['#ff7a3d','#3da5d9','#6bc46d','#b57bff','#e86a8a','#ffd24d'],HAIRC=['#2a1d14','#6a4a2a','#c9a24a','#1a1a20','#8a3a2a','#d9d2c4'],SKINC=['#f0c8a0','#e8b98a','#c98e62','#a8734c'];
 let SANDBOX=lsGet('rimini.mode','timed')==='sandbox';
 let PLAYER=Object.assign({name:'Ospite',gender:'m',si:0,hi:0,ki:1,job:''},lsGet('rimini.player',{}));
 let _me=null;const ME=()=>{const j=PLAYER.job||'';if(!_me||_me.src!==j)_me=Object.assign({src:j},jobProfile(j));return _me;};
-function playerLook(){const f=PLAYER.gender==='f';return{shirt:SHIRTS[PLAYER.si%6],pants:f?'#3a3f66':'#26304f',skin:SKINC[PLAYER.ki%4],hair:HAIRC[PLAYER.hi%6],long:f,skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff',glasses:(G&&G.worn)||null};}
+function playerLook(){const f=PLAYER.gender==='f';return{shirt:SHIRTS[PLAYER.si%6],pants:f?'#3a3f66':'#26304f',skin:SKINC[PLAYER.ki%4],hair:HAIRC[PLAYER.hi%6],long:f,skirt:f,phones:true,badge:'#4dd0ff',shoe:'#fff',gear:(G&&typeof wornGear==='function')?wornGear():''};}
 const NIKY=new Proxy({},{get:(_,k)=>playerLook()[k]});
 const pname=()=>(PLAYER.name||'Ospite').trim()||'Ospite';
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 const _faceC={};
-function faceURL(p){const key=[p.shirt,p.skin,p.hair,p.long?1:0,p.skirt?1:0,p.cap||'',p.glasses||'',p.pants||'',p.phones?1:0].join('|');if(_faceC[key])return _faceC[key];const c=document.createElement('canvas');c.width=c.height=30;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#1b2240';x.fillRect(0,0,30,30);x.fillStyle='#2a3566';x.fillRect(0,25,30,5);x.save();x.scale(2.5,2.5);person(x,6,24,0,0,p);x.restore();return _faceC[key]=c.toDataURL();}
+function faceURL(p){const key=[p.shirt,p.skin,p.hair,p.long?1:0,p.skirt?1:0,p.cap||'',p.gear||'',p.pants||'',p.phones?1:0].join('|');if(_faceC[key])return _faceC[key];const c=document.createElement('canvas');c.width=c.height=30;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#1b2240';x.fillRect(0,0,30,30);x.fillStyle='#2a3566';x.fillRect(0,25,30,5);x.save();x.scale(2.5,2.5);person(x,6,24,0,0,p);x.restore();return _faceC[key]=c.toDataURL();}
 function facePal(name,gender){const r=mulberry32(hashStr('face|'+name)),s=FPAL[Math.floor(r()*FPAL.length)];return{shirt:s[0],pants:s[1],skin:SKINS[Math.floor(r()*SKINS.length)],hair:HAIRS[Math.floor(r()*HAIRS.length)],long:gender==='f',skirt:gender==='f'&&r()<.3,badge:'#ff6a3d'};}
 const faceImg=(p,cls)=>`<img class="${cls||'cav'}" src="${faceURL(p)}" alt="">`;
 function portrait(canvas,p){const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,28,28);c.fillStyle='#1b2240';c.fillRect(0,0,28,28);c.fillStyle='#2a3566';c.fillRect(0,18,28,10);person(c,14,37,0,0,p);}
@@ -348,7 +348,7 @@ function interactables(){
     I(457,308,18,'Un caffè al bar',coffee);I(815,308,18,'Un caffè al bar',coffee);
     I(745,780,20,'Programma e info nell’app',()=>{if(!G.flags.app)say(NPC.find(n=>n.id==='info'),nodeInfo());else openPhone('home');});
     I(630,610,40,'Sali al primo piano (scale mobili)',()=>goFloor(1,k(630),k(590)));
-    const kar=activeAt(['Village']);I(1060,690,70,kar?kar.title:'Il Village',()=>kar?karaoke(kar):info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
+    const kar=activeAt(['Village'])||(G.sandbox&&G.day===2&&G.items&&G.items.banner?PROGRAMMA.find(e=>e.d===2&&/Pigiama/.test(e.title)):null);I(1060,690,70,kar?kar.title:'Il Village',()=>kar?karaoke(kar):info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
         I(810,810,46,'Una sessione di yoga',()=>say(NPC.find(n=>n.id==='yoga'),nodeYoga()));
     const mt=G.meets.find(m=>m.day===G.day&&G.min>=m.start-10&&G.min<m.start+40);
     I(225,694,30,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso.'));
@@ -640,7 +640,7 @@ function drawTheatre(){
   ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(w.label.toUpperCase(),x0+8,y0+8);
 }
 function karaoke(e){
-  if(e&&/Pigiama/.test(e.title)){say({name:'Host del Village',role:'Pigiama party finale',p:NPC.find(n=>n.id==='dj').p},{t:'L’ultima notte al Village: tutti in pigiama con la Family! Aperto a tutti i partecipanti.',c:[{t:'Mi unisco al pigiama party!',n:{t:'Si balla, si ride e si chiude in bellezza i tre giorni.',c:[{t:'Che serata!',n:null,act:kDone}]}},{t:'Dopo',n:null}]});return;}
+  if(e&&/Pigiama/.test(e.title)){say({name:'Host del Village',role:'Pigiama party finale',p:NPC.find(n=>n.id==='dj').p},{t:'L’ultima notte al Village: tutti in pigiama con la Family! Aperto a tutti i partecipanti.',c:[...(G.items&&G.items.banner&&!G.flags.banner?[{t:'🚩 Pianta lo stendardo del Marketers World',n:{t:'Lo pianti in mezzo al prato. Il vento lo apre e il logo si vede da lontano: tutti applaudono. È il finale giusto per questi tre giorni.',c:[{t:'Evviva!',n:null,act:plantBanner}]}}]:[]),{t:'Mi unisco al pigiama party!',n:{t:'Si balla, si ride e si chiude in bellezza i tre giorni.',c:[{t:'Che serata!',n:null,act:kDone}]}},{t:'Dopo',n:null}]});return;}
   if(G.min<22*60){info('Village','La sera al Village, dalle 22:00, «Palco - zona ristorante». Microfono libero.');return;}
   say({name:'Host del Village',role:'Karaoke',p:NPC.find(n=>n.id==='dj').p},{t:'Aperto a tutti i partecipanti del World. Il microfono è libero: che canzone scegli?',c:[
     {t:'Un classico italiano',n:{t:'La sala canta con te. Standing ovation!',c:[{t:'Inchino',n:null,act:kDone}]}},
@@ -729,7 +729,7 @@ function quests(){
     {t:'Fatti riconoscere dalla community',s:'Pubblica un post: chi hai incontrato di persona può commentarlo',ok:cmHasMetComment(cmT())},
     ...(typeof extrasNPC==='function'?[
       {t:(F.pets||0)>=2?'Saluta CatGPT e Alpachino':'???? ?????? ?? ?????????',s:(F.pets||0)>=2?'Il gatto grigio e l’alpaca girano per la mappa':'Obiettivo segreto',ok:(F.pets||0)>=2},
-      {t:(F.glasses||0)>=2?'Trova gli occhiali nascosti':'??????? ?????????',s:(F.glasses||0)>=2?'Due paia sparsi per il Palacongressi':'Obiettivo segreto'+((F.glasses||0)?' ('+F.glasses+'/2)':''),ok:(F.glasses||0)>=2},
+      ...(typeof itemQuests==='function'?itemQuests():[]),
       {t:(F.friends||0)>=5?'Incontra gli amici del gruppo':'?????? ?? ?????? ???????',s:(F.friends||0)>=5?'Persone sparse tra Palacongressi e Village':'Obiettivo segreto',ok:(F.friends||0)>=5}]:[]),
     {t:'Scambia 5 contatti',s:'Parla con le persone ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
@@ -795,7 +795,7 @@ function renderPhone(){
   const bind=()=>{
     B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(!G.sandbox&&!G.booked.has(id)&&(BYID[id].d<G.day||(BYID[id].d===G.day&&BYID[id].e<=G.min))){toast('Questa sessione è già finita.');return;}if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}keepPhone();});
     B.querySelectorAll('[data-dst]').forEach(b=>b.onclick=()=>{const n=b.dataset.dst,r=roomPos(n);if(!r)return;G.dest={n,f:r.f,x:k(r.x),y:k(r.y)};closePhone();toast('Destinazione: '+n,2200);});
-    B.querySelectorAll('[data-gw]').forEach(b=>b.onclick=()=>{G.worn=b.dataset.gw||null;renderPhone();});
+    B.querySelectorAll('[data-gw]').forEach(b=>b.onclick=()=>{toggleWear(b.dataset.gw);renderPhone();});
     B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);keepPhone();});
     B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
     B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');if(t==='notes'){phoneTab='net';netTab='tips';netOpen=null;renderPhone();return;}phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
@@ -876,7 +876,7 @@ function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabl
   if(f===G.f){const s=cvm.width/WW;c.fillStyle='#fff';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,5,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,3,0,7);c.fill();}}
 $('#bPhone').onclick=()=>openPhone();$('#bComm').onclick=()=>{if($('#phone').classList.contains('hide'))openPro();else closePhone();};$('#phX').onclick=closePhone;
 $('#bPhoto').onclick=()=>photo();
-$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#clock').onclick=()=>{if(!G||!G.sandbox||G.watching||G.react||DL||uiOpen())return;G.day=(G.day+1)%3;G.min=9*60;toast('Sandbox: '+DAYNAMES[G.day]+' mattina.',1600);};
+$('#bZin').onclick=()=>zoomStep(1);$('#bZout').onclick=()=>zoomStep(-1);$('#clock').onclick=()=>{if(!G||!G.sandbox||G.watching||G.react||DL||uiOpen())return;{const pv=G.day;G.day=(G.day+1)%3;G.min=9*60;toast('Sandbox: '+DAYNAMES[G.day]+' mattina.',1600);const m=typeof itemsNewDay==='function'?itemsNewDay(pv):[];if(m.length)setTimeout(()=>info('Sandbox · '+DAYNAMES[G.day],m.join('\n\n')),700);}};
 $('#bSkip').onclick=()=>skipTime();
 function skipTime(){if(!G||G.watching||G.react)return;G.min+=G.sandbox?60:15;toast(G.sandbox?'Passa un’ora.':'Passano 15 minuti.',1200);}
 addEventListener('wheel',e=>{if(G&&mode==='play'&&!G.watching&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide'))zoomStep(e.deltaY<0?1:-1);},{passive:true});
@@ -1001,10 +1001,10 @@ function putSaves(a){
     try{localStorage.setItem(SKEY,JSON.stringify(b));if(typeof toast==='function')toast('Spazio del browser quasi pieno: le foto restano solo nel salvataggio più recente.',3600);return true;}
     catch(e2){if(typeof toast==='function')toast('Impossibile salvare: spazio del browser pieno. Elimina qualche vecchio salvataggio.',4000);return false;}}
 }
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   G.xpeople=(st.xpeople||[]).map(p=>Object.assign({},p));G.people.push(...G.xpeople.filter(p=>!G.people.some(q=>q.id===p.id)));
   G.qd=null;
   if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
