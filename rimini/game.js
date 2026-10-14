@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=110;
+const BUILD=111;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -250,7 +250,8 @@ let SEED=lsGet('rimini.seed',null)||newSeed();
 
 function newGame(seed){
   G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:VILLAGE_ON?8*60+15:8*60+45,f:VILLAGE_ON?2:0,p:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y),dir:0,step:0}:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),seen:new Set(),comm:cmInit(),album:[],qd:{},qq:[],sandbox:SANDBOX,meets:[],people:genPeople(seed||SEED),done:false,cam:VILLAGE_ON?{x:k(VG.spawn.x),y:k(VG.spawn.y)}:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
-  FL[0]=buildGround();drawShuttleStop(FL[0]);FL[1]=buildFirst();FL[2]=VILLAGE_ON?buildVillage():null;FL[3]=typeof buildSunflower==='function'?buildSunflower():null;buildNPC();
+  FL[0]=buildGround();drawShuttleStop(FL[0]);FL[1]=buildFirst();FL[2]=VILLAGE_ON?buildVillage():null;FL[3]=typeof buildSunflower==='function'?buildSunflower():null;
+  buildMask(FL[1],[[9,11,22],[5,6,12]]);if(FL[3])buildMask(FL[3],[[26,20,16]]);buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40'],['#d6403a','#2b3350'],['#2a4a8a','#3a3a4a'],['#2aa8a0','#2a3566'],['#ff8f7a','#303850'],['#8a5a3a','#242a40'],['#b6d84a','#2b3350'],['#7ac8f0','#3a3350'],['#8a2a4a','#2a2a44']];
 const HAIRS=['#2a1d14','#4a3322','#7a5a2a','#1a1a20','#8a3a2a','#c9a24a','#d9d2c4','#0d0d10','#b0401c','#9a9aa4'],SKINS=['#e8b98a','#dfae80','#c98e62','#f0c8a0','#a8734c','#fbdcc0','#8a5a38','#6b4226','#52321d','#3d2415'];
@@ -278,10 +279,19 @@ function buildNPC(){
   }
   if(typeof sunNPC==='function')sunNPC(add,pickFrom,mkAtt,nAtt+24);
   if(typeof extrasNPC==='function')extrasNPC(add,pickFrom);
+  NPC.forEach(n=>{if(FL[n.f]&&FL[n.f].mask){[n.x,n.y]=freeSpot(n.f,n.x,n.y);}});
 }
 
 /* ============================================================ movimento e collisioni */
+/* maschera delle zone "fuori mappa": pixel dello sfondo (o del vuoto sopra la Sala della Piazza) non sono calpestabili */
+function buildMask(L,cols){
+  const cell=4,mw=Math.ceil(WW/cell),mh=Math.ceil(WH/cell),d=L.c.getImageData(0,0,WW,WH).data,m=new Uint8Array(mw*mh);
+  const isBg=(x,y)=>{if(x<0||y<0||x>=WW||y>=WH)return true;const i=(y*WW+x)*4;for(const c of cols)if(Math.abs(d[i]-c[0])<=2&&Math.abs(d[i+1]-c[1])<=2&&Math.abs(d[i+2]-c[2])<=2)return true;return false;};
+  for(let cy=0;cy<mh;cy++)for(let cx=0;cx<mw;cx++){const x=cx*cell+2,y=cy*cell+2;if(isBg(x,y)&&isBg(x-2,y-2)&&isBg(x+1,y-2)&&isBg(x-2,y+1)&&isBg(x+1,y+1))m[cy*mw+cx]=1;}
+  L.mask=m;L.mw=mw;L.mh=mh;
+}
 function hits(L,x,y,gate){const b={x:x-4,y:y-4,w:8,h:5};
+  if(L.mask){const t=(px,py)=>{const cx=Math.floor(px/4),cy=Math.floor(py/4);return cx<0||cy<0||cx>=L.mw||cy>=L.mh||L.mask[cy*L.mw+cx]===1;};if(t(x,y)||t(x-4,y)||t(x+4,y))return true;}
   for(const s of L.solids)if(b.x<s.x+s.w&&b.x+b.w>s.x&&b.y<s.y+s.h&&b.y+b.h>s.y)return true;
   if(!G.flags.accred&&L===FL[0]&&b.x<k(705)&&b.x+b.w>k(560)&&b.y<k(722)&&b.y+b.h>k(704))return true;
   return false;}
