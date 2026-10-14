@@ -126,10 +126,20 @@ function nextDay(){
 }
 function shuttleHome(){
   if(!G.sandbox&&G.min<17*60){info('Navetta per il Village','La navetta serale parte dalle 17:00. Fino ad allora il Marketers World è tutto tuo.');return;}
-  const host={name:'Navetta serale',role:'Rientro al Marketers Village',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
-  say(host,{t:(G.day===0&&G.min>=19*60+30?'Stasera c’è anche il Marketers Meetup al Sunflower (navetta solo il venerdì sera). ':'')+(G.day>=2?'È l’ultima sera: alle 22:00 all’Offworld, al Marketers Village, c’è il pigiama party finale. ':'Alle 22:00 all’Offworld, al Marketers Village, c’è la serata (karaoke). ')+'Vuoi passare direttamente alla festa o girare liberamente al Palacongressi e prendere la navetta entro le 22? Se fai tardi, alle 22 ti ritrovi al Village… e su Marketers Pro si parlerà del ritardatario!',c:[
-    ...(G.day===0&&(G.min>=19*60+30||G.sandbox)&&G.min<22*60?[{t:'Al Marketers Meetup al Sunflower',n:null,act:()=>goSunflower()}]:[]),
+  const host={name:'Navetta serale',role:'Serata',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
+  if(G.day===0){
+    say(host,{t:'Stasera, venerdì, la navetta serale porta al Marketers Meetup al Sunflower (dalle 20:00): bar, tavoli e tante persone con cui parlare. Vuoi andare subito o girare ancora al Palacongressi? Alle 22:00 la navetta ti porta lì in automatico; alle 23:30 si rientra al Village per dormire.',c:[
+      {t:'Vado al Marketers Meetup al Sunflower',n:null,act:()=>goSunflower(false)},{t:'Giro ancora al Palacongressi',n:null}]});return;}
+  say(host,{t:(G.day>=2?'È l’ultima sera: alle 22:00 all’Offworld, al Marketers Village, c’è il pigiama party finale. ':'Alle 22:00 all’Offworld, al Marketers Village, c’è la serata (karaoke). ')+'Vuoi passare direttamente alla festa o girare liberamente al Palacongressi e prendere la navetta entro le 22? Se fai tardi, alle 22 ti ritrovi al Village… e su Marketers Pro si parlerà del ritardatario!',c:[
     {t:'Passo direttamente alla festa',n:null,act:()=>rideBus(true)},{t:'Giro ancora al Palacongressi',n:null}]});
+}
+/* venerdì: alle 23:30 la navetta riporta tutti al Village, si va a dormire entro le 23:59 */
+function fridayNight(){
+  if(G.sandbox)return;
+  if(G.min>=23*60+30&&G.f!==2&&G.nightDay!==G.day){G.nightDay=G.day;
+    G.fade=1;G.f=2;G.p.x=k(255);G.p.y=k(310);[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.p.dir=0;G.cam.x=G.p.x;G.cam.y=G.p.y;
+    toast('Sono le 23:30: la navetta ti riporta al Marketers Village. Vai a dormire a Casa A entro le 23:59!',5200);}
+  if(G.min>=23*60+59){toast('È quasi mezzanotte: si dorme.',1800);nextDay();}
 }
 
 /* tasto "passa al giorno dopo": chiude la giornata e riparte dal Village (domenica: conclude il weekend) */
@@ -201,7 +211,8 @@ function sunExit(){
 function sunToPalace(){
   G.fade=1;A.blip();setTimeout(()=>{G.f=0;G.p.x=k(632);G.p.y=k(885);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.min+=12;toast('Eccoti di nuovo all’Ingresso A del Palacongressi.',2800);},250);
 }
-function goSunflower(){
-  G.fade=1;A.blip();setTimeout(()=>{G.f=3;G.p.x=k(SUN.door.x);G.p.y=k(SUN.door.y-60);[G.p.x,G.p.y]=freeSpot(3,G.p.x,G.p.y);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.min=Math.max(G.min+10,20*60);G.flags.sun=true;A.stamp();toast('Benvenuto al Marketers Meetup al Sunflower! Bar, tavoli e tante persone con cui parlare.',3800);},250);
+function goSunflower(late){
+  G.fade=1;A.blip();setTimeout(()=>{G.f=3;G.p.x=k(SUN.door.x);G.p.y=k(SUN.door.y-60);[G.p.x,G.p.y]=freeSpot(3,G.p.x,G.p.y);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.eveDay=G.day;G.min=late?G.min:Math.max(G.min+10,20*60);G.flags.sun=true;A.stamp();
+    if(late){toast('Sono le 22:00: la navetta ti porta al Sunflower… sei arrivato in ritardo!',4200);if(typeof cmLate==='function')cmLate(G.day);}else toast('Benvenuto al Marketers Meetup al Sunflower! Bar, tavoli e tante persone con cui parlare.',3800);},250);
 }
 function sunQuest(){return[{t:'Marketers Meetup al Sunflower',s:'Venerdì sera, 20:00-22:00: navetta dal Palacongressi',ok:!!(G.flags&&G.flags.sun)}];}

@@ -249,7 +249,7 @@ function makeContent(s){
 (function buildProgram(){
   const m=t=>+t.slice(0,2)*60+ +t.slice(3);let id=0;
   FRIDAY.forEach(s=>{s.d=0;s.id=id++;s.start=m(s.t);PROGRAMMA.push(s);});
-  PROGRAMMA.push({d:0,id:id++,t:'20:00',start:20*60,e:22*60,title:'Marketers Meetup',room:'Sunflower',kind:'meetup',tags:[],sp:'',role:'Serata di networking al Sunflower: navetta dal Palacongressi solo il venerdì sera'});
+  PROGRAMMA.push({d:0,id:id++,t:'20:00',start:20*60,e:23*60+30,title:'Marketers Meetup',room:'Sunflower',kind:'meetup',tags:[],sp:'',role:'Serata di networking al Sunflower: navetta dal Palacongressi solo il venerdì sera'});
   PROGRAMMA.push({d:0,id:id++,t:'13:00',start:13*60,e:13*60+30,title:'Pausa pranzo e networking',room:'Area networking',kind:'lounge',tags:[],sp:'',role:''});
   SATURDAY.forEach(s=>{s.d=1;s.id=id++;s.start=m(s.t);PROGRAMMA.push(s);});
   SUNDAY.forEach(s=>{s.d=2;s.id=id++;s.start=m(s.t);PROGRAMMA.push(s);});

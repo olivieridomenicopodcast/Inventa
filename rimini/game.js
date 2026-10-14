@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=101;
+const BUILD=102;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -1105,7 +1105,8 @@ function update(dt){
   if(!DL&&!G.react&&!uiOpen()){
     // orologio: 1 minuto di gioco ogni 4 secondi reali
     if(!G.sandbox&&!G.fin)G.min+=dt/4;autoT+=dt;if(autoT>120){autoT=0;autoSave();}
-    if(G.min>=23*60+30){if(G.day>=2){endGame();G.min=23*60+29;}else nextDay();}
+    if(G.day===0&&typeof fridayNight==='function'){fridayNight();}
+    else if(G.min>=23*60+30){if(G.day>=2){endGame();G.min=23*60+29;}else nextDay();}
     let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0)+touch.x,dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0)+touch.y;
     const m=Math.hypot(dx,dy);const p=G.p;
     if(m>.15){dx/=Math.max(1,m);dy/=Math.max(1,m);const sp=(keys.ShiftLeft?108:78)*dt;moveBody(p,dx*sp,dy*sp,FL[G.f]);p.step+=dt*(keys.ShiftLeft?7.5:5.3);p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);if(Math.floor(p.step*2)!==Math.floor((p.step-dt*4)*2))A.step();}else p.step=0;
@@ -1150,7 +1151,7 @@ function draw(){
   if(G.fin&&G.f===(G.fin.f||0)&&typeof drawFinale==='function')drawFinale(ctx);
   // sera
   const hr=G.min/60;let ta=0;if(hr>=18)ta=clamp((hr-18)/3,0,1)*.45;
-  if(ta>0&&G.f===0){ctx.fillStyle='rgba(12,20,70,'+ta.toFixed(3)+')';ctx.fillRect(0,0,WW,WH);}
+  if(ta>0&&(G.f===0||G.f===2)){ctx.fillStyle='rgba(12,20,70,'+ta.toFixed(3)+')';ctx.fillRect(0,0,WW,WH);}
   // UI
   ctx.setTransform(DPR,0,0,DPR,0,0);
   if(G.dest)drawDest();
