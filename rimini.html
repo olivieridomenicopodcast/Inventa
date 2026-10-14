@@ -31,7 +31,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none
 #dlg canvas{width:84px;height:84px;image-rendering:pixelated;border-radius:12px;background:#1b2240;border:2px solid var(--ac)}
 #dlg .nm{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--ac);margin-bottom:3px;font-weight:400}
 #dlg .rl{font-size:11px;color:var(--dim);margin-bottom:7px}
-#dlg .tx{font-size:15px;line-height:1.5;min-height:46px}
+#dlg .tx{white-space:pre-line;font-size:15px;line-height:1.5;min-height:46px}
 #dlg .ch{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 #dlg .ch button{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.07);font-size:13px;text-align:left}
 #dlg .ch button:hover,#dlg .ch button:focus{border-color:var(--ac);background:rgba(255,106,61,.14);outline:none}
@@ -141,7 +141,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 #phone .ring::before{background:#0c1124!important}#phone .ring b{color:#fff!important}
 
 #mapov,#savem{position:fixed;inset:0;z-index:22;display:grid;place-items:center;background:rgba(2,4,10,.82);backdrop-filter:blur(4px);padding:10px}
-#mapov .mbox{width:min(1180px,100%);height:min(760px,calc(100vh - 20px));background:#0c1124;border:2px solid #2a3566;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+#mapov .mbox{width:min(1180px,100%);height:min(760px,calc(100vh - 20px));height:min(760px,calc(100dvh - 20px));background:#0c1124;border:2px solid #2a3566;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
 #mapov .mh{display:flex;gap:10px;align-items:center;padding:10px 14px;background:#121936;border-bottom:2px solid #ff6a3d}
 #mapov .mh b{font-family:'Press Start 2P',monospace;font-weight:400;font-size:11px;flex:1}
 .mfl{display:flex;gap:6px}.mfl button,.mx{padding:8px 12px;border-radius:8px;background:#1d2650;border:1px solid #2a3566;font-size:12px}.mfl button.on{background:#ff6a3d;color:#1a0a04;font-weight:700}
@@ -150,8 +150,14 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 #plist{width:300px;overflow:auto;padding:10px;border-left:2px solid #2a3566;touch-action:pan-y}
 #plist h4{font-family:'Press Start 2P',monospace;font-weight:400;font-size:9px;color:#ff6a3d;margin:10px 0 6px}
 #plist button{display:block;width:100%;text-align:left;padding:8px 10px;margin-bottom:5px;border-radius:8px;background:#151c3a;border:2px solid #2a3566;font-size:13px}
-#plist button small{display:block;color:#9fb0d8;font-size:11px}#plist button.on{border-color:#ff6a3d}#plist button.dst{background:#3a2a1c}
-@media(max-width:760px){#mapov .mbody{flex-direction:column}#plist{width:auto;height:40%;border-left:0;border-top:2px solid #2a3566}.mh b{font-size:9px}}
+#plist button small{display:block;color:#9fb0d8;font-size:11px}#plist button.on{border-color:#ff6a3d}
+#plist .pbk{width:auto;display:inline-block;background:none;border:0;color:#4dd0ff;padding:4px 0;margin-bottom:6px}
+#plist .pt{font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.5;color:#ffd24d;margin-bottom:4px}#plist .ps{font-size:12px;color:#9fb0d8;margin-bottom:10px}
+#plist .pgo{background:#ff6a3d!important;color:#1a0a04;font-weight:700;border-color:#ff6a3d!important;text-align:center}#plist .pno{text-align:center}
+#plist .pd{font-size:13px;line-height:1.5;color:#cfd8ee;margin:8px 0}
+#plist .pdays{display:flex;gap:6px;margin-bottom:8px}#plist .pdays button{width:auto;margin:0;padding:6px 11px}#plist .pdays button.on{border-color:#ff6a3d;background:#3a2a1c}
+#plist .pr{padding:8px 0;border-bottom:1px solid #2a3566;font-size:13px;line-height:1.35}#plist .pr b{display:block;font-size:12px;color:#9fb0d8}#plist .pr small{display:block;color:#9fb0d8;font-size:11.5px}#plist .pr.now{color:#ffd24d}#plist .pr.now b{color:#ffd24d}#plist button.dst{background:#3a2a1c}
+@media(max-width:760px){#mapov{padding:6px}#mapov .mbody{flex-direction:column}#mapcv2{flex:0 0 34%}#plist{width:auto;flex:1;min-height:0;border-left:0;border-top:2px solid #2a3566;padding-bottom:30px}.mh b{font-size:9px}}
 #savem .box{width:min(560px,100%);max-height:calc(100vh - 20px);overflow:auto;padding:18px;background:#0c1124;border:2px solid #2a3566;border-radius:14px;touch-action:pan-y}
 #savem h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:13px;color:#ff6a3d;margin-bottom:10px}
 .sv{display:flex;gap:8px;align-items:center;padding:10px;border:2px solid #2a3566;border-radius:10px;margin-bottom:8px;background:#151c3a;flex-wrap:wrap}
@@ -202,7 +208,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
     <div>
       <h1>RIMINI<br><span>3 GIORNI</span></h1>
       <p class="lead">Crea il tuo personaggio e gira per il Palacongressi di Rimini: ritira l’accredito, segui i workshop del venerdì e gli speech del weekend, chiacchiera con chi incontri, scopri gli stand e non perderti l’Offworld la sera.</p>
-      <div class="glass pn" id="cc" style="margin:14px 0"><label class="lbl" style="margin-top:0">Il tuo nome</label><input id="pname" maxlength="16" placeholder="Come ti chiami?" autocomplete="off" spellcheck="false" class="srch2"><label class="lbl">Personaggio</label><div class="chips3" id="cg"><button data-g="m">Maschio</button><button data-g="f">Femmina</button></div><label class="lbl">Maglia</label><div class="sw2" id="cs"></div><label class="lbl">Capelli</label><div class="sw2" id="ch"></div><label class="lbl">Carnagione</label><div class="sw2" id="cskin"></div></div>
+      <div class="glass pn" id="cc" style="margin:14px 0"><label class="lbl" style="margin-top:0">Il tuo nome</label><input id="pname" maxlength="16" placeholder="Come ti chiami?" autocomplete="off" spellcheck="false" class="srch2"><label class="lbl">Seme (cambia chi incontri)</label><div style="display:flex;gap:8px"><input id="sd" maxlength="10" class="srch2" style="text-transform:uppercase;letter-spacing:.15em" autocomplete="off" spellcheck="false"><button class="chips3" id="sdd" style="width:44px;border-radius:10px;border:2px solid var(--line);background:rgba(255,255,255,.05);font-size:18px" title="Seme casuale">🎲</button></div><label class="lbl">Personaggio</label><div class="chips3" id="cg"><button data-g="m">Maschio</button><button data-g="f">Femmina</button></div><label class="lbl">Maglia</label><div class="sw2" id="cs"></div><label class="lbl">Capelli</label><div class="sw2" id="ch"></div><label class="lbl">Carnagione</label><div class="sw2" id="cskin"></div></div>
       <div class="row2"><button class="btn" id="go">Entra a Rimini</button><button class="btn ghost" id="how">Come si gioca</button><button class="btn ghost" id="loadb">Carica partita</button></div>
       <p class="disc"><b style="color:var(--ink)">Realizzato da Olivieri Domenico usando Claude Code.</b><br>Progetto just for fun, privato: non è divulgato altrove, se non dentro l’ambiente Marketers.<br>Fan project non ufficiale, senza alcun legame con l’organizzazione. Le informazioni sull’evento vengono da pagine pubbliche; la pianta riprende le planimetrie ufficiali del Palacongressi di Rimini (piano terra e primo piano), semplificate e non in scala. Speech, workshop e partecipanti sono inventati.</p>
     </div>

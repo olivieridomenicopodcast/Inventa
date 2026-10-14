@@ -202,7 +202,7 @@ const WEEKEND_SLOTS=['09:00','10:30','14:30','16:00','17:30'];
 /* Sale e posizioni sulla mappa (f = piano). Silent Stage, Main stage silent e le sale sponsor sono posizioni ipotetiche. */
 const ROOMS={
  'Main stage silent':{f:0,x:651,y:470,spot:'main'},'Main Stage':{f:0,x:651,y:470,spot:'main'},'Sala della Piazza':{f:0,x:651,y:470,spot:'main'},
- 'Silent Stage 1':{f:0,x:432,y:300},'Silent Stage 2':{f:0,x:432,y:380},'Silent Stage 3':{f:0,x:432,y:460},'Silent Stage 4':{f:0,x:432,y:540},
+ 'Silent Stage 1':{f:0,x:442,y:354},'Silent Stage 2':{f:0,x:442,y:415},'Silent Stage 3':{f:0,x:442,y:485},'Silent Stage 4':{f:0,x:442,y:555},
  'Sala Castello':{f:0,x:920,y:255},
  'Sala della Marina':{f:1,x:350,y:277},'Sala del Parco':{f:1,x:350,y:349},'Sala del Borgo':{f:1,x:350,y:421},
  'Sala by CANVA':{f:1,x:920,y:370},'Sala Finance by FINECO':{f:1,x:920,y:480},'Sala by Active Powered':{f:1,x:920,y:615},'Sala Real Estate by Building Production':{f:1,x:197,y:478},

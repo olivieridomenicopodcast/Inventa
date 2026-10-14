@@ -153,6 +153,13 @@ function buildGround(){
   const rowsOf=(x,y,w,h,col)=>{for(let yy=y;yy<y+h;yy+=12)for(let xx=x;xx<x+w;xx+=10)chair(c,xx,yy,col);};
   rowsOf(k(310),k(190),k(70),k(40),'#7a62b8');stage(L,k(305),k(172),k(88),k(14),'');
   rowsOf(k(892),k(172),k(56),k(40),'#7a62b8');rowsOf(k(892),k(620),k(56),k(36),'#7a62b8');
+  // Silent Stage 1-4: quattro postazioni con le cuffie lungo il corridoio ovest
+  [1,2,3,4].forEach(n=>{const r=ROOMS['Silent Stage '+n],x=k(r.x)-k(21),y=k(r.y)-k(25),w=k(42),h=k(46);
+    c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x+2,y+3,w,h);c.fillStyle='#1d3a4a';c.fillRect(x,y,w,h);c.fillStyle='#2f8f9f';c.fillRect(x,y,w,3);c.fillRect(x,y+h-3,w,3);
+    c.fillStyle='#0f2430';for(let i=0;i<4;i++)c.fillRect(x+6+i*((w-16)/3|0),y+h-14,6,8);
+    c.strokeStyle='#8fe0f0';c.lineWidth=1;for(let i=0;i<4;i++){const hx=x+9+i*((w-16)/3|0);c.beginPath();c.arc(hx,y+h-16,3,Math.PI,0);c.stroke();}
+    txt(c,'SILENT',x+w/2,y+11,'#e8fbff',8);txt(c,'STAGE '+n,x+w/2,y+22,'#ffd24d',8);});
+  txt(c,'MAIN STAGE',k(651),k(332),'#ffd24d',8);
   // bar temporanei
   desk(L,k(446),k(255),22,k(40),'#7a3a8a','BAR');desk(L,k(804),k(255),22,k(40),'#7a3a8a','BAR');
   // wc / guardaroba
@@ -171,7 +178,7 @@ function buildGround(){
   // stand nell'atrio nord
   STANDS.forEach(s=>booth(L,k(s.x)-26,k(s.y)-18,52,34,s.color,s.short));
   txt(c,'AREA EXPO',k(650),k(198),'#8892a8',8);
-  plant(L,k(430),k(210));plant(L,k(850),k(210));plant(L,k(430),k(620));plant(L,k(850),k(620));plant(L,k(420),k(520));plant(L,k(856),k(520));
+  plant(L,k(430),k(210));plant(L,k(850),k(210));plant(L,k(430),k(620));plant(L,k(850),k(620));plant(L,k(856),k(520));
   // gazebo accrediti e assistenza app (fuori dall'ingresso A)
   const gz=(x,y,lab,col)=>{c.fillStyle='rgba(0,0,0,.2)';c.fillRect(x-36,y+4,76,16);c.fillStyle=col;c.fillRect(x-40,y-8,80,5);c.fillStyle='#fff';for(let i=0;i<8;i++)c.fillRect(x-40+i*10,y-8,5,5);desk(L,x-30,y+4,60,10,'#2b3358',lab);solid(L,x-40,y-8,4,26);solid(L,x+36,y-8,4,26);};
   gz(k(520),k(805),'ACCREDITI','#ff6a3d');gz(k(745),k(805),'INFO APP','#4dd0ff');
@@ -233,27 +240,31 @@ const keys={};let touch={x:0,y:0};
 const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
-function pickFrom(a){return a[Math.floor(Math.random()*a.length)];}
+const RNG=()=>(G&&G.rng)?G.rng():Math.random();
+function pickFrom(a){return a[Math.floor(RNG()*a.length)];}
+const newSeed=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let t='';for(let i=0;i<5;i++)t+=a[Math.floor(Math.random()*a.length)];return t;};
+let SEED=lsGet('rimini.seed',null)||newSeed();
 
-function newGame(){
-  G={day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),meets:[],people:genPeople(),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
+function newGame(seed){
+  G={seed:seed||SEED,rng:mulberry32(hashStr((seed||SEED)+'|run')),day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(),saved:new Set(),meets:[],people:genPeople(seed||SEED),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
   FL[0]=buildGround();FL[1]=buildFirst();buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
 const HAIRS=['#2a1d14','#4a3322','#7a5a2a','#1a1a20','#8a3a2a','#c9a24a','#d9d2c4'],SKINS=['#e8b98a','#dfae80','#c98e62','#f0c8a0','#a8734c'];
-function randPal(){const s=pickFrom(FPAL);return{shirt:s[0],pants:s[1],skin:pickFrom(SKINS),hair:pickFrom(HAIRS),long:Math.random()<.35,badge:pickFrom(['#ff6a3d','#4dd0ff','#7ad37a','#ffd24d']),cap:Math.random()<.12?pickFrom(['#2a3566','#8a2a2a']):null};}
+function randPal(){const s=pickFrom(FPAL);return{shirt:s[0],pants:s[1],skin:pickFrom(SKINS),hair:pickFrom(HAIRS),long:RNG()<.35,badge:pickFrom(['#ff6a3d','#4dd0ff','#7ad37a','#ffd24d']),cap:RNG()<.12?pickFrom(['#2a3566','#8a2a2a']):null};}
 function buildNPC(){
   NPC=[];
-  const add=o=>{o.dir=o.dir??0;o.step=0;o.vx=0;o.vy=0;o.t=Math.random()*3;NPC.push(o);return o;};
+  const add=o=>{o.dir=o.dir??0;o.step=0;o.vx=0;o.vy=0;o.t=RNG()*3;NPC.push(o);return o;};
   FAMILY.forEach(f=>add({id:f.id,kind:'family',name:f.name,role:f.role,f:f.where.f,x:k(f.where.x),y:k(f.where.y),p:{shirt:f.shirt,pants:'#232a44',skin:f.skin,hair:f.hair,badge:'#ffd24d'},data:f}));
   SPEAKERS.forEach(s=>add({id:'sp_'+s.name,kind:'speaker',name:s.name,role:'Speaker annunciata/o (da verificare col programma)',f:s.where.f,x:k(s.where.x),y:k(s.where.y),p:randPal(),dir:2}));
   add({id:'accred',kind:'staff',name:'Staff accrediti',role:'Ritiro badge',f:0,x:k(520),y:k(805)+2,p:{shirt:'#ff6a3d',pants:'#232a44',skin:'#e8b98a',hair:'#3a2a1c',badge:'#fff'},dir:0});
   add({id:'info',kind:'staff',name:'Assistenza app',role:'Info point',f:0,x:k(745),y:k(805)+2,p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'},dir:0});
   add({id:'yoga',kind:'staff',name:'Insegnante di yoga',role:'Sessione sul prato',f:0,x:k(810),y:k(780),p:{shirt:'#7ad37a',pants:'#e8e8f0',skin:'#e0b085',hair:'#4a3322',badge:'#7ad37a',long:true},dir:0});
   add({id:'dj',kind:'staff',name:'Host Offworld',role:'Karaoke e DJ set',f:0,x:k(985)+75,y:k(600)+96,p:{shirt:'#161226',pants:'#232a44',skin:'#e8b98a',hair:'#c9a24a',badge:'#ff6a3d',cap:'#ff6a3d'},dir:0});
-  // partecipanti inventati che girano (coordinate della pianta)
-  const R=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,780,860,860,0],[420,560,830,680,1],[420,560,830,680,1],[400,120,860,200,1]];
-  R.forEach((r,i)=>{const fn=pickFrom(ATT_FIRST),ln=pickFrom(ATT_LAST);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:pickFrom(ATT_JOBS)+' · '+pickFrom(ATT_CITY),f:r[4],x:x0+Math.random()*(x1-x0),y:y0+Math.random()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});});
+  // partecipanti inventati che girano: numero, aspetto e zone cambiano a ogni seme
+  const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0]];
+  const nAtt=12+Math.floor(RNG()*9);
+  for(let i=0;i<nAtt;i++){const r=pickFrom(ZONES);const fn=pickFrom(ATT_FIRST),ln=pickFrom(ATT_LAST);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:pickFrom(ATT_JOBS)+' · '+pickFrom(ATT_CITY),f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});}
 }
 
 /* ============================================================ movimento e collisioni */
@@ -283,8 +294,8 @@ function nextAt(rooms){return PROGRAMMA.find(e=>e.d===G.day&&rooms.includes(e.ro
 function nextEvent(){return PROGRAMMA.find(e=>e.d===G.day&&e.kind!=='lounge'&&e.start>G.min)||null;}
 function overlaps(a,b){return a.d===b.d&&a.start<b.e&&b.start<a.e;}
 function conflictWith(s){return [...G.booked].some(id=>id!==s.id&&overlaps(BYID[id],s))||G.meets.some(m=>overlaps({d:m.day,start:m.start,e:m.start+30},s));}
-function genPeople(){
-  const r=mulberry32(hashStr('rimini-people')),used=new Set(),out=[];
+function genPeople(seed){
+  const r=mulberry32(hashStr(seed+'|people')),used=new Set(),out=[];
   const tag=['Potrebbe trovare utile quello che fai','Offre la sua esperienza','Cerca collaborazioni','Vuole confrontarsi sul tuo settore'];
   for(let i=0;i<14;i++){let nm;do{nm=ATT_FIRST[Math.floor(r()*ATT_FIRST.length)]+' '+ATT_LAST[Math.floor(r()*ATT_LAST.length)];}while(used.has(nm));used.add(nm);
     out.push({id:'p'+i,name:nm,job:ATT_JOBS[Math.floor(r()*ATT_JOBS.length)],city:ATT_CITY[Math.floor(r()*ATT_CITY.length)],compat:Math.round(96-i*3.4-r()*5),tag:tag[Math.floor(r()*tag.length)],pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5'][i%6],pants:'#2b3350',skin:SKINS[i%SKINS.length],hair:HAIRS[i%HAIRS.length],long:i%3===0,badge:'#ff6a3d'}});}
@@ -295,21 +306,21 @@ function interactables(){
   const seen=new Set();
   const roomSpot=(names,x,y,r,title)=>{
     const e=activeAt(names),nx=nextAt(names);
-    I(x,y,r,e?'Entra: '+(e.title.length>34?e.title.slice(0,33)+'…':e.title):title+(nx?': prossima alle '+nx.t:': nessuna sessione ora'),()=>e?enterSession(e):info(title,nx?'Nessuna sessione ora. La prossima: '+nx.t+', «'+nx.title+'».':'Nessuna sessione ora in questa sala.'));
+    I(x,y,r,e?title+' · adesso: '+(e.title.length>30?e.title.slice(0,29)+'…':e.title):title+(nx?': prossima alle '+nx.t:': nessuna sessione ora'),()=>openRoom(names,title));
   };
   if(f===0){
     STANDS.forEach(s=>I(s.x,s.y+30,20,'Guarda lo stand «'+s.label+'»',()=>standTalk(s)));
     roomSpot(['Main stage silent','Sala della Piazza','Main Stage'],651,470,50,'Palco principale');
-    ['Silent Stage 1','Silent Stage 2','Silent Stage 3','Silent Stage 4'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,28,n));
+    ['Silent Stage 1','Silent Stage 2','Silent Stage 3','Silent Stage 4'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,24,n));
     roomSpot(['Sala Castello'],920,255,40,'Sala Castello');
-    I(458,300,26,'Un caffè al bar',coffee);I(820,300,26,'Un caffè al bar',coffee);
+    I(457,308,18,'Un caffè al bar',coffee);I(815,308,18,'Un caffè al bar',coffee);
     I(745,780,20,'Programma e info nell’app',()=>{if(!G.flags.app)say(NPC.find(n=>n.id==='info'),nodeInfo());else openPhone('home');});
     I(630,610,40,'Sali al primo piano (scale mobili)',()=>goFloor(1,k(630),k(590)));
     const kar=activeAt(['Village']);I(1060,690,70,kar?kar.title:'Il Village',()=>kar?karaoke(kar):info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
         I(810,810,46,'Una sessione di yoga',()=>say(NPC.find(n=>n.id==='yoga'),nodeYoga()));
     const mt=G.meets.find(m=>m.day===G.day&&G.min>=m.start-10&&G.min<m.start+40);
-    I(250,690,45,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso.'));
-    I(300,670,30,'Pausa al Bistrot',rest);
+    I(225,694,30,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso.'));
+    I(312,658,26,'Pausa al Bistrot',rest);
     I(651,305,36,'Leggi il cartello della sala',()=>info('Sala della Piazza',FACTS.piazza));
     I(632,770,40,'Leggi l’ingresso',()=>info(EVENT.name+' '+EVENT.year,EVENT.dates+'. '+EVENT.place+'. '+FACTS.palazzo));
     I(180,356,30,'Ingresso B',()=>info('Ingresso B','Dall’Ingresso B si arriva al lato ovest, verso i negozi e il Bistrot.'));
@@ -318,7 +329,7 @@ function interactables(){
     I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(590)));
     I(635,775,70,'Sala dell’Anfiteatro',()=>info('Sala dell’Anfiteatro',FACTS.anfi+' Qui oggi non ci sono sessioni: gli speech sono in Sala della Piazza, al piano terra.'));
     ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,30,n.replace('Sala Real Estate by Building Production','Sala Real Estate')));
-    I(651,575,45,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
+    I(770,578,35,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
   }
   for(const n of NPC)if(n.f===f)out.push({x:n.x,y:n.y,r:22,npc:n,label:'Parla con '+n.name,fn:()=>talkTo(n)});
   return out;
@@ -416,6 +427,16 @@ function coffee(){G.flags.coffee++;toast(pickFrom(['Un caffè al volo: ora sei c
 function rest(){G.min+=15;toast('Ti siedi 15 minuti sul divano a controllare l’app.');}
 function addTip(t,src){if(!G.tips.some(x=>x.t===t))G.tips.push({t,src});}
 function goFloor(f,x,y){G.fade=1;setTimeout(()=>{G.f=f;G.p.x=x;G.p.y=y;if(f===1)G.flags.anfi=true;A.blip();},120);}
+function roomSched(names,day){return PROGRAMMA.filter(e=>e.d===day&&names.includes(e.room)&&e.kind!=='lounge').sort((a,b)=>a.start-b.start);}
+function openRoom(names,title){
+  const e=activeAt(names),nx=nextAt(names),today=roomSched(names,G.day);
+  const host={name:title,role:'Sala · programma',p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'}};
+  const ln=x=>hm(x.start)+'–'+hm(x.e%1440)+'  '+(x.title.length>44?x.title.slice(0,43)+'…':x.title)+(x.sp?' ('+x.sp.split(',')[0]+')':'');
+  const sched={t:today.length?'Programma di oggi in questa sala:\n'+today.map(x=>(x===e?'▶ ':'   ')+ln(x)).join('\n'):'Oggi in questa sala non ci sono sessioni.',c:[{t:'Indietro',n:()=>main()}]};
+  const main=()=>({t:e?'Adesso in sala: «'+e.title+'»\n'+hm(e.start)+'–'+hm(e.e%1440)+(e.sp?' · '+e.sp:''):(nx?'Nessuna sessione in corso. La prossima: «'+nx.title+'» alle '+nx.t+'.':'Per oggi non ci sono altre sessioni in questa sala.'),
+    c:[e?{t:'Entra ora',n:null,act:()=>enterSession(e)}:null,{t:'Vedi il programma di oggi',n:sched},{t:'Esci',n:null}].filter(Boolean)});
+  say(host,main());
+}
 function enterSession(e){
   if(e.kind==='sign'){firmacopie(e);return;}
   if(e.kind==='game'){quiz(e);return;}
@@ -547,7 +568,7 @@ function doneMeet(m,n){G.meets=G.meets.filter(x=>x!==m);G.flags.meet++;addContac
 /* ============================================================ riattivazione: micro rhythm game */
 const POSES=['Montagna','Guerriero','Albero','Respiro','Cobra','Guerriero','Albero','Montagna'];
 function startReact(e){
-  const r=mulberry32(hashStr('react'+e.id)),notes=[],beat=.625,lead=2.2;
+  const r=mulberry32(hashStr(G.seed+'|react'+e.id)),notes=[],beat=.625,lead=2.2;
   for(let i=0;i<14;i++)notes.push({t:lead+i*beat,lane:Math.floor(r()*3),res:null,fl:0});
   G.react={e,t:0,notes,beat,fall:1.6,hits:0,perfect:0,miss:0,done:false,end:lead+14*beat+1.4,fx:[],combo:0};
   closeDlg();A.blip();
@@ -736,7 +757,7 @@ const mapPlaces=()=>{
   const P=[];const add=(n,f,x,y,cat,rooms)=>P.push({n,f,x,y,cat,rooms});
   add('Ingresso A (principale)',0,632,770,'Ingressi');add('Ingresso B',0,180,356,'Ingressi');add('Ingresso C',0,918,460,'Ingressi');
   add('Accrediti (badge)',0,520,805,'Servizi');add('Assistenza app',0,745,805,'Servizi');
-  add('Scale mobili (cambia piano)',0,630,610,'Servizi');add('Bistrot',0,300,670,'Servizi');add('Area networking',0,250,690,'Servizi');add('Bar',0,458,300,'Servizi');
+  add('Scale mobili (cambia piano)',0,630,610,'Servizi');add('Bistrot',0,312,658,'Servizi');add('Area networking',0,225,694,'Servizi');add('Bar',0,457,308,'Servizi');
   add('Main Stage · Sala della Piazza',0,651,470,'Sale',['Main Stage','Main stage silent','Sala della Piazza']);
   for(let i=1;i<=4;i++)add('Silent Stage '+i,0,ROOMS['Silent Stage '+i].x,ROOMS['Silent Stage '+i].y,'Sale',['Silent Stage '+i]);
   add('Sala Castello',0,920,255,'Sale',['Sala Castello']);
@@ -744,23 +765,44 @@ const mapPlaces=()=>{
   add('Village (karaoke, party)',0,1060,690,'Fuori',['Village']);add('Prato dello yoga',0,810,810,'Fuori');
   add('Scale mobili (cambia piano)',1,630,610,'Servizi');
   ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>add(n,1,ROOMS[n].x,ROOMS[n].y,'Sale',[n]));
-  add('Sala dell’Anfiteatro',1,635,775,'Sale');add('Vuoto sulla Piazza (affaccio)',1,651,575,'Servizi');
+  add('Sala dell’Anfiteatro',1,635,775,'Sale');add('Vuoto sulla Piazza (affaccio)',1,770,578,'Servizi');
   return P;
 };
-let MAPF=0,MAPSEL=null,mapRaf=0;
-function openMap(){if(!G)return;MAPF=G.f;MAPSEL=null;$('#mapov').classList.remove('hide');mapList();mapLoop();}
+let MAPF=0,MAPSEL=null,mapRaf=0,MAPDAY=0;
+function openMap(){if(!G)return;MAPF=G.f;MAPSEL=null;MAPDAY=G.day;$('#mapov').classList.remove('hide');mapList();mapLoop();}
 function closeMap(){$('#mapov').classList.add('hide');cancelAnimationFrame(mapRaf);last=performance.now();}
+const PDESC={
+ 'Ingresso A (principale)':'L’ingresso principale, con il portico ad arco. Fuori, a sinistra gli accrediti e a destra l’assistenza app. Dentro: reception, ascensori e scale mobili.',
+ 'Ingresso B':'Ingresso sul lato ovest: porta ai negozi e al Bistrot.','Ingresso C':'Ingresso sul lato est, verso il parcheggio. Vicino: WC e guardaroba.',
+ 'Accrediti (badge)':'Qui si ritira il badge: serve prima l’app attivata.','Assistenza app':'Qui si attiva l’app (email del biglietto e codice a 6 cifre).',
+ 'Scale mobili (cambia piano)':'Collegano il piano terra al primo piano (sale dei workshop e Anfiteatro).','Bistrot':'Area ristoro con tavoli: pausa pranzo e relax.',
+ 'Area networking':'Qui ti incontri con le persone con cui hai preso un Meeting dall’app.','Bar':'Bar temporaneo nell’atrio: un caffè al volo.',
+ 'Village (karaoke, party)':'Il Village: la sera karaoke con microfono libero e il pigiama party finale.','Prato dello yoga':'Il prato davanti all’ingresso, con le stuoie dello yoga.',
+ 'Sala dell’Anfiteatro':'Grande sala con sedute fisse (1.540 posti) e palco circolare. Nel gioco non ci sono sessioni qui.','Vuoto sulla Piazza (affaccio)':'Dal primo piano si vede dall’alto la Sala della Piazza.',
+ 'Main Stage · Sala della Piazza':'La sala principale (circa 4.700 posti): Main stage silent il venerdì, Main Stage nel weekend. Qui anche Riattivazione e Yoga Silent Party.'};
 function mapList(){
   $('#mfl0').className=MAPF===0?'on':'';$('#mfl1').className=MAPF===1?'on':'';
-  const P=mapPlaces(),box=$('#plist');box.innerHTML='';const cats=['Ingressi','Sale','Stand','Servizi','Fuori'];
+  const P=mapPlaces(),box=$('#plist');box.innerHTML='';box.scrollTop=0;
+  if(MAPSEL){const sel=MAPSEL,isDst=G.dest&&G.dest.n===sel.n&&G.dest.f===sel.f;
+    const stand=STANDS.find(x=>x.label===sel.n);
+    const wrap=document.createElement('div');
+    let h=`<button id="pback" class="pbk">‹ Torna all’elenco</button><div class="pt">${esc(sel.n)}</div><div class="ps">${sel.f===0?'Piano terra':'Primo piano'}${sel.f!==G.f?' · tu sei all’altro piano: ti guido alle scale mobili':''}</div><button id="godst" class="pgo">★ Portami qui</button>${G.dest?'<button id="nodst" class="pno">Togli destinazione</button>':''}`;
+    const d=PDESC[sel.n]||(stand?stand.info:'');if(d)h+=`<p class="pd">${esc(d)}</p>`;
+    if(sel.rooms){const sc=roomSched(sel.rooms,MAPDAY);
+      h+=`<h4>PROGRAMMA DELLA SALA</h4><div class="pdays">${DAYNAMES.map((n,i)=>`<button data-md="${i}" class="${MAPDAY===i?'on':''}">${n.split(' ')[0].slice(0,3)}</button>`).join('')}</div>`+(sc.length?sc.map(x=>{const now=MAPDAY===G.day&&G.min>=x.start&&G.min<x.e;return `<div class="pr ${now?'now':''}"><b>${hm(x.start)}–${hm(x.e%1440)}${now?' ▶ in corso':''}</b>${esc(x.title)}${x.sp?'<small>'+esc(x.sp)+(x.role?' · '+esc(x.role):'')+'</small>':''}</div>`;}).join(''):'<div class="pd">Nessuna sessione in questo giorno.</div>');}
+    if(sel.n==='Ingresso A (principale)'||sel.cat==='Stand'&&!sel.rooms){}
+    wrap.innerHTML=h;box.appendChild(wrap);
+    $('#pback').onclick=()=>{MAPSEL=null;mapList();};
+    $('#godst').onclick=()=>{G.dest={n:sel.n,f:sel.f,x:k(sel.x),y:k(sel.y)};toast('Destinazione: '+sel.n,2000);closeMap();};
+    const nd=$('#nodst');if(nd)nd.onclick=()=>{G.dest=null;mapList();};
+    wrap.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{MAPDAY=+b.dataset.md;const y=box.scrollTop;mapList();box.scrollTop=y;});
+    return;}
+  const cats=['Ingressi','Sale','Stand','Servizi','Fuori'];
+  const hint=document.createElement('div');hint.className='pd';hint.textContent='Tocca un posto sulla mappa o nell’elenco per vedere cosa c’è dentro.';box.appendChild(hint);
   cats.forEach(c=>{const L=P.filter(p=>p.cat===c&&p.f===MAPF);if(!L.length)return;const h=document.createElement('h4');h.textContent=c.toUpperCase();box.appendChild(h);
-    L.forEach(p=>{const live=p.rooms?activeAt(p.rooms):null;const b=document.createElement('button');b.className=(MAPSEL===p?'on ':'')+(G.dest&&G.dest.n===p.n&&G.dest.f===p.f?'dst':'');
+    L.forEach(p=>{const live=p.rooms?activeAt(p.rooms):null;const b=document.createElement('button');b.className=(G.dest&&G.dest.n===p.n&&G.dest.f===p.f?'dst':'');
       b.innerHTML=esc(p.n)+(live?`<small>ora: ${esc(live.title.length>40?live.title.slice(0,38)+'…':live.title)}</small>`:'')+(G.dest&&G.dest.n===p.n&&G.dest.f===p.f?'<small>★ destinazione</small>':'');
       b.onclick=()=>{MAPSEL=p;mapList();};box.appendChild(b);});});
-  if(MAPSEL){const d=document.createElement('div');d.style.cssText='position:sticky;bottom:0;background:#0c1124;padding-top:8px';
-    d.innerHTML=`<div style="font-size:12px;color:#9fb0d8;margin-bottom:6px">${esc(MAPSEL.n)}${MAPSEL.f!==G.f?' · sull’altro piano: ti guido alle scale mobili':''}</div><button id="godst" style="background:#ff6a3d;color:#1a0a04;font-weight:700;border-color:#ff6a3d">Portami qui</button>${G.dest?'<button id="nodst">Togli destinazione</button>':''}`;box.appendChild(d);
-    $('#godst').onclick=()=>{G.dest={n:MAPSEL.n,f:MAPSEL.f,x:k(MAPSEL.x),y:k(MAPSEL.y)};toast('Destinazione: '+MAPSEL.n,2000);closeMap();};
-    const nd=$('#nodst');if(nd)nd.onclick=()=>{G.dest=null;mapList();};}
 }
 function mapLoop(){
   const cvm=$('#mapcv2');if($('#mapov').classList.contains('hide'))return;
@@ -800,13 +842,13 @@ function drawDest(){
 const SKEY='rimini.saves';
 const getSaves=()=>lsGet(SKEY,[]);
 const putSaves=a=>lsSet(SKEY,a);
-function snap(){return{v:1,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
   Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   Object.assign(G.p,st.p);G.cam.x=G.p.x;G.cam.y=G.p.y;zOff=st.zOff||0;applyZoom();
 }
-const summary=()=>{const p=progress();return ['Ven','Sab','Dom'][G.day]+' '+hm(Math.floor(G.min))+' · '+p.done+'/'+p.tot+' obiettivi · '+G.contacts.length+' contatti';};
+const summary=()=>{const p=progress();return ['Ven','Sab','Dom'][G.day]+' '+hm(Math.floor(G.min))+' · '+p.done+'/'+p.tot+' obiettivi · '+G.contacts.length+' contatti · seme '+G.seed;};
 function saveTo(id,name){const a=getSaves();const now=Date.now();const ent={id:id||('s'+now),name:name||('Salvataggio '+(a.length+1)),ts:now,sum:summary(),st:snap()};
   const i=a.findIndex(x=>x.id===ent.id);if(i>=0){ent.name=name||a[i].name;a[i]=ent;}else a.unshift(ent);putSaves(a.slice(0,15));return ent;}
 function autoSave(){if(!G||mode!=='play'||G.done)return;try{saveTo('auto','Autosalvataggio');}catch(e){}}
@@ -848,7 +890,7 @@ function endGame(){
 }
 
 /* ============================================================ ciclo */
-function startGame(st){newGame();if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
+function startGame(st){const sd=st&&st.seed?st.seed:SEED;newGame(sd);if(st)restore(st);mode='play';$('#title').classList.add('hide');$('#hud').classList.remove('hide');A.init();
   if(!st)toast('Venerdì mattina a Rimini. Dall’Ingresso A: accrediti a sinistra, assistenza app a destra. Mappa: tasto M.',5200);else toast('Partita caricata.',1800);last=performance.now();}
 let last=performance.now();
 function update(dt){
@@ -965,7 +1007,8 @@ function buildCreator(){
   document.querySelectorAll('#cg button').forEach(b=>{b.className=b.dataset.g===PLAYER.gender?'on':'';b.onclick=()=>{PLAYER.gender=b.dataset.g;lsSet('rimini.player',PLAYER);buildCreator();};});
 }
 buildCreator();
-$('#go').onclick=()=>{PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
+$('#sd').value=SEED;$('#sd').oninput=e=>{SEED=(e.target.value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10)||SEED;lsSet('rimini.seed',SEED);};$('#sdd').onclick=()=>{SEED=newSeed();$('#sd').value=SEED;lsSet('rimini.seed',SEED);};
+$('#go').onclick=()=>{const v=($('#sd').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);SEED=v||newSeed();lsSet('rimini.seed',SEED);PLAYER.name=($('#pname').value||'').trim()||'Ospite';lsSet('rimini.player',PLAYER);startGame();};
 $('#loadb').onclick=()=>openSaves('title');
 $('#how').onclick=()=>toast('Obiettivi: app → accredito → workshop (ven) → speech (sab/dom) → contatti → stand → Offworld.',5000);
 
