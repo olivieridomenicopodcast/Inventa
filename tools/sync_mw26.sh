@@ -1,5 +1,5 @@
 #!/bin/sh
-# Sincronizza Rimini 3 giorni da Inventa al repo MW26: copia IDENTICA di tutti i file, con le sole differenze volute
+# Sincronizza Rimini 3 giorni da Inventa al repo MW26: copia IDENTICA di tutti i file (script, font, stile), con le sole differenze volute
 # (nessun collegamento a Inventa/hub, titolo MW26, didascalia foto senza "· Inventa").
 #
 # Uso:   tools/sync_mw26.sh [cartella-di-MW26] [--check] [--push]
@@ -14,8 +14,9 @@ for a in "$@"; do case "$a" in --check) CHECK=1;; --push) PUSH=1;; *) DST="$a";;
 [ -d "$DST/.git" ] || { echo "Cartella MW26 non trovata: $DST (clona prima il repo)"; exit 1; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-mkdir -p "$TMP/rimini"
+mkdir -p "$TMP/rimini" "$TMP/fonts"
 cp "$SRC"/rimini/* "$TMP/rimini/"
+cp "$SRC"/fonts/* "$TMP/fonts/"
 cp "$SRC/shared.css" "$TMP/shared.css"
 python3 - "$SRC" "$TMP" <<'PY'
 import sys
@@ -43,14 +44,18 @@ CH=0
 for f in index.html shared.css; do cmp -s "$TMP/$f" "$DST/$f" || { echo "da aggiornare: $f"; CH=1; }; done
 for f in "$TMP"/rimini/*; do b=$(basename "$f"); cmp -s "$f" "$DST/rimini/$b" || { echo "da aggiornare: rimini/$b"; CH=1; }; done
 for f in "$DST"/rimini/*; do b=$(basename "$f"); [ -e "$TMP/rimini/$b" ] || { echo "da rimuovere: rimini/$b"; CH=1; }; done
+for f in "$TMP"/fonts/*; do b=$(basename "$f"); cmp -s "$f" "$DST/fonts/$b" || { echo "da aggiornare: fonts/$b"; CH=1; }; done
+if [ -d "$DST/fonts" ]; then for f in "$DST"/fonts/*; do b=$(basename "$f"); [ -e "$TMP/fonts/$b" ] || { echo "da rimuovere: fonts/$b"; CH=1; }; done; fi
 if [ $CH -eq 0 ]; then echo "MW26 è già identico a Inventa (tranne titolo, intestazione, didascalia foto e numero di build)."; exit 0; fi
 [ $CHECK -eq 1 ] && { echo "MW26 NON è allineato."; exit 2; }
 
 # copia
-mkdir -p "$DST/rimini"
+mkdir -p "$DST/rimini" "$DST/fonts"
 cp "$TMP/index.html" "$DST/index.html"; cp "$TMP/shared.css" "$DST/shared.css"
 for f in "$DST"/rimini/*; do b=$(basename "$f"); [ -e "$TMP/rimini/$b" ] || rm -f "$f"; done
 cp "$TMP"/rimini/* "$DST/rimini/"
+for f in "$DST"/fonts/*; do b=$(basename "$f"); [ -e "$TMP/fonts/$b" ] || rm -f "$f"; done
+cp "$TMP"/fonts/* "$DST/fonts/"
 echo "Copia completata in $DST."
 cd "$DST"
 if [ $PUSH -eq 1 ]; then

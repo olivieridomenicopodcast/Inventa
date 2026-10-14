@@ -1,0 +1,5 @@
+Font inclusi nel progetto, scaricati da Google Fonts (sottoinsiemi latin e latin-ext):
+- Space Grotesk (The Space Grotesk Project Authors)
+- Unbounded (The Unbounded Project Authors)
+- Press Start 2P (The Press Start 2P Project Authors)
+Tutti con licenza SIL Open Font License 1.1 (https://openfontlicense.org): uso, copia e ridistribuzione liberi, anche insieme al software.
