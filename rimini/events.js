@@ -190,18 +190,18 @@ function famTick(){
 }
 const trWhen=at=>at==null?'—':DAYNAMES[Math.min(2,Math.floor(at/1440))]+' '+hm(((at%1440)+1440)%1440);
 const trAll=()=>lsGet('rimini.trophies',{});
-const TR_G={fam:'Marketers Family',fr:'Amici del gruppo'};
+const TR_G={fam:'Marketers Family',grp:'Gruppi'};
 function trophyDefs(){
   const L=FAMILY.map(f=>({id:f.id,g:'fam',name:f.name,role:f.role,pal:{shirt:f.shirt,pants:'#232a44',skin:f.skin,hair:f.hair,badge:'#ffd24d'}}));
   if(typeof extrasTrophies==='function')L.push(...extrasTrophies());return L;
 }
 const trophyTotal=g=>trophyDefs().filter(d=>!g||d.g===g).length;
 function trophyFound(n){
-  if(!n||!(n.kind==='family'||n.friend||n.id==='denise'))return;G.trophies=G.trophies||{};if(G.trophies[n.id])return;
+  if(!n||!(n.kind==='family'||n.id==='denise'||n.id==='bmu'))return;G.trophies=G.trophies||{};if(G.trophies[n.id])return;
   G.trophies[n.id]={at:cmT(),place:(typeof albumPlace==='function'?albumPlace():'')};const all=trAll();all[n.id]=true;lsSet('rimini.trophies',all);
   const c=trophyCount(),T=trophyTotal();A.stamp();if(A.fanfare)setTimeout(()=>A.fanfare(),300);
   toast('Trofeo sbloccato: '+n.name+' ('+c+'/'+T+')',4200);
-  const d=trophyDefs().find(x=>x.id===n.id),g=d&&d.g;if(g&&trophyDefs().filter(x=>x.g===g).every(x=>G.trophies[x.id]))setTimeout(()=>toast(g==='fam'?'Hai incontrato tutta la Marketers Family!':'Hai incontrato tutti gli amici del gruppo!',4800),2200);
+  const fam=trophyDefs().filter(x=>x.g==='fam');if(n.id!=='bmu'&&fam.every(x=>G.trophies[x.id]))setTimeout(()=>toast('Hai incontrato tutta la Marketers Family!',4800),2200);
 }
 function trophyCount(){const ids=new Set(trophyDefs().map(d=>d.id));return Object.keys(G.trophies||{}).filter(i=>ids.has(i)).length;}
 function trophyGroupDone(g){return trophyDefs().filter(d=>d.g===g).every(d=>(G.trophies||{})[d.id]);}
@@ -209,9 +209,30 @@ function trophyQuest(){const D=trophyDefs().filter(d=>d.g==='fam'),c=D.filter(d=
 function trophyHtml(){
   const got=G.trophies||{},all=trAll(),D=trophyDefs(),tot=lsGet('rimini.trophies',{}),ids=new Set(D.map(d=>d.id));
   const card=f=>{const g=got[f.id];
+    if(f.g==='grp')return g?`<div class="trc got">${faceImg(f.pal,'avi2')}<b>${esc(f.name)}</b><small>${esc(f.role)}</small><em>Completato: ${trWhen(g.at)}</em></div>`
+      :`<div class="trc"><div class="trq">${faceImg(f.pal,'avi2')}</div><b>???</b><small>Un gruppo di amici da trovare in giro (${typeof bmuCount==='function'?bmuCount():0}/${typeof bmuTotal==='function'?bmuTotal():0} incontrati)</small></div>`;
     return g?`<div class="trc got">${faceImg(f.pal,'avi2')}<b>${esc(f.name)}</b><small>${esc(f.role)}</small><em>Incontrato: ${trWhen(g.at)}${g.place?' · '+esc(g.place):''}</em></div>`
       :`<div class="trc"><div class="trq">${faceImg(f.pal,'avi2')}</div><b>???</b><small>${all[f.id]?'Già incontrato in un’altra partita':'Non ancora incontrato'}</small></div>`;};
   const groups=Object.keys(TR_G).filter(g=>D.some(d=>d.g===g));
   return `<div class="back" data-go="home">‹ Home</div><h3 class="h3">Trofei</h3><div class="note" style="margin:0 0 10px">Trova in giro per la mappa le persone speciali del Marketers World: quando ne incontri una, il suo trofeo compare qui. In questa partita: <b>${trophyCount()}/${D.length}</b> · in tutte le partite: <b>${Object.keys(tot).filter(i=>ids.has(i)).length}/${D.length}</b>. Chi fa parte della Marketers Family ha un puntino dorato sopra la testa.</div>`+
     groups.map(g=>{const L=D.filter(d=>d.g===g),n=L.filter(d=>got[d.id]).length;return `<div class="sec">// ${esc(TR_G[g].toUpperCase())} · ${n}/${L.length}</div><div class="trg">${L.map(card).join('')}</div>`;}).join('');
+}
+/* ---------- selfie di gruppo con lo stendardo: salvato nell'album e scaricato sul dispositivo ---------- */
+function captureAt(half,cap){
+  const vc=G.vc||G.cam,sc=DPR*Z,w=2*half*sc,h=1.5*half*sc,sx=(W/2)*DPR,sy=(H/2)*DPR;
+  const c=document.createElement('canvas');c.width=720;c.height=540;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#0a0d18';g.fillRect(0,0,720,540);
+  g.drawImage(cv,sx-w/2,sy-h/2,w,h,0,0,720,540);
+  g.fillStyle='rgba(8,10,20,.8)';g.fillRect(0,490,720,50);g.fillStyle='#fff';g.font='700 24px "Space Grotesk",sans-serif';g.textAlign='left';g.fillText(cap,16,522);g.textAlign='right';g.fillStyle='#ff6a3d';g.fillText('Rimini · '+DAYNAMES[G.day],704,522);
+  return c;
+}
+function bannerSelfie(done){
+  const bp=G.bannerPos||{x:k(1052),y:k(690)};
+  G.p.x=bp.x+26;G.p.y=bp.y+38;G.p.dir=0;G.cam.x=bp.x;G.cam.y=bp.y+48;
+  setTimeout(()=>{
+    G.dest=null;const c=captureAt(150,'Stendardo piantato · '+pname());
+    G.flags.selfie=true;if(typeof albumAdd==='function')albumAdd(c,'Selfie con lo stendardo');A.stamp();
+    c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rimini-selfie-stendardo-'+new Date().toISOString().replace(/[-:T]/g,'').slice(0,12)+'.png';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},600);});
+    toast('Selfie salvato: lo trovi nell’Album e nei download del dispositivo.',3800);
+    setTimeout(done,1600);
+  },350);
 }

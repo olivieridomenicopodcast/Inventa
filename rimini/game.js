@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=99;
+const BUILD=100;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -1023,10 +1023,10 @@ function putSaves(a){
     try{localStorage.setItem(SKEY,JSON.stringify(b));if(typeof toast==='function')toast('Spazio del browser quasi pieno: le foto restano solo nel salvataggio più recente.',3600);return true;}
     catch(e2){if(typeof toast==='function')toast('Impossibile salvare: spazio del browser pieno. Elimina qualche vecchio salvataggio.',4000);return false;}}
 }
-function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},nlog:G.nlog||[],trophies:G.trophies||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
+function snap(){return{v:1,seed:G.seed,player:PLAYER,day:G.day,min:G.min,f:G.f,p:{x:G.p.x,y:G.p.y,dir:G.p.dir},flags:G.flags,contacts:G.contacts,tips:G.tips,booked:[...G.booked],seen:[...G.seen],xpeople:G.xpeople||[],comm:G.comm,album:G.album||[],items:G.items||{},worn:G.worn||null,wear:G.wear||{},lost:G.lost||{},wait:[...(G.wait||[])],sqd:G.sqd||{},nlog:G.nlog||[],trophies:G.trophies||{},bmu:G.bmu||{},sandbox:!!G.sandbox,saved:[...G.saved],meets:G.meets,met:G.met,dest:G.dest,zOff};}
 function restore(st){
   if(st.player){PLAYER=Object.assign(PLAYER,st.player);lsSet('rimini.player',PLAYER);}
-  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},nlog:st.nlog||[],trophies:st.trophies||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
+  Object.assign(G,{day:st.day,min:st.min,f:st.f,flags:Object.assign({},FLAGS0,st.flags),contacts:st.contacts||[],tips:st.tips||[],booked:new Set(st.booked||[]),sandbox:!!st.sandbox,album:st.album||[],items:st.items||{},worn:st.worn||null,wear:st.wear||null,lost:st.lost||{},wait:new Set(st.wait||[]),sqd:st.sqd||{},nlog:st.nlog||[],trophies:st.trophies||{},bmu:st.bmu||{},seen:new Set(st.seen||[]),comm:Object.assign(cmInit(),st.comm||{}),saved:new Set(st.saved||[]),meets:st.meets||[],met:st.met||{},dest:st.dest||null});
   G.xpeople=(st.xpeople||[]).map(p=>Object.assign({},p));G.people.push(...G.xpeople.filter(p=>!G.people.some(q=>q.id===p.id)));
   G.qd=null;
   if(!st.flags||st.flags.bus===undefined)G.flags.bus=true;
@@ -1135,6 +1135,7 @@ function draw(){
   if(G.f===0)drawGate();
   if(typeof drawItems==='function')drawItems(ctx);
   if(typeof sqDrawWorld==='function')sqDrawWorld(ctx);
+  if(typeof drawPlantedBanner==='function')drawPlantedBanner(ctx);
   // entità ordinate per y
   const list=NPC.filter(n=>n.f===G.f).map(n=>({y:n.y,n}));list.push({y:G.p.y,me:true});list.sort((a,b)=>a.y-b.y);
   const near=nearest();

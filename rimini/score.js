@@ -23,9 +23,9 @@ function scoreRun(){
   add('Stendardo piantato',F.banner?1:0,100);
   add('Esibizioni al karaoke',F.kn||0,20);
   add('Stelle del karaoke',F.ks||0,10);
-  add('Trofei raccolti',typeof trophyCount==='function'?trophyCount():0,25);
+  add('Trofei raccolti',typeof trophyCount==='function'?trophyCount()-((G.trophies||{}).bmu?1:0):0,25);
   add('Tutta la Marketers Family incontrata',typeof trophyGroupDone==='function'&&trophyGroupDone('fam')?1:0,100);
-  add('Tutti gli amici del gruppo incontrati',typeof trophyGroupDone==='function'&&trophyTotal('fr')&&trophyGroupDone('fr')?1:0,100);
+  add('Gruppo BMU al completo',(G.trophies||{}).bmu?1:0,100);
   add('Marketers Meetup al Sunflower',F.sun?1:0,30);
   add('Pigiama party',F.pjp?1:0,40);
   add('Giochi del pigiama party',F.pjg||0,15);

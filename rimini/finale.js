@@ -52,8 +52,24 @@ function startPartyFx(dur,endMsg){
 }
 /* ---------- stendardo piantato al pigiama party: fuochi, titoli di coda e fine della partita ---------- */
 function plantBanner(){
-  G.flags.banner=true;wearItem('banner',false);A.stamp();setTimeout(()=>A.stamp(),350);setTimeout(()=>A.stamp(),700);
-  toast('Stendardo piantato! 🚩',2600);startPartyFx(9);setTimeout(startCredits,9800);
+  const bp={x:k(1052),y:k(690)};G.bannerPos=bp;G.dest=null;G.flags.banner=true;wearItem('banner',false);
+  G.f=2;G.p.x=bp.x+30;G.p.y=bp.y+40;[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.p.dir=0;G.cam.x=bp.x;G.cam.y=bp.y+40;
+  A.stamp();setTimeout(()=>A.stamp(),350);setTimeout(()=>A.stamp(),700);
+  toast('Stendardo piantato!',2600);startPartyFx(8);
+  setTimeout(()=>{const host=(typeof offHost==='function')?offHost('Pigiama party finale'):{name:'Host Offworld',role:'Pigiama party',p:NPC.find(n=>n.id==='dj').p};
+    say(host,{t:'Lo stendardo sventola e tutti sono qui davanti a te. Foto di gruppo con lo stendardo prima dei titoli di coda?',c:[
+      {t:'Scatta il selfie (si salva sul dispositivo)',n:null,act:()=>bannerSelfie(startCredits)},
+      {t:'No, vado ai titoli di coda',n:null,act:()=>setTimeout(startCredits,300)}]});},5200);
+}
+/* lo stendardo piantato resta bene in vista davanti al palco Offworld */
+function drawPlantedBanner(c){
+  if(!G||!G.flags||!G.flags.banner||G.f!==2)return;const bp=G.bannerPos||{x:k(1052),y:k(690)},x=Math.round(bp.x),y=Math.round(bp.y);
+  const w=Math.round(Math.sin(G.t*3)*2);
+  c.fillStyle='rgba(255,210,77,.12)';c.beginPath();c.arc(x,y-30,46,0,7);c.fill();
+  c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(x,y+3,14,5,0,0,7);c.fill();c.fillStyle='#8a6a3a';c.beginPath();c.ellipse(x,y+1,11,4,0,0,7);c.fill();
+  c.fillStyle='#6a4a2a';c.fillRect(x-2,y-76,4,78);c.fillStyle='#d8b04a';c.fillRect(x-4,y-80,8,5);c.fillRect(x-1,y-84,2,5);
+  const fx=x+2,fy=y-74;c.fillStyle='#0b0b10';c.fillRect(fx,fy,44,36+w);c.fillStyle='#d8b04a';c.fillRect(fx,fy,44,2);c.fillRect(fx,fy+34+w,44,2);
+  if(typeof logoPx==='function')logoPx(c,fx+11,fy+7,2);
 }
 function startCredits(){
   let el=document.getElementById('cred');if(el)el.remove();

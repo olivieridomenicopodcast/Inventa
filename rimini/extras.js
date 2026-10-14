@@ -269,7 +269,7 @@ function glassesRow(){
 }
 /* ---------- amici: dialoghi ---------- */
 function friendTalk(n){
-  if(typeof trophyFound==='function')trophyFound(n);
+  if(typeof bmuAdd==='function')bmuAdd(n);
   const F=FRIENDS.find(x=>x.id===n.friend),first=(n.name||'').split(' ')[0];
   const onMet=()=>{if(!G.met[n.id]){G.met[n.id]=1;addContact(n);G.flags.friends=(G.flags.friends||0)+1;}};
   const r=chRng(n,'fr');
@@ -405,10 +405,16 @@ function deniseTalk(n){
   say(n,menu());
 }
 
-/* trofei: gli amici del gruppo e Denise (il resto della Marketers Family è nei dati del programma) */
+/* trofei: Denise e il «Gruppo BMU» (Bar Marketers Unofficial): si completa incontrando tutti gli amici del gruppo */
+const bmuTotal=()=>FRIENDS.length;
+const bmuCount=()=>FRIENDS.filter(f=>G.bmu&&G.bmu[f.id]).length;
+function bmuAdd(n){
+  if(!n||!n.friend)return;G.bmu=G.bmu||{};if(G.bmu[n.friend])return;G.bmu[n.friend]=true;
+  if(bmuCount()>=bmuTotal())trophyFound({id:'bmu',name:'Gruppo BMU (Bar Marketers Unofficial)'});
+}
 function extrasTrophies(){
   const L=[];const dn=NPC.find(n=>n.id==='denise');
   if(dn)L.push({id:'denise',g:'fam',name:'Denise Dellagiacoma',role:'Yoga Academy',pal:dn.p});
-  FRIENDS.forEach(f=>{const n=NPC.find(x=>x.id==='fr_'+f.id);L.push({id:'fr_'+f.id,g:'fr',name:f.name,role:f.job,pal:n?n.p:facePal(f.name,genderOf(f.name))});});
+  const me=NPC.find(n=>n.id==='fr_dom');L.push({id:'bmu',g:'grp',name:'Gruppo BMU',role:'Bar Marketers Unofficial',pal:me?me.p:{shirt:'#2a5a8a',pants:'#232a44',skin:'#e8b98a',hair:'#1a1a20'}});
   return L;
 }
