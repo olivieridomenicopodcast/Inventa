@@ -453,6 +453,230 @@
     "AI"
    ],
    "stato": "prenota"
+  },
+  {
+   "ora": "15:20-15:45",
+   "titolo": "Da zero a un milione di fatturato: la storia di ABF",
+   "sala": "MK PRO con Ilaria Foresti",
+   "speaker": "Sebastiano Tartufoli",
+   "ruolo": "Co-Founder e CEO di ABF - Asia Bald…",
+   "temi": [],
+   "stato": "ingresso libero"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "I 5 errori di un design che non convince e come correggerli",
+   "sala": "Sala by CANVA",
+   "speaker": "Alessio Bucci",
+   "ruolo": "Graphic Designer e Content Creator",
+   "temi": [
+    "Brand & Comunicazione",
+    "Social & Creator"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Come abbiamo chiuso oltre 600.000€ di vendite in meno di un anno partendo da LinkedIn",
+   "sala": "Sala della Marina",
+   "speaker": "Irene Bosi",
+   "ruolo": "Event Director & Head of Partnership",
+   "temi": [
+    "Business",
+    "AI"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Come scrivere agli umani al tempo dell'AI: leggere i dati per trovare storie, angoli e campagne che funzionano",
+   "sala": "Sala del Borgo",
+   "speaker": "Federico Capuano",
+   "ruolo": "Copywriter Specialist at Yoga Acade…",
+   "temi": [
+    "AI",
+    "Brand & Comunicazione"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "AI Campaign Factory: 5 agenti AI per creare una campagna completa, dalle ads alle landing page",
+   "sala": "Sala by Active Powered",
+   "speaker": "Alessandro Baglieri",
+   "ruolo": "Co-owner & CMO Active Powered",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "15:20-16:10",
+   "titolo": "Clonazione di massa: come far pubblicare 15 Reel a settimana al tuo clone AI",
+   "sala": "Main stage silent",
+   "speaker": "Gabriele Aprile",
+   "ruolo": "Creator AI e Founder di Esserci.ai",
+   "temi": [
+    "AI",
+    "Social & Creator"
+   ],
+   "stato": "slot occupato"
+  },
+  {
+   "ora": "14:25-14:50",
+   "titolo": "L'AI nei video, senza perdere l'anima: il metodo di Cristiana Mantenuto",
+   "sala": "MK PRO con Ilaria Foresti",
+   "speaker": "Cristiana Mantenuto",
+   "ruolo": "Video maker e video editor",
+   "temi": [],
+   "stato": "ingresso libero"
+  },
+  {
+   "ora": "15:00-15:30",
+   "titolo": "Eresidency Game",
+   "sala": "Game Quiz",
+   "speaker": "",
+   "ruolo": "",
+   "temi": [],
+   "stato": "game quiz"
+  },
+  {
+   "ora": "14:00-14:25",
+   "titolo": "Un anno fa ha scelto di mettersi in proprio, oggi fattura 7.000 euro al mese: la storia di Donato De Tullio",
+   "sala": "MK PRO con Ilaria Foresti",
+   "speaker": "Donato De Tullio",
+   "ruolo": "Business e communication coach.",
+   "temi": [],
+   "stato": "ingresso libero"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Vivi, condividi, monetizza: costruire un posizionamento col racconto di sè",
+   "sala": "Sala del Borgo",
+   "speaker": "Maddalena Mariani",
+   "ruolo": "Story coach, biografa e ghostwriter b…",
+   "temi": [
+    "Brand & Comunicazione",
+    "Mindset & Lifestyle"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Ristrutturare, non ricostruire: 7 leve per far tornare a scalare un business digitale",
+   "sala": "Sala del Parco",
+   "speaker": "Emanuele Lovallo",
+   "ruolo": "Project Manager & Consulente",
+   "temi": [
+    "Growth & Advertising"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Road to 300K. Come correre la maratona su Instagram nell'era dell'AI",
+   "sala": "Silent Stage 3",
+   "speaker": "Gabry Solution",
+   "ruolo": "Ingegnere Informatico & Content Cre…",
+   "temi": [
+    "Social & Creator",
+    "AI"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "La mentalità “data-driven” fa fatturare in media il 30% in più. Come adottarla nel tuo business?",
+   "sala": "Silent Stage 4",
+   "speaker": "Cecilia Nostro",
+   "ruolo": "Founder di Zelo",
+   "temi": [
+    "AI",
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Metodo di lavoro: Come puoi stravolgere la tua comunicazione (la nostra strategia copia/incolla)",
+   "sala": "Sala by Active Powered",
+   "speaker": "Beatrice Cavalleri",
+   "ruolo": "Responsabile Strategie Social e Vide…",
+   "temi": [
+    "AI",
+    "Brand & Comunicazione"
+   ],
+   "stato": "sold-out"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Jacopo Tartaglia - L'agente immobiliare egoista. / Giglia Dal Santo - Compreresti casa da un Avatar? personal brand nell'era AI",
+   "sala": "Sala Real Estate by Building Producti…",
+   "speaker": "Jacopo Tartaglia +1 (Giglia Dal Santo)",
+   "ruolo": "CEO & Co-Founder Valent…",
+   "temi": [
+    "Business",
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "L'AI ha rivoluzionato il marketing di Marketers: impara i nostri sistemi e applicali al tuo business",
+   "sala": "Sala Castello",
+   "speaker": "Marco … Grieco",
+   "ruolo": "Growth Manager at Marketers Comp…",
+   "temi": [
+    "AI",
+    "Growth & Advertising"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Il tuo lavoro è già un investimento: La domanda più importante da farti prima di investire",
+   "sala": "Sala Finance by FINECO",
+   "speaker": "Riccardo Spada",
+   "ruolo": "Podcaster e divulgatore di finanza pe…",
+   "temi": [
+    "Economics",
+    "Business"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Impara a fallire: trasformare un'idea impossibile in un progetto reale",
+   "sala": "Main stage silent",
+   "speaker": "Dario Costa",
+   "ruolo": "Race e Stunt Pilot, atleta Red Bull",
+   "temi": [],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Creare contenuti grafici senza abbonamento con Affinity by Canva",
+   "sala": "Sala by CANVA",
+   "speaker": "Giacomo Buccheri",
+   "ruolo": "Docente e Graphic Designer",
+   "temi": [
+    "Social & Creator",
+    "Brand & Comunicazione"
+   ],
+   "stato": "prenota"
+  },
+  {
+   "ora": "14:00-14:50",
+   "titolo": "Fare marketing con l’AI – Formazione per consulenti, agenzie e social media manager",
+   "sala": "Silent Stage 2",
+   "speaker": "Veronica Gentili",
+   "ruolo": "Social Media Expert.",
+   "temi": [
+    "Social & Creator",
+    "AI"
+   ],
+   "stato": "prenota"
   }
  ]
 }
