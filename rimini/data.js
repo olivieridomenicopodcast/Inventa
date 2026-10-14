@@ -204,3 +204,6 @@ const TALK_SLOTS=['09:00','10:30','14:30','16:00','17:30'],WS_SLOTS=['10:00','11
    if(d===1)PROGRAMMA.push({d:1,t:'20:30',e:'Offworld: party, karaoke e side events',w:'tent'});}
   PROGRAMMA.sort((a,b)=>a.d-b.d||(+a.t.slice(0,2)*60+ +a.t.slice(3))-(+b.t.slice(0,2)*60+ +b.t.slice(3)));
 })();
+
+/* Sale dei workshop del venerdì (primo piano). Da aggiornare con il programma ufficiale. */
+const WS_ROOMS=[{n:'Sala della Marina',x:350,y:277},{n:'Sala del Parco',x:350,y:349},{n:'Sala del Borgo',x:350,y:421}];

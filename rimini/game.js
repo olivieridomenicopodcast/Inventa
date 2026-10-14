@@ -277,9 +277,9 @@ function interactables(){
   if(f===0){
     STANDS.forEach(s=>I(s.x,s.y+30,20,'Guarda lo stand «'+s.label+'»',()=>standTalk(s)));
     I(651,470,50,'Siediti e guarda lo speech',()=>watch('main'));
-    I(350,255,45,'Segui il workshop in Sala del Tempio',()=>watch('work',0));
-    I(920,255,40,'Segui il workshop in Sala del Castello',()=>watch('work',1));
-    I(920,665,40,'Segui il workshop in Sala dell’Arco',()=>watch('work',2));
+    I(350,255,45,'Sala del Tempio',()=>info('Sala del Tempio','Una delle sale al piano terra. I workshop del venerdì sono al primo piano.'));
+    I(920,255,40,'Sala del Castello',()=>info('Sala del Castello','Una delle sale al piano terra. I workshop del venerdì sono al primo piano.'));
+    I(920,665,40,'Sala dell’Arco',()=>info('Sala dell’Arco','Una delle sale al piano terra. I workshop del venerdì sono al primo piano.'));
     I(458,300,26,'Un caffè al bar',coffee);I(820,300,26,'Un caffè al bar',coffee);
     I(745,780,20,'Programma e info nell’app',()=>{if(!G.flags.app)say(NPC.find(n=>n.id==='info'),nodeInfo());else openPhone('prog');});
     I(630,610,40,'Sali al primo piano (scale mobili)',()=>goFloor(1,k(630),k(590)));
@@ -293,7 +293,8 @@ function interactables(){
   }else{
     I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(590)));
     I(635,775,70,'Sala dell’Anfiteatro',()=>info('Sala dell’Anfiteatro',FACTS.anfi+' Qui oggi non ci sono sessioni: gli speech sono in Sala della Piazza, al piano terra.'));
-    I(350,260,35,'Sale del primo piano',()=>info('Sale del primo piano','Qui ci sono le sale della Vecchia Pescheria, del Faro, della Marina, del Parco e del Borgo.'));
+    WS_ROOMS.forEach((r,i)=>I(r.x,r.y,30,'Segui il workshop in '+r.n,()=>watch('work',i)));
+    I(350,150,40,'Sale del primo piano',()=>info('Sale del primo piano','Qui ci sono le sale della Vecchia Pescheria, del Faro, della Marina, del Parco e del Borgo.'));
     I(190,540,35,'Sala stampa e sale ovest',()=>info('Ala ovest','Sala dell’Orologio, dello Squero, dei Bastioni, del Lavatoio e della Fontana, che è la sala stampa.'));
     I(918,380,30,'Sale Ponte e Porto',()=>info('Ala est','Sala del Ponte e Sala del Porto.'));
     I(920,620,40,'Sala dell’Arengo',()=>info('Sala dell’Arengo','Una sala con sedute fisse al primo piano.'));
@@ -472,7 +473,7 @@ function drawTheatre(){
     ctx.font='400 '+Math.round(zs*3.4)+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.45)';ctx.textAlign='right';ctx.fillText((w.i+1)+'/'+w.c.slides.length,lx+lw-pad,ly+lh-pad-zs*3);}
   else{ctx.font='400 '+Math.round(zs*3.6)+'px "Press Start 2P",monospace';ctx.fillStyle='#ffd24d';ctx.fillText('ESERCIZIO',lx+pad,ly+pad);wrap(sl.q,'700 '+Math.round(zs*5.6)+'px "Space Grotesk",sans-serif',lw-2*pad,zs*8,lx+pad,ly+pad+zs*9,'#fff');}
   ctx.restore();
-  ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(main?'SALA DELLA PIAZZA':'SALA WORKSHOP',x0+8,y0+8);
+  ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(main?'SALA DELLA PIAZZA':WS_ROOMS[w.room].n.toUpperCase(),x0+8,y0+8);
 }
 function offworld(){
   if(G.min<20*60+30){info('Offworld','Qui la sera: '+FACTS.off+' Si inizia verso le 20:30.');return;}
@@ -489,7 +490,7 @@ function quests(){
   return[
     {t:'Scarica l’app e accedi',s:'Fuori dall’Ingresso A, a destra',ok:F.app},
     {t:'Ritira l’accredito',s:'Fuori dall’Ingresso A, a sinistra',ok:F.accred},
-    {t:'Segui un workshop',s:'Venerdì, nelle sale Tempio, Castello e Arco',ok:F.ws>=1},
+    {t:'Segui un workshop',s:'Venerdì, nelle sale del primo piano',ok:F.ws>=1},
     {t:'Segui 2 speech dal palco',s:'Sabato o domenica, Sala della Piazza ('+F.talk+'/2)',ok:F.talk>=2},
     {t:'Visita l’Anfiteatro',s:'Primo piano, con le scale mobili al centro',ok:F.anfi},
     {t:'Scambia 5 contatti',s:'Parla con i partecipanti ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
@@ -514,7 +515,7 @@ function renderPhone(){
     $('#finish').onclick=()=>{closePhone();endGame();};
   }else if(phoneTab==='prog'){
     const cur=PROGRAMMA.filter(e=>e.d===G.day);
-    B.innerHTML=`<div class="note" style="margin:0 0 10px">${esc(DAYNAMES[G.day])} · ${esc(EVENT.hours)}.<br>Titoli e speaker di speech e workshop sono inventati: gli orari sono indicativi.</div>`+cur.map(e=>{const s=+e.t.slice(0,2)*60+ +e.t.slice(3);const body=e.rooms?e.rooms.map((r,k)=>'<br><small style="color:var(--dim)">Sala '+(k+1)+': '+esc(r.title)+' · '+esc(r.speaker)+'</small>').join(''):'';return `<div class="pg ${G.min>=s&&G.min<s+70?'now':''}"><b>${e.t}</b> · ${esc(e.talk?e.talk.title+' · '+e.talk.speaker:e.e)}${body}</div>`;}).join('')+`<div class="note"><b>Speaker annunciati dall'organizzazione per il 2026 (da verificare):</b> ${SPEAKERS.map(s=>esc(s.name)).join(', ')}.</div><div class="note">Fonti: ${esc(EVENT.src)}.</div>`;
+    B.innerHTML=`<div class="note" style="margin:0 0 10px">${esc(DAYNAMES[G.day])} · ${esc(EVENT.hours)}.<br>Titoli e speaker di speech e workshop sono inventati: gli orari sono indicativi.</div>`+cur.map(e=>{const s=+e.t.slice(0,2)*60+ +e.t.slice(3);const body=e.rooms?e.rooms.map((r,k)=>'<br><small style="color:var(--dim)">'+esc(WS_ROOMS[k].n)+': '+esc(r.title)+' · '+esc(r.speaker)+'</small>').join(''):'';return `<div class="pg ${G.min>=s&&G.min<s+70?'now':''}"><b>${e.t}</b> · ${esc(e.talk?e.talk.title+' · '+e.talk.speaker:e.e)}${body}</div>`;}).join('')+`<div class="note"><b>Speaker annunciati dall'organizzazione per il 2026 (da verificare):</b> ${SPEAKERS.map(s=>esc(s.name)).join(', ')}.</div><div class="note">Fonti: ${esc(EVENT.src)}.</div>`;
   }else if(phoneTab==='cont'){
     B.innerHTML=G.contacts.length?G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri.</div>';
   }else{
