@@ -219,13 +219,13 @@ function buildFirst(){
 /* ============================================================ stato */
 let FL=[null,null],G=null,NPC=[],mode='title';
 const keys={};let touch={x:0,y:0};
-const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0};
+const FLAGS0={app:false,accred:false,ws:0,talk:0,anfi:false,stands:{},yoga:false,off:0,dario:false,luca:false,selfie:false,coffee:0,sign:false,react:0,party:false,kara:false,quiz:0,meet:0};
 function fmt(min){const h=Math.floor(min/60),m=Math.floor(min%60);return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
 const rng=mulberry32(hashStr('rimini'+Math.floor(Date.now()/86400000)));
 function pickFrom(a){return a[Math.floor(Math.random()*a.length)];}
 
 function newGame(){
-  G={day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
+  G={day:0,min:8*60+45,f:0,p:{x:k(632),y:k(893),dir:1,step:0},flags:JSON.parse(JSON.stringify(FLAGS0)),contacts:[],tips:[],log:[],booked:new Set(PROGRAMMA.filter(e=>e.mine).map(e=>e.id)),saved:new Set(),meets:[],people:genPeople(),done:false,cam:{x:k(632),y:k(860)},fade:0,watching:null,t:0,met:{}};
   FL[0]=buildGround();FL[1]=buildFirst();buildNPC();
 }
 const FPAL=[['#c9a24a','#2a3566'],['#3da5d9','#2b3350'],['#6bc46d','#3a3a4a'],['#b57bff','#2a2a44'],['#ffd24d','#3a3350'],['#e86a8a','#2b3350'],['#f0f0f5','#303850'],['#3b3b46','#242a40']];
@@ -263,28 +263,41 @@ function updateNPC(dt){
 }
 
 /* ============================================================ interazioni */
-function sessionNow(where){
-  const m=G.min;
-  for(const e of PROGRAMMA){if(e.d!==G.day||e.w!==where)continue;const [h,mm]=e.t.split(':').map(Number),s=h*60+mm;if(m>=s&&m<s+70)return e;}
-  return null;
+const SMIN=e=>e.start,pad2=n=>String(n).padStart(2,'0'),hm=m=>pad2(Math.floor(m/60))+':'+pad2(m%60);
+function activeAt(rooms,day){
+  const d=day==null?G.day:day;
+  return PROGRAMMA.find(e=>e.d===d&&rooms.includes(e.room)&&e.kind!=='lounge'&&G.min>=e.start-5&&G.min<e.e)||null;
 }
-function nextEvent(){
-  const list=PROGRAMMA.filter(e=>e.d===G.day&&(+e.t.slice(0,2)*60+ +e.t.slice(3))>G.min);
-  return list[0]||null;
+function nextAt(rooms){return PROGRAMMA.find(e=>e.d===G.day&&rooms.includes(e.room)&&e.kind!=='lounge'&&e.start>G.min)||null;}
+function nextEvent(){return PROGRAMMA.find(e=>e.d===G.day&&e.kind!=='lounge'&&e.start>G.min)||null;}
+function overlaps(a,b){return a.d===b.d&&a.start<b.e&&b.start<a.e;}
+function conflictWith(s){return [...G.booked].some(id=>id!==s.id&&overlaps(BYID[id],s))||G.meets.some(m=>overlaps({d:m.day,start:m.start,e:m.start+30},s));}
+function genPeople(){
+  const r=mulberry32(hashStr('rimini-people')),used=new Set(),out=[];
+  const tag=['Potrebbe trovare utile quello che fai','Offre la sua esperienza','Cerca collaborazioni','Vuole confrontarsi sul tuo settore'];
+  for(let i=0;i<14;i++){let nm;do{nm=ATT_FIRST[Math.floor(r()*ATT_FIRST.length)]+' '+ATT_LAST[Math.floor(r()*ATT_LAST.length)];}while(used.has(nm));used.add(nm);
+    out.push({id:'p'+i,name:nm,job:ATT_JOBS[Math.floor(r()*ATT_JOBS.length)],city:ATT_CITY[Math.floor(r()*ATT_CITY.length)],compat:Math.round(96-i*3.4-r()*5),tag:tag[Math.floor(r()*tag.length)],pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5'][i%6],pants:'#2b3350',skin:SKINS[i%SKINS.length],hair:HAIRS[i%HAIRS.length],long:i%3===0,badge:'#ff6a3d'}});}
+  return out;
 }
 function interactables(){
   const out=[],f=G.f,I=(x,y,r,label,fn)=>out.push({x:k(x),y:k(y),r:k(r),label,fn});
+  const seen=new Set();
+  const roomSpot=(names,x,y,r,title)=>{
+    const e=activeAt(names),nx=nextAt(names);
+    I(x,y,r,e?'Entra: '+(e.title.length>34?e.title.slice(0,33)+'…':e.title):title+(nx?': prossima alle '+nx.t:': nessuna sessione ora'),()=>e?enterSession(e):info(title,nx?'Nessuna sessione ora. La prossima: '+nx.t+', «'+nx.title+'».':'Nessuna sessione ora in questa sala.'));
+  };
   if(f===0){
     STANDS.forEach(s=>I(s.x,s.y+30,20,'Guarda lo stand «'+s.label+'»',()=>standTalk(s)));
-    I(651,470,50,'Siediti e guarda lo speech',()=>watch('main'));
-    I(350,255,45,'Sala del Tempio',()=>info('Sala del Tempio','Una delle sale al piano terra. I workshop del venerdì sono al primo piano.'));
-    I(920,255,40,'Sala del Castello',()=>info('Sala del Castello','Una delle sale al piano terra. I workshop del venerdì sono al primo piano.'));
-    I(920,665,40,'Sala dell’Arco',()=>info('Sala dell’Arco','Una delle sale al piano terra. I workshop del venerdì sono al primo piano.'));
+    roomSpot(['Main stage silent','Sala della Piazza','Main Stage'],651,470,50,'Palco principale');
+    ['Silent Stage 1','Silent Stage 2','Silent Stage 3','Silent Stage 4'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,28,n));
+    roomSpot(['Sala Castello'],920,255,40,'Sala Castello');
     I(458,300,26,'Un caffè al bar',coffee);I(820,300,26,'Un caffè al bar',coffee);
-    I(745,780,20,'Programma e info nell’app',()=>{if(!G.flags.app)say(NPC.find(n=>n.id==='info'),nodeInfo());else openPhone('prog');});
+    I(745,780,20,'Programma e info nell’app',()=>{if(!G.flags.app)say(NPC.find(n=>n.id==='info'),nodeInfo());else openPhone('home');});
     I(630,610,40,'Sali al primo piano (scale mobili)',()=>goFloor(1,k(630),k(590)));
-    I(1060,690,70,'Offworld: entra in pista',offworld);
-    I(810,810,46,'Una sessione di yoga',()=>say(NPC.find(n=>n.id==='yoga'),nodeYoga()));
+    const kar=activeAt(['Village']);I(1060,690,70,kar?'Karaoke al Village: microfono libero':'Il Village',()=>kar?karaoke():info('Il Village','Qui la sera c’è il Karaoke al Village, dalle 22:00 alle 24:00 al «Palco - zona ristorante». Microfono libero.'));
+        I(810,810,46,'Una sessione di yoga',()=>say(NPC.find(n=>n.id==='yoga'),nodeYoga()));
+    const mt=G.meets.find(m=>m.day===G.day&&G.min>=m.start-10&&G.min<m.start+40);
+    I(250,690,45,mt?'Meeting con '+G.people.find(p=>p.id===mt.pid).name:'Area networking',()=>mt?meetNow(mt):info('Area networking','Qui ti incontri con chi hai contattato dall’app (scheda Networking). Nessun meeting adesso.'));
     I(300,670,30,'Pausa al Bistrot',rest);
     I(651,305,36,'Leggi il cartello della sala',()=>info('Sala della Piazza',FACTS.piazza));
     I(632,770,40,'Leggi l’ingresso',()=>info(EVENT.name+' '+EVENT.year,EVENT.dates+'. '+EVENT.place+'. '+FACTS.palazzo));
@@ -293,11 +306,7 @@ function interactables(){
   }else{
     I(630,610,40,'Scendi al piano terra (scale mobili)',()=>goFloor(0,k(630),k(590)));
     I(635,775,70,'Sala dell’Anfiteatro',()=>info('Sala dell’Anfiteatro',FACTS.anfi+' Qui oggi non ci sono sessioni: gli speech sono in Sala della Piazza, al piano terra.'));
-    WS_ROOMS.forEach((r,i)=>I(r.x,r.y,30,'Segui il workshop in '+r.n,()=>watch('work',i)));
-    I(350,150,40,'Sale del primo piano',()=>info('Sale del primo piano','Qui ci sono le sale della Vecchia Pescheria, del Faro, della Marina, del Parco e del Borgo.'));
-    I(190,540,35,'Sala stampa e sale ovest',()=>info('Ala ovest','Sala dell’Orologio, dello Squero, dei Bastioni, del Lavatoio e della Fontana, che è la sala stampa.'));
-    I(918,380,30,'Sale Ponte e Porto',()=>info('Ala est','Sala del Ponte e Sala del Porto.'));
-    I(920,620,40,'Sala dell’Arengo',()=>info('Sala dell’Arengo','Una sala con sedute fisse al primo piano.'));
+    ['Sala della Marina','Sala del Parco','Sala del Borgo','Sala by CANVA','Sala Finance by FINECO','Sala by Active Powered','Sala Real Estate by Building Production'].forEach(n=>roomSpot([n],ROOMS[n].x,ROOMS[n].y,30,n.replace('Sala Real Estate by Building Production','Sala Real Estate')));
     I(651,330,70,'Guarda il vuoto sulla Piazza',()=>info('Il vuoto','Da qui si vede dall’alto la Sala della Piazza: è un unico grande spazio a doppia altezza.'));
   }
   for(const n of NPC)if(n.f===f)out.push({x:n.x,y:n.y,r:22,npc:n,label:'Parla con '+n.name,fn:()=>talkTo(n)});
@@ -332,6 +341,7 @@ function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;G.con
 function talkTo(n){
   if(n.kind==='family'){
     const d=n.data;
+    if(n.id==='dario'&&n.sg){firmacopie(activeAt(['Stand Urlico Hoepli']));return;}
     if(n.id==='dario')G.flags.dario=true;if(n.id==='luca')G.flags.luca=true;
     const greet=pickFrom(['Ciao! Benvenuto al Marketers World!','Ehi, che bello vederti qui!','Buon evento! Divertiti e fai tante conoscenze.']);
     say(n,{t:greet,c:[{t:'Chi sei?',n:{t:d.facts[0]+(d.facts[1]?' '+d.facts[1]:''),c:[{t:'Parlami dell’evento',n:factNode(n)},{t:'Ciao!',n:null}]}},{t:'Parlami dell’evento',n:factNode(n)},{t:'Ciao!',n:null,act:()=>addContact(n)}]});
@@ -370,24 +380,54 @@ function attendee(n){
 }
 function standTalk(s){
   const first=!G.flags.stands[s.id];G.flags.stands[s.id]=1;
+  if(s.id==='pro'){const e=activeAt(['MK PRO con Ilaria Foresti']);if(e){enterSession(e);return;}}
+  if(s.id==='tool'){const e=activeAt(['Game Quiz','Gamification']);if(e){quiz(e);return;}}
+  if(s.id==='mkt'){const e=activeAt(['Stand Urlico Hoepli']);if(e){firmacopie(e);return;}}
   info(s.label,s.info+(first?' (visitato!)':''));if(first){A.stamp();}
+}
+function firmacopie(e){
+  const dario=e&&/Vignali/.test(e.sp||'');
+  const d=dario?NPC.find(n=>n.id==='dario'):{name:(e&&e.sp)||'Autore',role:'Firmacopie · Stand Urlico Hoepli',p:{shirt:'#3a4a8a',pants:'#232a44',skin:'#dfae80',hair:'#2a2420',badge:'#ffd24d'}};
+  const book=e?e.title.replace(/^.*? - /,''):'«Il tao del business. L’arte di ribellarsi all’ordinario»';
+  say(d,{t:'Ciao! Vuoi che ti firmi il libro? '+book,c:[{t:'Sì, grazie! Per Niky',n:{t:'Fatto! Un abbraccio e buon Marketers World.',c:[{t:'Grazie!',n:null,act:()=>{G.flags.sign=true;if(dario){G.flags.dario=true;addContact(d);}A.stamp();toast('Libro firmato!');}}]}},{t:'Passo dopo',n:null}]});
+}
+function quiz(e){
+  const qs=[
+   {q:'In che città si tiene l’evento?',o:['Rimini','Milano','Bologna'],a:0},
+   {q:'Quali giorni dura l’evento?',o:['16–18 ottobre','2–4 maggio','16–18 novembre'],a:0},
+   {q:'Come si accede all’app ufficiale?',o:['Con l’email del biglietto e un codice a 6 cifre','Con un abbonamento','Con il numero di telefono'],a:0}];
+  let i=0,ok=0;
+  const step=()=>{if(i>=qs.length){G.flags.quiz++;G.min=Math.max(G.min,e.e);A.stamp();return say({name:'Game Quiz',role:e.title,p:NPC.find(n=>n.id==='info').p},{t:'Quiz concluso: '+ok+'/3 risposte esatte!',c:[{t:'Ok',n:null}]});}
+    const q=qs[i++];say({name:'Game Quiz',role:e.title,p:NPC.find(n=>n.id==='info').p},{t:q.q,c:q.o.map((t,j)=>({t,n:null,act:()=>{if(j===q.a){ok++;toast('Esatto!',900);}else toast('Non proprio…',900);setTimeout(step,200);}}))});};
+  step();
 }
 function coffee(){G.flags.coffee++;toast(pickFrom(['Un caffè al volo: ora sei carico.','Il caffè del Palacongressi: fa il suo dovere.','Doppio espresso: pronto per il prossimo speech!']));A.blip();}
 function rest(){G.min+=15;toast('Ti siedi 15 minuti sul divano a controllare l’app.');}
 function addTip(t,src){if(!G.tips.some(x=>x.t===t))G.tips.push({t,src});}
 function goFloor(f,x,y){G.fade=1;setTimeout(()=>{G.f=f;G.p.x=x;G.p.y=y;if(f===1)G.flags.anfi=true;A.blip();},120);}
-function nextFor(where){return PROGRAMMA.filter(e=>e.d===G.day&&e.w===where&&(+e.t.slice(0,2)*60+ +e.t.slice(3))>G.min)[0]||null;}
-function watch(where,room){
-  const e=sessionNow(where);
-  if(!e){const nx=nextFor(where);info(where==='work'?'Workshop':'Palco principale',G.day===0&&where==='main'?'Il venerdì il palco è chiuso: oggi workshop. '+FACTS.fri:G.day>0&&where==='work'?'I workshop sono il venerdì. Oggi si va in Sala della Piazza per gli speech.':'Ora non c’è una sessione.'+(nx?' La prossima: '+nx.t+', «'+(nx.talk?nx.talk.title:nx.e)+'».':' Per oggi è finita.'));return;}
+function enterSession(e){
+  if(e.kind==='sign'){firmacopie(e);return;}
+  if(e.kind==='game'){quiz(e);return;}
+  if(e.kind==='party'){partySilent(e);return;}
+  if(e.kind==='react'){startReact(e);return;}
+  if(e.kind==='karaoke'){karaoke();return;}
   if(!G.flags.accred){info('Varco','Serve il badge per entrare in sala.');return;}
-  startTheatre(e,where,room||0);
+  if(e.kind==='ws'){
+    if(!G.booked.has(e.id)){
+      if(e.sold){info('Sold-out','La sala è piena: «'+e.title+'» è sold-out. Prova una sessione con posti, oppure un MK PRO a ingresso libero.');return;}
+      toast('Non l’avevi prenotato, ma c’è posto: entri!',2600);
+    }
+  }
+  startTheatre(e);
+}
+function partySilent(e){
+  say({name:'Host Yoga Silent Party',role:'Main stage silent',p:NPC.find(n=>n.id==='yoga').p},{t:'Cuffie sulle orecchie, silenzio fuori e musica dentro: balliamo tutti insieme sul Main stage silent!',c:[{t:'Si balla!',n:{t:'Che energia! Ti senti più leggero.',c:[{t:'Fantastico',n:null,act:()=>{G.flags.party=true;G.flags.yoga=true;G.min=Math.max(G.min,e.e);A.stamp();toast('Yoga Silent Party vissuta!');}}]}},{t:'Magari dopo',n:null}]});
 }
 /* ----- teatro: si guarda davvero lo speech ----- */
 const stg=$('#stg');let stCv=null;
-function startTheatre(e,where,room){
-  const c=where==='work'?e.rooms[room]:e.talk;
-  G.watching={c,e,where,room,i:0,typed:0,idle:0,taken:{},ex:null,good:0,applause:0,t:0,notes:0,done:false};
+function startTheatre(e){
+  const c=makeContent(e),where=e.kind==='talk'?'main':'work';
+  G.watching={c,e,where,label:e.room,i:0,typed:0,idle:0,taken:{},ex:null,good:0,applause:0,t:0,notes:0,done:false};
   closeDlg();stg.classList.remove('hide');renderSlide();A.blip();
 }
 function slideOf(){const w=G.watching;return w.c.slides[w.i];}
@@ -416,9 +456,9 @@ function advance(){
 }
 function leaveTheatre(complete){
   const w=G.watching;if(!w)return;G.watching=null;stg.classList.add('hide');
-  G.min+=complete?60:15;
+  G.min=complete?Math.max(G.min,w.e.e):G.min+15;
   if(complete){if(w.where==='work'){G.flags.ws++;const n=NPC.filter(x=>x.kind==='att'&&!G.met[x.id])[0];if(n){G.met[n.id]=1;addContact(n);}}else G.flags.talk++;
-    toast((w.where==='work'?'Workshop':'Speech')+' concluso: '+w.notes+' appunti nel taccuino'+(w.good?', esercizio riuscito!':'.'),4200);}
+    toast((w.where==='work'?'Sessione':'Speech')+' conclusa: '+w.notes+' appunti nel taccuino'+(w.good?', esercizio riuscito!':'.'),4200);}
   else toast('Sei uscito prima della fine.',2500);
 }
 function updateTheatre(dt){
@@ -473,16 +513,80 @@ function drawTheatre(){
     ctx.font='400 '+Math.round(zs*3.4)+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.45)';ctx.textAlign='right';ctx.fillText((w.i+1)+'/'+w.c.slides.length,lx+lw-pad,ly+lh-pad-zs*3);}
   else{ctx.font='400 '+Math.round(zs*3.6)+'px "Press Start 2P",monospace';ctx.fillStyle='#ffd24d';ctx.fillText('ESERCIZIO',lx+pad,ly+pad);wrap(sl.q,'700 '+Math.round(zs*5.6)+'px "Space Grotesk",sans-serif',lw-2*pad,zs*8,lx+pad,ly+pad+zs*9,'#fff');}
   ctx.restore();
-  ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(main?'SALA DELLA PIAZZA':WS_ROOMS[w.room].n.toUpperCase(),x0+8,y0+8);
+  ctx.font='400 '+Math.max(8,Math.round(zs*3))+'px "Press Start 2P",monospace';ctx.fillStyle='rgba(255,255,255,.55)';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(w.label.toUpperCase(),x0+8,y0+8);
 }
-function offworld(){
-  if(G.min<20*60+30){info('Offworld','Qui la sera: '+FACTS.off+' Si inizia verso le 20:30.');return;}
-  say({name:'Host Offworld',role:'Karaoke',p:NPC.find(n=>n.id==='dj').p},{t:'Il microfono è tuo! Che canzone scegli?',c:[
-    {t:'Un classico italiano',n:{t:'La sala canta con te. Standing ovation!',c:[{t:'Inchino',n:null,act:offDone}]}},
-    {t:'Una hit degli anni 2000',n:{t:'Dopo due stonature il pubblico ti salva cantando il ritornello. Che serata!',c:[{t:'Inchino',n:null,act:offDone}]}},
+function karaoke(){
+  if(G.min<22*60){info('Karaoke al Village','Il Karaoke al Village è dalle 22:00 alle 24:00, «Palco - zona ristorante». Microfono libero.');return;}
+  say({name:'Host del Village',role:'Karaoke',p:NPC.find(n=>n.id==='dj').p},{t:'Aperto a tutti i partecipanti del World. Il microfono è libero: che canzone scegli?',c:[
+    {t:'Un classico italiano',n:{t:'La sala canta con te. Standing ovation!',c:[{t:'Inchino',n:null,act:kDone}]}},
+    {t:'Una hit degli anni 2000',n:{t:'Dopo due stonature il pubblico ti salva cantando il ritornello. Che serata!',c:[{t:'Inchino',n:null,act:kDone}]}},
     {t:'Passo il microfono',n:null}]});
 }
-function offDone(){G.flags.off++;G.min+=50;A.stamp();toast('Offworld vissuto!');}
+function kDone(){G.flags.kara=true;G.flags.off++;G.min+=50;A.stamp();toast('Karaoke al Village vissuto!');}
+function meetNow(m){
+  const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att'};
+  const tip=pickFrom(TIPS[pickFrom(TIPKEYS)]);
+  say(n,{t:'Ciao Niky! Che bello incontrarti di persona. Allora, di cosa ti occupi?',c:[
+    {t:'Podcast coach, editor e sound designer',n:{t:'Wow! Io faccio '+pe.job+'. Penso che potremmo collaborare: sentiamoci dopo l’evento.',c:[{t:'Volentieri!',n:null,act:()=>doneMeet(m,n)}]}},
+    {t:'Parliamo di come cresce un business',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{addTip(tip,'meeting con '+pe.name);doneMeet(m,n);}}]}},
+    {t:'Scusa, devo scappare',n:null}]});
+}
+function doneMeet(m,n){G.meets=G.meets.filter(x=>x!==m);G.flags.meet++;addContact(n);G.min+=30;A.stamp();}
+
+/* ============================================================ riattivazione: micro rhythm game */
+const POSES=['Montagna','Guerriero','Albero','Respiro','Cobra','Guerriero','Albero','Montagna'];
+function startReact(e){
+  const r=mulberry32(hashStr('react'+e.id)),notes=[],beat=.625,lead=2.2;
+  for(let i=0;i<14;i++)notes.push({t:lead+i*beat,lane:Math.floor(r()*3),res:null,fl:0});
+  G.react={e,t:0,notes,beat,fall:1.6,hits:0,perfect:0,miss:0,done:false,end:lead+14*beat+1.4,fx:[],combo:0};
+  closeDlg();A.blip();
+}
+function reactHit(lane){
+  const R=G.react;if(!R||R.done)return;
+  let best=null,bd=.3;for(const n of R.notes){if(n.res||n.lane!==lane)continue;const d=Math.abs(n.t-R.t);if(d<bd){bd=d;best=n;}}
+  R.lastLane=lane;R.lastT=R.t;
+  if(!best){R.combo=0;return;}
+  best.res=bd<.1?'perfect':'good';best.fl=.4;R.hits++;R.combo++;if(bd<.1)R.perfect++;A.tone(520+lane*160,.12,'triangle',.08,700+lane*160);
+}
+function updateReact(dt){
+  const R=G.react;R.t+=dt;
+  for(const n of R.notes)if(!n.res&&R.t>n.t+.3){n.res='miss';R.miss++;R.combo=0;}
+  for(const n of R.notes)if(n.fl>0)n.fl-=dt;
+  if(!R.done&&R.t>R.end){
+    R.done=true;const sc=R.hits/R.notes.length;
+    G.flags.react++;G.min=Math.max(G.min,R.e.e);A.stamp();
+    const msg=sc>=.85?'Ti senti rinato!':sc>=.5?'Più leggero di prima.':'Almeno hai respirato.';
+    G.react=null;
+    say({name:'Jo Dunica',role:'Riattivazione · Main Stage',p:NPC.find(n=>n.id==='yoga').p},{t:'Riattivazione finita: '+R.hits+'/'+R.notes.length+' respiri a tempo ('+R.perfect+' perfetti). '+msg,c:[{t:'Grazie!',n:null,act:()=>{addTip('Una pausa di respiro a metà giornata aiuta a seguire meglio gli speech.','Riattivazione');}}]});
+  }
+}
+function drawReact(){
+  const R=G.react,t=G.t;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a1040');g.addColorStop(1,'#05060d');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // host
+  const hs=Math.max(3,Math.floor(Math.min(W,H)/110)),bi=Math.max(0,Math.floor((R.t-1)/R.beat)),pose=POSES[bi%POSES.length];
+  ctx.save();ctx.translate(W/2,H*.3);ctx.scale(hs,hs);ctx.imageSmoothingEnabled=false;
+  person(ctx,0,10,0,0,{shirt:'#7ad37a',pants:'#e8e8f0',skin:'#e0b085',hair:'#4a3322',long:true,badge:'#7ad37a'});
+  ctx.strokeStyle='#7ad37a';ctx.lineWidth=2;ctx.lineCap='round';const up=Math.floor(R.t/R.beat)%2;
+  ctx.beginPath();ctx.moveTo(-5,-9);ctx.lineTo(-9,up?-20:-4);ctx.moveTo(5,-9);ctx.lineTo(9,up?-20:-4);ctx.stroke();ctx.restore();
+  ctx.font='700 '+Math.round(Math.min(W,520)/20)+'px "Press Start 2P",monospace';ctx.fillStyle='#ffd24d';ctx.textAlign='center';ctx.fillText(pose.toUpperCase(),W/2,H*.3+hs*16);
+  ctx.font='600 '+Math.round(Math.min(W,520)/26)+'px "Space Grotesk",sans-serif';ctx.fillStyle='#bcd';ctx.fillText('Riattivazione con Jo Dunica · respira a tempo',W/2,H*.08);
+  // corsie
+  const lw=Math.min(W/3.2,150),x0=W/2-lw*1.5,top=H*.42,hit=H*.86;
+  const cols=['#4dd0ff','#ff6a3d','#7ad37a'],keys=['A / ←','S / ↓','D / →'];
+  for(let l=0;l<3;l++){ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(x0+l*lw+4,top,lw-8,hit-top+30);
+    ctx.strokeStyle=cols[l];ctx.lineWidth=3;ctx.beginPath();ctx.arc(x0+l*lw+lw/2,hit,lw*.28,0,7);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.55)';ctx.font='600 12px "Space Grotesk",sans-serif';ctx.fillText(keys[l],x0+l*lw+lw/2,hit+lw*.28+18);
+    if(R.lastLane===l&&R.t-R.lastT<.15){ctx.fillStyle=cols[l]+'66';ctx.beginPath();ctx.arc(x0+l*lw+lw/2,hit,lw*.3,0,7);ctx.fill();}}
+  for(const n of R.notes){const d=(n.t-R.t)/R.fall;if(d>1.05||d<-.2)continue;const y=hit-d*(hit-top);const x=x0+n.lane*lw+lw/2;
+    if(n.res==='miss'){ctx.globalAlpha=.3;}
+    if(n.res&&n.res!=='miss'){ctx.fillStyle=cols[n.lane];ctx.globalAlpha=Math.max(0,n.fl/.4);ctx.beginPath();ctx.arc(x,hit,lw*.28*(1.8-n.fl),0,7);ctx.fill();ctx.globalAlpha=1;continue;}
+    ctx.fillStyle=cols[n.lane];ctx.beginPath();ctx.arc(x,y,lw*.2,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(x-lw*.05,y-lw*.05,lw*.07,0,7);ctx.fill();ctx.globalAlpha=1;}
+  ctx.fillStyle='#fff';ctx.font='700 '+Math.round(Math.min(W,520)/24)+'px "Space Grotesk",sans-serif';ctx.textAlign='center';
+  ctx.fillText('A tempo: '+R.hits+'/'+R.notes.length+(R.combo>2?'   ×'+R.combo:''),W/2,H*.96);
+  if(R.t<1.8){ctx.fillStyle='rgba(255,255,255,'+Math.min(1,(1.8-R.t))+')';ctx.fillText('Premi A S D (o tocca le tre corsie) quando il respiro arriva al cerchio',W/2,H*.38);}
+}
 
 /* ============================================================ passaporto e telefono */
 function quests(){
@@ -490,38 +594,119 @@ function quests(){
   return[
     {t:'Scarica l’app e accedi',s:'Fuori dall’Ingresso A, a destra',ok:F.app},
     {t:'Ritira l’accredito',s:'Fuori dall’Ingresso A, a sinistra',ok:F.accred},
-    {t:'Segui un workshop',s:'Venerdì, nelle sale del primo piano',ok:F.ws>=1},
+    {t:'Segui un workshop del venerdì',s:'Prenotalo nell’app e vai nella sala giusta',ok:F.ws>=1},
     {t:'Segui 2 speech dal palco',s:'Sabato o domenica, Sala della Piazza ('+F.talk+'/2)',ok:F.talk>=2},
-    {t:'Visita l’Anfiteatro',s:'Primo piano, con le scale mobili al centro',ok:F.anfi},
-    {t:'Scambia 5 contatti',s:'Parla con i partecipanti ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
+    {t:'Fai un meeting dall’app',s:'Scheda Networking, poi Area networking ('+F.meet+'/1)',ok:F.meet>=1},
+    {t:'Scambia 5 contatti',s:'Parla con le persone ('+G.contacts.length+'/5)',ok:G.contacts.length>=5},
     {t:'Visita 3 stand',s:'Atrio nord ('+nst+'/3)',ok:nst>=3},
     {t:'Incontra Dario e Luca',s:'Vicino al palco principale',ok:F.dario&&F.luca},
-    {t:'Fai una pausa di yoga',s:'Sul prato davanti all’ingresso',ok:F.yoga},
-    {t:'Vivi l’Offworld',s:'Tenda a est dell’Arco, dopo le 20:30',ok:F.off>=1},
+    {t:'Fatti firmare un libro',s:'Stand Urlico Hoepli (ven 16:00 Dario Vignali)',ok:F.sign},
+    {t:'Fai la Riattivazione',s:'Micro sessione di yoga sul Main Stage, sabato',ok:F.react>0},
+    {t:'Yoga Silent Party',s:'Main stage silent, venerdì 18:15',ok:F.party},
+    {t:'Karaoke al Village',s:'Venerdì dalle 22:00',ok:F.kara},
+    {t:'Gioca a un Game Quiz',s:'Stand nell’atrio, venerdì',ok:F.quiz>=1},
     {t:'Scatta una foto ricordo',s:'Pulsante 📷 o tasto F',ok:F.selfie}
   ];
 }
 function progress(){const q=quests();return{done:q.filter(x=>x.ok).length,tot:q.length};}
-let phoneTab='pass';
+let phoneTab='home',progDay=null,progMine=false;
 function openPhone(tab){if(!G.flags.app){toast('Prima serve l’app: vai all’assistenza fuori dall’ingresso.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
 function closePhone(){$('#phone').classList.add('hide');}
-function renderPhone(){
-  const T=[['pass','Passaporto'],['prog','Programma'],['cont','Contatti'],['map','Mappa']];
-  $('#phT').innerHTML=T.map(([k,n])=>`<button data-k="${k}" class="${phoneTab===k?'on':''}">${n}</button>`).join('');
-  document.querySelectorAll('#phT button').forEach(b=>b.onclick=()=>{phoneTab=b.dataset.k;renderPhone();});
+const TAGC={'AI':'#8a5cf0','Business':'#1ea0e8','Growth & Advertising':'#2a5af0','Brand & Comunicazione':'#5a4adf','Social & Creator':'#e08a20','Economics':'#0f9a6a','Mindset & Lifestyle':'#e03a3a'};
+const tagH=t=>`<span class="tg"><i style="background:${TAGC[t]||'#888'}"></i>${esc(t)}</span>`;
+function sessCard(e){
+  const booked=G.booked.has(e.id),saved=G.saved.has(e.id),conf=!booked&&e.kind==='ws'&&conflictWith(e);
+  let btn='';
+  if(e.kind==='ws'){btn=booked?`<button class="pb ok" data-bk="${e.id}">Prenotato ✓</button>`:e.sold?'<button class="pb sold" disabled>Sold-out</button>':conf?'<button class="pb occ" disabled>Slot occupato</button>':`<button class="pb" data-bk="${e.id}">Prenota</button>`;}
+  else if(e.kind==='lounge'){btn='';}
+  else btn=`<button class="pb ghost" data-sv="${e.id}">${saved?'✓ In agenda':'Salva in agenda'}</button>`;
+  const kt={mk:'INGRESSO LIBERO, SENZA PRENOTAZIONE',free:'INGRESSO LIBERO, SENZA PRENOTAZIONE',game:'GAME QUIZ',sign:'FIRMACOPIE',party:'PARTY',karaoke:'VILLAGE',react:'RIATTIVAZIONE · MINI GIOCO',talk:e.invented?'SPEECH · INVENTATO':'SPEECH'}[e.kind]||'';
+  return `<div class="sc ${booked?'mine':''}"><div class="tm">${hm(e.start)}–${hm(e.e%1440)}${kt?` <span class="kt">${kt}</span>`:''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${e.sp?`<div class="sp">${esc(e.sp)}<small>${esc(e.role||'')}</small></div>`:''}<div class="tags">${(e.tags||[]).map(tagH).join('')}</div>${btn}</div>`;
+}
+function meetOptions(){
+  const out=[];
+  for(let d=G.day;d<=2&&out.length<8;d++)for(let t=9*60+30;t<=18*60+30&&out.length<8;t+=30){
+    if(d===G.day&&t<G.min+25)continue;
+    const probe={d,start:t,e:t+30};
+    if([...G.booked].some(id=>overlaps(BYID[id],probe)))continue;
+    if(G.meets.some(m=>m.day===d&&m.start===t))continue;
+    out.push({d,t});}
+  return out;
+}
+function askMeeting(pid){
+  const pe=G.people.find(x=>x.id===pid),ops=meetOptions();
   const B=$('#phB');
-  if(phoneTab==='pass'){const p=progress(),q=quests();
-    B.innerHTML=`<div class="ring" style="--p:${Math.round(p.done/p.tot*100)}"><b>${p.done}/${p.tot}</b></div>`+q.map(x=>`<div class="q ${x.ok?'done':''}"><div class="ck">${x.ok?'✓':''}</div><div><b>${esc(x.t)}</b><small>${esc(x.s)}</small></div></div>`).join('')+`<div class="note">Tips raccolti: ${G.tips.length}</div><div style="margin-top:12px"><button class="btn ghost" id="finish" style="width:100%">Termina i tre giorni</button></div>`;
-    $('#finish').onclick=()=>{closePhone();endGame();};
+  B.innerHTML=`<div class="back" id="bk">‹ Indietro</div><h3 class="h3">Meeting con ${esc(pe.name)}</h3><div class="note" style="margin:0 0 10px">${esc(pe.job)} · ${esc(pe.city)} · compatibilità ${pe.compat}%</div><div class="note" style="margin:0 0 8px">Scegli un orario libero (le tue sessioni prenotate sono escluse). Luogo: Area networking.</div>`+(ops.length?ops.map((o,i)=>`<button class="opt2" data-o="${i}"><b>${DAYNAMES[o.d]} · ${hm(o.t)}</b><span>Area networking, 30 minuti</span></button>`).join(''):'<div class="note">Nessun orario libero.</div>');
+  $('#bk').onclick=renderPhone;
+  B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const o=ops[+b.dataset.o];if(Math.random()<.18+ (1-pe.compat/100)*.25){toast(pe.name+' non è disponibile in quell’orario. Prova un’altra fascia.',2800);return;}
+    G.meets.push({pid,day:o.d,start:o.t});toast(pe.name+' ha accettato: '+DAYNAMES[o.d]+' '+hm(o.t)+', Area networking.',3200);A.stamp();phoneTab='agenda';renderPhone();});
+}
+function personCard(pe,big){return `<div class="pcard ${big?'':'sm'}"><div class="av" style="background:${pe.pal.shirt}"><span>${esc(pe.name.split(' ').map(x=>x[0]).join(''))}</span></div><div class="pi"><b>${esc(pe.name)}</b><small>${esc(pe.job)} · ${esc(pe.city)}</small><em>${esc(pe.tag)}</em><span class="tm2">${pe.compat}% compatibile</span></div><button class="pb" data-mt="${pe.id}">Meeting</button></div>`;}
+function renderPhone(){
+  const T=[['home','Home','⌂'],['prog','Programma','▦'],['agenda','Agenda','✓'],['net','Networking','☺']];
+  const tb=([k,n,i])=>`<button data-k="${k}" class="${phoneTab===k?'on':''}"><span>${i}</span>${n}</button>`;$('#phT').innerHTML=T.slice(0,2).map(tb).join('')+'<button class="qrb" id="qrb">▣</button>'+T.slice(2).map(tb).join('');
+  document.querySelectorAll('#phT [data-k]').forEach(b=>b.onclick=()=>{phoneTab=b.dataset.k;renderPhone();});
+  $('#qrb').onclick=()=>showQR();
+  const B=$('#phB');B.scrollTop=0;
+  const bind=()=>{
+    B.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{const id=+b.dataset.bk;if(G.booked.has(id)){G.booked.delete(id);toast('Prenotazione annullata.');}else{G.booked.add(id);toast('Posto prenotato!');A.blip();}renderPhone();});
+    B.querySelectorAll('[data-sv]').forEach(b=>b.onclick=()=>{const id=+b.dataset.sv;if(G.saved.has(id))G.saved.delete(id);else G.saved.add(id);renderPhone();});
+    B.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>askMeeting(b.dataset.mt));
+    B.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const [t,d]=b.dataset.go.split(':');phoneTab=t;if(d!=null&&d!=='')progDay=+d;renderPhone();});
+  };
+  if(phoneTab==='home'){
+    const nw=[...G.booked].filter(id=>BYID[id].kind==='ws').length,p=progress();
+    const ag=[...G.booked,...G.saved].map(id=>BYID[id]).filter(e=>e.d>G.day||(e.d===G.day&&e.e>G.min)).sort((a,b)=>a.d-b.d||a.start-b.start).slice(0,3);
+    B.innerHTML=`<div class="hero"><canvas id="heroc" width="400" height="190"></canvas><div class="ht"><small>👋 ${G.min<12*60?'Buongiorno':G.min<18*60?'Buon pomeriggio':'Buonasera'}</small><h2>Bentornato,<br><em>Niky.</em></h2></div><div class="hb"><span>● ${['VEN','SAB','DOM'][G.day]} ${hm(Math.floor(G.min))}</span><span>16·17·18 OTT</span><span>PALACONGRESSI</span></div></div>
+     <div class="bn" data-go="prog:0">🎟 Hai prenotato <b>${nw}</b> workshop. Scegli altri nel programma di venerdì →</div>
+     <div class="sec">// ESPLORA IL MW26</div><div class="tiles"><button data-go="prog:">▦<b>Programma</b></button><button data-go="speak">🎙<b>Speaker</b></button><button data-go="ann">📣<b>Annunci</b></button><button data-go="az">🏢<b>Aziende</b></button><button data-go="off">🎉<b>OffWorld</b></button><button data-go="pass">🏅<b>Obiettivi ${p.done}/${p.tot}</b></button></div>
+     <div class="sec">// IN AGENDA <a data-go="agenda">Tutta l’agenda →</a></div>${ag.length?ag.map(e=>`<div class="ai"><div class="ad"><small>${['VEN','SAB','DOM'][e.d]}</small><b>${hm(e.start)}</b></div><div><small class="kk">${e.kind==='ws'?'WORKSHOP':e.kind==='talk'?'SPEECH':'EVENTO'}</small><b>${esc(e.title.length>60?e.title.slice(0,58)+'…':e.title)}</b><small>${esc(e.room)}</small></div></div>`).join(''):'<div class="note">Niente in agenda. Prenota un workshop dal Programma.</div>'}
+     <div class="sec">// PERSONE DA CONOSCERE <a data-go="net">Vedile tutte →</a></div><div class="hs">${G.people.slice(0,5).map(pe=>personCard(pe)).join('')}</div>
+     <div class="sec">// ULTIMO ANNUNCIO</div><div class="ann"><small>13 OTT · 18:00</small><b>Benvenuti a Rimini!</b><span>Ritira il badge fuori dall’Ingresso A e scarica l’app: dentro trovi programma, workshop e networking.</span></div>
+     <div class="spread"><b>Fai sapere che ci sarai</b><span>La tua card per le storie e LinkedIn, pronta in un tocco.</span><button id="card">Crea la tua card</button></div>
+     <div class="note">Fan project non ufficiale. I workshop del venerdì vengono dal programma pubblico; speech del weekend, partecipanti e contenuti delle slide sono inventati.</div>`;
+    const hc=$('#heroc').getContext('2d');hc.imageSmoothingEnabled=false;hc.drawImage(FL[0].cv,k(470),k(600),k(330),k(160),0,0,400,190);hc.fillStyle='rgba(10,16,50,.55)';hc.fillRect(0,0,400,190);
+    $('#card').onclick=()=>{closePhone();photo();};
+    bind();
   }else if(phoneTab==='prog'){
-    const cur=PROGRAMMA.filter(e=>e.d===G.day);
-    B.innerHTML=`<div class="note" style="margin:0 0 10px">${esc(DAYNAMES[G.day])} · ${esc(EVENT.hours)}.<br>Titoli e speaker di speech e workshop sono inventati: gli orari sono indicativi.</div>`+cur.map(e=>{const s=+e.t.slice(0,2)*60+ +e.t.slice(3);const body=e.rooms?e.rooms.map((r,k)=>'<br><small style="color:var(--dim)">'+esc(WS_ROOMS[k].n)+': '+esc(r.title)+' · '+esc(r.speaker)+'</small>').join(''):'';return `<div class="pg ${G.min>=s&&G.min<s+70?'now':''}"><b>${e.t}</b> · ${esc(e.talk?e.talk.title+' · '+e.talk.speaker:e.e)}${body}</div>`;}).join('')+`<div class="note"><b>Speaker annunciati dall'organizzazione per il 2026 (da verificare):</b> ${SPEAKERS.map(s=>esc(s.name)).join(', ')}.</div><div class="note">Fonti: ${esc(EVENT.src)}.</div>`;
-  }else if(phoneTab==='cont'){
-    B.innerHTML=G.contacts.length?G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri.</div>';
+    if(progDay==null)progDay=G.day;
+    const list=PROGRAMMA.filter(e=>e.d===progDay&&e.kind!=='lounge'&&(!progMine||G.booked.has(e.id)||G.saved.has(e.id)));
+    B.innerHTML=`<div class="chips2">${DAYNAMES.map((n,i)=>`<button data-d="${i}" class="${progDay===i?'on':''}">${n}</button>`).join('')}<button id="mine" class="${progMine?'on':''}">I miei</button></div>`+(progDay>0?'<div class="note" style="margin:0 0 8px">Il programma di sabato e domenica non è quello ufficiale: gli speech sono inventati.</div>':'')+(list.length?list.map(sessCard).join(''):'<div class="note">Niente da mostrare.</div>');
+    B.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{progDay=+b.dataset.d;renderPhone();});$('#mine').onclick=()=>{progMine=!progMine;renderPhone();};bind();
+  }else if(phoneTab==='agenda'){
+    const items=[...G.booked,...G.saved].map(id=>BYID[id]);
+    const ms=G.meets.map(m=>({d:m.day,start:m.start,e:m.start+30,title:'Meeting con '+G.people.find(p=>p.id===m.pid).name,room:'Area networking',kind:'meet',tags:[],sp:'',role:''}));
+    const all=[...items,...ms].sort((a,b)=>a.d-b.d||a.start-b.start);
+    B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div></div>`:`<div class="sc ${G.booked.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div></div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';
+  }else if(phoneTab==='net'){
+    B.innerHTML=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base a cosa fai e cosa cerchi. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('')+(G.contacts.length?`<div class="sec">// I TUOI CONTATTI</div>`+G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'');
+    bind();
+  }else if(phoneTab==='speak'){
+    const seen=new Map();PROGRAMMA.filter(e=>e.sp&&e.kind!=='talk').forEach(e=>{if(!seen.has(e.sp))seen.set(e.sp,e);});
+    B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="note" style="margin:0 0 10px">Speaker presenti nel programma di venerdì (dal programma pubblico), da ${seen.size} nomi.</div>`+[...seen.values()].map(e=>`<div class="pg"><b>${esc(e.sp)}</b><br><span style="color:var(--dim)">${esc(e.role||'')}</span><br><small>${hm(e.start)} · ${esc(e.room)}</small></div>`).join('');bind();
+  }else if(phoneTab==='az'){
+    const az=[['Canva','Sala by CANVA'],['FINECO','Sala Finance by FINECO'],['Active Powered','Sala by Active Powered'],['Building Production','Sala Real Estate by Building Production'],['Urlico Hoepli','Stand Urlico Hoepli'],['Marketers PRO','MK PRO con Ilaria Foresti']];
+    B.innerHTML=`<div class="back" data-go="home">‹ Home</div>`+az.map(([n,r])=>`<div class="pg"><b>${esc(n)}</b><br><span style="color:var(--dim)">${esc(r)}</span></div>`).join('');bind();
+  }else if(phoneTab==='off'){
+    const ev=PROGRAMMA.filter(e=>['party','karaoke','sign','game'].includes(e.kind)).sort((a,b)=>a.d-b.d||a.start-b.start);
+    B.innerHTML=`<div class="back" data-go="home">‹ Home</div>`+ev.map(sessCard).join('');bind();
+  }else if(phoneTab==='ann'){
+    B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="ann"><small>13 OTT · 18:00</small><b>Benvenuti a Rimini!</b><span>Ritira il badge fuori dall’Ingresso A e scarica l’app.</span></div><div class="ann"><small>11 OTT · 13:37</small><b>Spread the Wor(l)d</b><span>Adesso puoi condividere sui social la tua presenza all’evento.</span></div>`;bind();
+  }else if(phoneTab==='pass'){
+    const p=progress(),q=quests();
+    B.innerHTML=`<div class="back" data-go="home">‹ Home</div><div class="ring" style="--p:${Math.round(p.done/p.tot*100)}"><b>${p.done}/${p.tot}</b></div>`+q.map(x=>`<div class="q ${x.ok?'done':''}"><div class="ck">${x.ok?'✓':''}</div><div><b>${esc(x.t)}</b><small>${esc(x.s)}</small></div></div>`).join('')+`<div class="note">Spunti raccolti: ${G.tips.length}</div><div style="margin-top:12px"><button class="btn ghost" id="finish" style="width:100%">Termina i tre giorni</button></div><div style="margin-top:12px"><button class="btn ghost" id="mapb" style="width:100%">Mappa</button></div>`;
+    $('#finish').onclick=()=>{closePhone();endGame();};$('#mapb').onclick=()=>{phoneTab='map';renderPhone();};bind();
   }else{
-    B.innerHTML=`<canvas id="mapc" width="410" height="215"></canvas><div class="note">Pianta stilizzata, non in scala. ${esc(FACTS.piazza)}. ${esc(FACTS.anfi)}.</div><div style="margin-top:8px"><button class="btn ghost" id="mf" style="width:100%">${G.f===0?'Mostra il primo piano':'Mostra il piano terra'}</button></div>`;
-    drawMap($('#mapc'),G.f);$('#mf').onclick=()=>{drawMap($('#mapc'),G.f===0?1:0,true);};
+    B.innerHTML=`<div class="back" data-go="pass">‹ Obiettivi</div><canvas id="mapc" width="410" height="215"></canvas><div class="note">Pianta stilizzata, non in scala. ${esc(FACTS.piazza)}. ${esc(FACTS.anfi)}.</div><div style="margin-top:8px"><button class="btn ghost" id="mf" style="width:100%">${G.f===0?'Mostra il primo piano':'Mostra il piano terra'}</button></div>`;
+    drawMap($('#mapc'),G.f);$('#mf').onclick=()=>{drawMap($('#mapc'),G.f===0?1:0,true);};bind();
   }
+}
+function showQR(){
+  const B=$('#phB'),n=21;let g='';const r=mulberry32(hashStr('niky-badge'));
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const f=(x<7&&y<7)||(x>=n-7&&y<7)||(x<7&&y>=n-7);let on=r()<.5;if(f){const lx=x%(n-7)>=0?x:x,ex=(x<7?x:x-(n-7)),ey=(y<7?y:y-(n-7));on=(ex===0||ex===6||ey===0||ey===6||(ex>=2&&ex<=4&&ey>=2&&ey<=4));}
+    if(on)g+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;}
+  B.innerHTML=`<div class="back" id="bk">‹ Indietro</div><div class="qrc"><svg viewBox="0 0 ${n} ${n}" width="200" height="200" shape-rendering="crispEdges" fill="#111"><rect width="${n}" height="${n}" fill="#fff"/>${g}</svg><b>Niky</b><span>Biglietto · Marketers World 2026</span><small>QR decorativo del gioco, non valido.</small></div>`;
+  $('#bk').onclick=renderPhone;
 }
 function drawMap(cvm,f,other){const c=cvm.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#0a0d18';c.fillRect(0,0,cvm.width,cvm.height);c.drawImage(FL[f].cv,0,0,WW,WH,0,0,cvm.width,cvm.width*WH/WW);
   if(f===G.f){const s=cvm.width/WW;c.fillStyle='#fff';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,5,0,7);c.fill();c.fillStyle='#ff6a3d';c.beginPath();c.arc(G.p.x*s,(G.p.y-6)*s,3,0,7);c.fill();}}
@@ -558,7 +743,8 @@ function update(dt){
   G.t+=dt;
   if(G.fade>0)G.fade=Math.max(0,G.fade-dt*4);
   if(G.watching){updateTheatre(dt);return;}
-  if(!DL&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide')){
+  if(G.react){updateReact(dt);return;}
+  if(!DL&&!G.react&&$('#phone').classList.contains('hide')&&$('#end').classList.contains('hide')){
     // orologio: 1 secondo reale = 2 minuti di gioco
     G.min+=dt*2;
     if(G.min>=23*60+30){G.fade=1;if(G.day>=2){endGame();G.min=23*60+29;}else{G.day++;G.min=8*60+45;G.f=0;G.p.x=k(632);G.p.y=k(885);toast('Notte a Rimini: nuova giornata, '+DAYNAMES[G.day]+' ottobre.',3500);}}
@@ -566,6 +752,8 @@ function update(dt){
     const m=Math.hypot(dx,dy);const p=G.p;
     if(m>.15){dx/=Math.max(1,m);dy/=Math.max(1,m);const sp=(keys.ShiftLeft?85:62)*dt;moveBody(p,dx*sp,dy*sp,FL[G.f]);p.step+=dt*(keys.ShiftLeft?6:4.2);p.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?2:3):(dy<0?1:0);if(Math.floor(p.step*2)!==Math.floor((p.step-dt*4)*2))A.step();}else p.step=0;
   }
+  {const d=NPC.find(n=>n.id==='dario'),sg=!!(activeAt(['Stand Urlico Hoepli'])&&/Vignali/.test(activeAt(['Stand Urlico Hoepli']).sp));if(d){if(sg){d.f=0;d.x=k(800);d.y=k(272);d.dir=0;}else if(d.sg){d.x=k(d.data.where.x);d.y=k(d.data.where.y);}d.sg=sg;}}
+  G.meets=G.meets.filter(m=>{const dead=(m.day<G.day)||(m.day===G.day&&G.min>m.start+40);if(dead)toast('Hai saltato un meeting.',2200);return !dead;});
   updateNPC(dt);
   // fine giornata di sala: si possono scoprire i luoghi
   const cam=G.cam,vw=W/Z,vh=H/Z,p=G.p;
@@ -573,6 +761,7 @@ function update(dt){
 }
 function draw(){
   if(G.watching){drawTheatre();return;}
+  if(G.react){drawReact();return;}
   const L=FL[G.f],vw=W/Z,vh=H/Z,cam=G.cam;
   let cx=vw>=WW?WW/2:clamp(cam.x,vw/2,WW-vw/2),cy=vh>=WH?WH/2:clamp(cam.y,vh/2,WH-vh/2+(MOB?vh*.22:0));
   cx=Math.round(cx*Z)/Z;cy=Math.round(cy*Z)/Z;
@@ -606,8 +795,8 @@ function hud(){
   setT($('#ck'),'ck',dn+' '+hr);
   const nx=nextEvent(),p=progress();
   setT($('#ckS'),'cs',(nx?'Prossimo '+nx.t+': '+(nx.talk?nx.talk.title:nx.e):'Giornata finita')+' · '+p.done+'/'+p.tot+' obiettivi');
-  if(MOB){const hide=!!(DL||G.watching);$('#pad').style.display=hide?'none':'';$('#act').style.display=hide?'none':'';}
-  const n=DL||G.watching?null:nearest();const pr=$('#prompt');
+  if(MOB){const hide=!!(DL||G.watching||G.react);$('#pad').style.display=hide?'none':'';$('#act').style.display=hide?'none':'';}
+  const n=DL||G.watching||G.react?null:nearest();const pr=$('#prompt');
   if(n){const h=`<kbd>${MOB?'●':'E'}</kbd>${esc(n.label)}`;if(cacheP!==h){cacheP=h;pr.innerHTML=h;}pr.classList.remove('hide');}else{pr.classList.add('hide');cacheP='';}
 }
 let cacheP='';const cT={};function setT(el,k,v){if(cT[k]!==v){cT[k]=v;el.textContent=v;}}
@@ -623,11 +812,12 @@ requestAnimationFrame(frame);
 function act(){
   if(mode!=='play'||!G)return;
   if(DL){const f=$('#dC button');if(f)f.click();return;}
-  if(G.watching||!$('#phone').classList.contains('hide'))return;
+  if(G.watching||G.react||!$('#phone').classList.contains('hide'))return;
   const n=nearest();if(n){A.init();n.fn();}
 }
 addEventListener('keydown',e=>{
   if(mode!=='play'){return;}
+  if(G&&G.react){const L={KeyA:0,ArrowLeft:0,KeyS:1,ArrowDown:1,KeyD:2,ArrowRight:2}[e.code];if(L!=null){e.preventDefault();reactHit(L);}return;}
   if(G&&G.watching){const w=G.watching;if(e.code==='Space'||e.code==='KeyE'||e.code==='Enter'){e.preventDefault();if(!e.repeat)advance();}else if(e.code==='KeyN')takeNote();else if(e.code==='Escape')leaveTheatre(false);else if(/^Digit[1-3]$/.test(e.code)&&w.ex&&w.ex.picked==null)pickEx(+e.code.slice(5)-1);return;}
   keys[e.code]=1;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
@@ -646,6 +836,7 @@ pad.addEventListener('pointerdown',e=>{padId=e.pointerId;pad.setPointerCapture(e
 pad.addEventListener('pointermove',e=>{if(e.pointerId===padId)padMove(e);});
 const padEnd=e=>{if(e.pointerId===padId){padId=null;touch.x=touch.y=0;padi.style.transform='';}};
 pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',padEnd);
+cv.addEventListener('pointerdown',e=>{if(G&&G.react){reactHit(Math.min(2,Math.floor(e.clientX/(W/3))));}});
 $('#act').addEventListener('pointerdown',e=>{e.preventDefault();act();});
 $('#go').onclick=startGame;
 $('#how').onclick=()=>toast('Obiettivi: app → accredito → workshop (ven) → speech (sab/dom) → contatti → stand → Offworld.',5000);
@@ -663,4 +854,4 @@ function drawTitle(t){
   person(c,170,112,0,0,{shirt:'#1d2b4a',pants:'#232a44',skin:'#e8b98a',hair:'#3a2a1c',badge:'#ffd24d'});
   person(c,196,112,0,0,{shirt:'#3b3b3b',pants:'#232a44',skin:'#e6b48c',hair:'#2a2118',badge:'#ffd24d'});
 }
-window.__rim={get G(){return G;},startGame,get FL(){return FL;},act,nearest,watch,talkTo,endGame,quests,progress,keys,get NPC(){return NPC;},PROGRAMMA};
+window.__rim={get G(){return G;},startGame,get FL(){return FL;},act,nearest,enterSession,talkTo,endGame,quests,progress,keys,get NPC(){return NPC;},PROGRAMMA};
