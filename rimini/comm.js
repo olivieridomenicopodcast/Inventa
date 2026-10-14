@@ -194,15 +194,17 @@ function cmReplies(){
   return out;
 }
 /* feed visibile: pool + post degli incontrati + miei */
-function cmFeed(T,onlyMine){
+function cmFeed(T,onlyMine,pin,noExtras){
   const C=cmEnsure(),items=[];
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
   const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:playerLook(),me:true};
   for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,img:p.img||null,kind:'mine',mine:true});
-  if(typeof extrasFeed==='function'&&!onlyMine)items.push(...extrasFeed(T));
-  return items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at).slice(0,onlyMine?200:40);
+  if(typeof extrasFeed==='function'&&!onlyMine&&!noExtras)items.push(...extrasFeed(T));
+  const all=items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at),out=all.slice(0,onlyMine?200:40);
+  if(pin&&!out.some(x=>x.id===pin)){const f=all.find(x=>x.id===pin);if(f)out.unshift(f);}
+  return out;
 }
 function cmView(p,T){
   const C=cmEnsure(),base=p.mine?cmComments(p,true):p.kind==='met'?[]:cmComments(p,false),mine=(C.cm[p.id]||[]).map(c=>({id:c.id,at:c.at,who:{name:pname(),me:true,pal:playerLook()},text:c.text,me:true}));
@@ -213,12 +215,14 @@ function cmView(p,T){
   return{comments:all,likes};
 }
 /* attività sui miei contenuti, per le notifiche */
+function cmPostText(pid){const C=cmEnsure(),m=C.posts.find(p=>p.id===pid);if(m)return m.text;const q=cmPool().find(p=>p.id===pid);if(q)return q.text;const k=cmFeed(cmT(),false,null,true).find(p=>p.id===pid);return k?k.text:'';}
 function cmActivity(T){
   const C=cmEnsure(),out=[];
-  for(const p of C.posts)for(const c of cmComments(p,true))if(c.at<=T)out.push({at:c.at,met:c.met});
-  for(const x of cmReplies())if(x.at<=T)out.push({at:x.at,met:false});
+  for(const p of C.posts)for(const c of cmComments(p,true))if(c.at<=T)out.push({id:c.id,type:'comment',at:c.at,met:c.met,who:c.who,text:c.text,pid:p.id,ptext:p.text});
+  for(const x of cmReplies())if(x.at<=T)out.push({id:x.id,type:'reply',at:x.at,met:false,who:x.who,text:x.text,pid:x.pid,ptext:cmPostText(x.pid)});
   return out;
 }
+function cmLikesNotes(T){const C=cmEnsure(),out=[];for(const p of C.posts){const n=cmView({id:p.id,at:p.at,mine:true,m:{}},T).likes;if(n>0)out.push({id:'lk_'+p.id,type:'like',at:p.at+10,count:n,pid:p.id,ptext:p.text});}return out;}
 const cmUnread=T=>cmActivity(T).filter(a=>a.at>cmEnsure().seenT).length;
 const cmHasMetComment=T=>cmActivity(T).some(a=>a.met);
 function cmNotify(){
@@ -227,23 +231,26 @@ function cmNotify(){
   if(n&&phoneTab!=='comm')toast('Marketers Pro: '+n+(n>1?' nuove interazioni':' nuova interazione')+' con i tuoi contenuti',2800);
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
-let cmOpen={},cmMine=false,cmAlbum=false;
+let cmOpen={},cmMine=false,cmAlbum=false,cmNotif=false,cmPin=null,cmHi=null;
+const cmAv=m=>faceImg(m.pal&&m.pal.hair?m.pal:facePal(m.name||'?',m.gender||'m'),'cav');
 function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>gxf(cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}),PLAYER.gender,PLAYER.gender));}
 function renderComm(B){
-  const C=cmEnsure(),T=cmT();C.seenT=T;
-  const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length,nAlb=(G.album||[]).length;
-  const fil=`<div class="cfil"><button data-f="all" class="${cmMine||cmAlbum?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine&&!cmAlbum?'on':''}">✎ I miei post (${nMine})</button><button data-f="album" class="${cmAlbum?'on':''}">📷 Album (${nAlb})</button></div>`;
-  const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmMine=b.dataset.f==='mine';renderPhone();});
-  const av=(m)=>faceImg(m.pal&&m.pal.hair?m.pal:facePal(m.name||'?',m.gender||'m'),'cav');
+  const C=cmEnsure(),T=cmT();
+  const sug=cmCompose(),feed=cmFeed(T,cmMine&&!cmNotif,cmPin),nMine=C.posts.length,nAlb=(G.album||[]).length,nUn=cmUnread(T);
+  const fil=`<div class="cfil"><button data-f="all" class="${cmMine||cmAlbum||cmNotif?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine&&!cmAlbum&&!cmNotif?'on':''}">✎ I miei post (${nMine})</button><button data-f="notif" class="${cmNotif?'on':''}">🔔 Notifiche${nUn?' <i class="nbd">'+nUn+'</i>':''}</button><button data-f="album" class="${cmAlbum?'on':''}">📷 Album (${nAlb})</button></div>`;
+  const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmNotif=b.dataset.f==='notif';cmMine=b.dataset.f==='mine';cmPin=null;cmHi=null;renderPhone();});
+  const av=cmAv;
   if(cmAlbum){albumRender(B,fil);bindFil();return;}
+  if(cmNotif){notifRender(B,fil,T);bindFil();return;}
   B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+
    fil+
    (feed.length?feed.map(p=>{const v=cmView(p,T),open=!!cmOpen[p.id],liked=!!C.liked[p.id];
-     return `<div class="cp ${p.mine?'mine':''}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(gxf(p.text,p.m.gender||'m'))}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
-      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(gxf(c.text,(c.who&&c.who.gender)||'m'))}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
+     return `<div class="cp ${p.mine?'mine':''}" data-pid="${p.id}"><div class="ch">${av(p.m)}<div><b>${esc(p.m.name)}${p.m.me?' (tu)':''}</b><small>${esc(p.m.job||'')} · ${cmRel(p.at,T)}</small></div></div><div class="ct">${cmHL(gxf(p.text,p.m.gender||'m'))}</div>${p.img&&albumGet(p.img)?'<img class="cimg" src="'+albumGet(p.img).img+'">':''}<div class="ca"><button data-lk="${p.id}" class="${liked?'on':''}">${liked?'♥':'♡'} ${v.likes}</button><button data-op="${p.id}">💬 ${v.comments.length}</button></div>`+
+      (open?`<div class="cc">${v.comments.map(c=>`<div class="cm ${c.me?'me':''} ${c.id===cmHi?'hi':''}">${av(c.who)}<div><b>${esc(c.who.name)}${c.me?' (tu)':''}</b><small>${cmRel(c.at,T)}</small><div>${cmHL(gxf(c.text,(c.who&&c.who.gender)||'m'))}</div></div></div>`).join('')||'<small>Ancora nessun commento.</small>'}<div class="cin"><input data-ci="${p.id}" maxlength="120" placeholder="Scrivi un commento…"><button class="pb" data-cs="${p.id}">Invia</button></div></div>`:'')+'</div>';}).join(''):(cmMine?'<div class="note">Non hai ancora pubblicato nulla. Scrivi un post qui sopra, poi tocca “Tutti i post” per tornare al feed.</div>':'<div class="note">Ancora nessun post: la community si sveglia a breve.</div>'));
   const ta=$('#cmT');ta.oninput=()=>{$('#cmN').textContent=ta.value.length+'/160';};
   bindFil();
+  if(cmPin){const el=B.querySelector('[data-pid="'+cmPin+'"]');if(el)setTimeout(()=>el.scrollIntoView({block:'center'}),30);cmPin=null;}
   B.querySelectorAll('[data-sg]').forEach(b=>b.onclick=()=>{ta.value=sug[+b.dataset.sg];ta.oninput();});
   $('#cmP').onclick=()=>{const t=ta.value.trim();if(!t){toast('Scrivi qualcosa prima di pubblicare.',1800);return;}C.posts.push({id:'u'+(++C.pid),text:t.slice(0,160),at:cmT()});toast('Post pubblicato su Marketers Pro.',1800);A.stamp();renderPhone();};
   B.querySelectorAll('[data-lk]').forEach(b=>b.onclick=()=>{const id=b.dataset.lk;C.liked[id]=!C.liked[id];A.blip();const y=B.scrollTop;renderPhone();B.scrollTop=y;});
@@ -278,3 +285,15 @@ function albumView(id){
   $('#alDel').onclick=()=>{G.album=G.album.filter(x=>x.id!==id);close();toast('Foto eliminata dall’album.',1600);renderPhone();};
   $('#alPub').onclick=()=>{const C=cmEnsure();C.posts.push({id:'u'+(++C.pid),text:e.cap+' · '+e.place+' #MW26',at:cmT(),img:id});toast('Foto pubblicata su Marketers Pro.',2000);A.stamp();close();cmAlbum=false;cmMine=true;renderPhone();};
 }
+
+/* ---------- notifiche: dove ti hanno commentato, risposto o messo like ---------- */
+function notifRender(B,fil,T){
+  const C=cmEnsure(),seen=C.seenT,L=[...cmActivity(T),...cmLikesNotes(T)].sort((a,b)=>b.at-a.at);
+  const cut=s=>{s=(s||'').replace(/\s+/g,' ');return s.length>60?s.slice(0,58)+'…':s;};
+  B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Notifiche</b> · commenti, risposte e like ai tuoi contenuti. Tocca una notifica per aprire il post.</div>`+fil+
+   (L.length?L.map(a=>{const nw=a.type!=='like'&&a.at>seen,head=a.type==='comment'?`<b>${esc(a.who.name)}</b> ha commentato il tuo post`:a.type==='reply'?`<b>${esc(a.who.name)}</b> ha risposto al tuo commento su`:`<b>${a.count} ${a.count===1?'persona ha':'persone hanno'}</b> messo like al tuo post`;
+     return `<button class="nt ${nw?'new':''}" data-nid="${esc(a.pid)}|${esc(a.id)}">${a.type==='like'?'<span class="nti">♥</span>':cmAv(a.who)}<div><div>${head} «${esc(cut(a.ptext))}»${a.met?' <span class="nmet">incontrat'+(a.who&&a.who.gender==='f'?'a':'o')+' di persona</span>':''}</div>${a.text?`<div class="nq">${cmHL2(a.text,a.who)}</div>`:''}<small>${cmRel(a.at,T)}${nw?' · NUOVA':''}</small></div></button>`;}).join(''):'<div class="note">Nessuna notifica per ora. Quando qualcuno commenta o risponde ai tuoi contenuti, lo vedi qui.</div>');
+  B.querySelectorAll('[data-nid]').forEach(b=>b.onclick=()=>{const [pid,cid]=b.dataset.nid.split('|');cmAlbum=false;cmNotif=false;cmMine=!!C.posts.find(p=>p.id===pid);cmPin=pid;cmOpen[pid]=true;cmHi=cid;renderPhone();});
+  C.seenT=T;
+}
+const cmHL2=(t,w)=>cmHL(gxf(t,(w&&w.gender)||'m'));

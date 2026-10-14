@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=74;
+const BUILD=75;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -397,7 +397,7 @@ function pickChoice(c){
 }
 function closeDlg(){DL=null;dlg.classList.add('hide');}
 function info(title,t){say({name:title,role:'Informazioni',p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'}},{t:t});}
-function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({name:n.name,role:n.role,kind:n.kind,p:n.p?Object.assign({},n.p):null,gender:n.gender||null});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
+function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({at:cmT(),place:(typeof albumPlace==='function'?albumPlace():''),name:n.name,role:n.role,kind:n.kind,p:n.p?Object.assign({},n.p):null,gender:n.gender||null});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
 function talkTo(n){
   if(n.kind==='pet'&&typeof petTalk==='function'){petTalk(n);return;}
   if(n.friend&&typeof friendTalk==='function'){friendTalk(n);return;}
@@ -495,7 +495,7 @@ function quiz(e){
 }
 function coffee(){G.flags.coffee++;toast(pickFrom(['Un caffè al volo: ora sei carico.','Il caffè del Palacongressi: fa il suo dovere.','Doppio espresso: pronto per il prossimo speech!']));A.blip();}
 function rest(){G.min+=15;toast('Ti siedi 15 minuti sul divano a controllare l’app.');}
-function addTip(t,src){if(!G.tips.some(x=>x.t===t))G.tips.push({t,src});}
+function addTip(t,src){if(!G.tips.some(x=>x.t===t))G.tips.push({t,src,at:cmT()});}
 function freeSpot(f,x,y){if(!hits(FL[f],x,y))return[x,y];for(let r=4;r<k(120);r+=4)for(let a=0;a<16;a++){const nx=x+Math.cos(a*Math.PI/8)*r,ny=y+Math.sin(a*Math.PI/8)*r;if(!hits(FL[f],nx,ny))return[nx,ny];}return[x,y];}
 function goFloor(f,x,y){G.fade=1;setTimeout(()=>{G.f=f;[G.p.x,G.p.y]=freeSpot(f,x,y);if(f===1)G.flags.anfi=true;A.blip();},120);}
 function roomSched(names,day){return PROGRAMMA.filter(e=>e.d===day&&names.includes(e.room)&&e.kind!=='lounge').sort((a,b)=>a.start-b.start);}
@@ -732,7 +732,7 @@ function quests(){
   ];
 }
 function progress(){const q=quests();return{done:q.filter(x=>x.ok).length,tot:q.length};}
-let phoneTab='home',progDay=null,progMine=false,progFor=false;
+let phoneTab='home',progDay=null,progMine=false,progFor=false,netTab='rec',netOpen=null;
 function openPhone(tab){$('#phT').style.display='';$('#phH').textContent='MW26 · APP';$('#phone').classList.remove('solo');if(!G.flags.app){toast('L’app dell’evento (nel gioco) si attiva all’Assistenza app, fuori dall’Ingresso A.');return;}phoneTab=tab||phoneTab;$('#phone').classList.remove('hide');renderPhone();}
 function openPro(){if(!G)return;phoneTab='comm';$('#phone').classList.remove('hide');$('#phone').classList.toggle('solo',!G.flags.app);$('#phT').style.display=G.flags.app?'':'none';$('#phH').textContent='MARKETERS PRO';renderPhone();}
 function closePhone(){$('#phone').classList.add('hide');}
@@ -812,7 +812,18 @@ function renderPhone(){
     const all=[...items,...ms].sort((a,b)=>a.d-b.d||a.start-b.start);
     B.innerHTML=all.length?all.map(e=>e.kind==='meet'?`<div class="sc mine"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)} <span class="kt">NETWORKING</span></div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`:`<div class="sc ${G.booked.has(e.id)&&!G.seen.has(e.id)?'mine':''}"><div class="tm">${DAYNAMES[e.d]} · ${hm(e.start)}–${hm(e.e%1440)}${G.seen.has(e.id)?' <span class="kt">CONCLUSO ✓</span>':''}</div><div class="tt">${esc(e.title)}</div><div class="rm">📍 ${esc(e.room)}</div>${goBtn(e.room)}</div>`).join(''):'<div class="note">La tua agenda è vuota. Prenota un workshop dal Programma o proponi un meeting dal Networking.</div>';bind();
   }else if(phoneTab==='net'){
-    B.innerHTML=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('')+(G.contacts.length?`<div class="sec">// I TUOI CONTATTI</div>`+G.contacts.map(c=>`<div class="pg"><b>${esc(c.name)}</b><br><span style="color:var(--dim)">${esc(c.role)}</span></div>`).join(''):'');
+    const nc=G.contacts.length,nt=G.tips.length;
+    const tabs=`<div class="cfil"><button data-nv="rec" class="${netTab==='rec'?'on':''}">Consigliati</button><button data-nv="con" class="${netTab==='con'?'on':''}">👥 I miei contatti (${nc})</button><button data-nv="tips" class="${netTab==='tips'?'on':''}">💡 I miei spunti (${nt})</button></div>`;
+    const when=at=>at==null?'—':DAYNAMES[Math.min(2,Math.floor(at/1440))]+' '+hm(((at%1440)+1440)%1440);
+    let body='';
+    if(netTab==='rec')body=`<div class="note" style="margin:0 0 10px">Persone consigliate per te in base al tuo mestiere («${esc(ME().job)}») e a cosa cerchi: più la percentuale è alta, più siete vicini. Proponi un meeting: se accetta, vi vedete all’Area networking all’orario scelto. Persone inventate.</div>`+G.people.map(pe=>personCard(pe,true)).join('');
+    else if(netTab==='con')body=nc?`<div class="note" style="margin:0 0 10px">Le persone con cui hai scambiato i contatti in questa partita. Tocca un contatto per i dettagli.</div>`+G.contacts.map((c,i)=>({c,i})).reverse().map(({c,i})=>{
+      const at=c.at!=null?c.at:(G.comm&&G.comm.metT&&G.comm.metT[c.name]),open=netOpen===i,pe=G.people.find(x=>x.name===c.name);
+      return `<div class="pcard ct ${open?'open':''}"><button class="ctb" data-ct="${i}">${faceImg(c.p||facePal(c.name,c.gender||genderOf(c.name)),'avi2')}<div class="pi"><b>${esc(c.name)}</b><small>${esc(c.role||'')}</small><em>Incontrat${(c.gender||genderOf(c.name))==='f'?'a':'o'}: ${when(at)}${c.place?' · '+esc(c.place):''}</em></div></button>`+(open?`<div class="ctd"><div class="note" style="margin:6px 0">${esc(c.name)} ti ha lasciato il contatto${c.place?' vicino a «'+esc(c.place)+'»':''}. Su Marketers Pro puoi vedere se ha commentato i tuoi post.</div><div class="crow2">${pe?`<button class="pb" data-mt="${pe.id}">Proponi un meeting</button>`:''}<button class="pb ghost" data-go="comm:">Vedi su Marketers Pro</button></div></div>`:'')+'</div>';}).join(''):'<div class="note">Ancora nessun contatto. Parla con le persone che incontri e scegli “Scambiamoci i contatti”.</div>';
+    else body=nt?`<div class="note" style="margin:0 0 10px">I consigli e gli appunti che hai raccolto in questa partita.</div>`+G.tips.slice().reverse().map(t=>`<div class="pg"><b>«${esc(t.t)}»</b><br><small style="color:var(--dim)">${esc(t.src||'')}${t.at!=null?' · '+when(t.at):''}</small></div>`).join(''):'<div class="note">Ancora nessuno spunto. Prendi appunti durante gli speech (“Segna l’appunto”) o chiedi consigli a chi incontri.</div>';
+    B.innerHTML=tabs+body;
+    B.querySelectorAll('[data-nv]').forEach(b=>b.onclick=()=>{netTab=b.dataset.nv;netOpen=null;renderPhone();});
+    B.querySelectorAll('[data-ct]').forEach(b=>b.onclick=()=>{const i=+b.dataset.ct;netOpen=netOpen===i?null:i;const y=B.scrollTop;renderPhone();B.scrollTop=y;});
     bind();
   }else if(phoneTab==='comm'){
     renderComm(B);
