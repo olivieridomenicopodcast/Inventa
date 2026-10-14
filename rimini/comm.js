@@ -129,7 +129,7 @@ function cmMembers(){
   if(G._cmM&&G._cmM.k===G.seed)return G._cmM.v;
   const r=mulberry32(hashStr(G.seed+'|members')),used=new Set(),out=[];
   for(let i=0;i<90;i++){let nm;do{nm=cmPick(r,ATT_FIRST)+' '+cmPick(r,ATT_LAST);}while(used.has(nm));used.add(nm);
-    const jb=cmPick(r,JOBS);out.push({id:'m'+i,name:nm,job:jb[0],fam:jb[1],city:cmPick(r,ATT_CITY),absent:r()<.3,gender:genderOf(nm),pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5','#ff6a3d'][i%7]}});}
+    const jb=cmPick(r,JOBS);out.push({id:'m'+i,name:nm,job:jb[0],fam:jb[1],city:cmPick(r,ATT_CITY),absent:r()<.3,gender:genderOf(nm),pal:facePal(nm,genderOf(nm))});}
   G._cmM={k:G.seed,v:out};return out;
 }
 /* post programmati nei tre giorni (e il giorno prima) */
@@ -164,7 +164,7 @@ function cmPool(){
 /* persone incontrate davvero nel gioco (kind att) come "membri" riconoscibili */
 function cmMetPeople(){
   const C=cmEnsure();return G.contacts.filter(c=>c.kind==='att'&&C.metT[c.name]!=null).map(c=>{const [job,city]=(c.role||'').split(' · '),jb=jobFind(job);
-    return{id:'k'+hashStr(c.name),name:c.name,job:job||'Partecipante',fam:jb?jb[1]:'strat',city:city||'',met:true,at:C.metT[c.name],gender:genderOf(c.name),pal:{shirt:['#3da5d9','#6bc46d','#b57bff','#e86a8a','#c9a24a'][hashStr(c.name)%5]}};});
+    return{id:'k'+hashStr(c.name),name:c.name,job:job||'Partecipante',fam:jb?jb[1]:'strat',city:city||'',met:true,at:C.metT[c.name],gender:c.gender||genderOf(c.name),pal:c.p||facePal(c.name,c.gender||genderOf(c.name))};});
 }
 const cmFill=(s,extra)=>s.replace('{me}',pname()).replace('{job}',(extra&&extra.job)||ME().job);
 /* commenti di un post (del pool o mio): deterministici, ordinati nel tempo */
@@ -199,13 +199,13 @@ function cmFeed(T,onlyMine){
   for(const p of cmPool())if(p.at<=T)items.push(Object.assign({},p,{mine:false}));
   cmMetPeople().forEach((m,i)=>{const r=mulberry32(hashStr(G.seed+'|mp|'+m.name));if(i>5)return;
     items.push({id:'k_'+m.id,at:m.at+25,m,text:cmFill(cmPick(r,CM_METPOST),{job:ME().job}).replace('{job}',ME().job),kind:'met',q:false,mine:false});});
-  const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:{shirt:'#ff6a3d'},me:true};
+  const me={id:'me',name:pname(),job:ME().job,fam:ME().fam,pal:playerLook(),me:true};
   for(const p of C.posts)items.push({id:p.id,at:p.at,m:me,text:p.text,img:p.img||null,kind:'mine',mine:true});
   if(typeof extrasFeed==='function'&&!onlyMine)items.push(...extrasFeed(T));
   return items.filter(x=>x.at<=T&&(!onlyMine||x.mine)).sort((a,b)=>b.at-a.at).slice(0,onlyMine?200:40);
 }
 function cmView(p,T){
-  const C=cmEnsure(),base=p.mine?cmComments(p,true):p.kind==='met'?[]:cmComments(p,false),mine=(C.cm[p.id]||[]).map(c=>({id:c.id,at:c.at,who:{name:pname(),me:true,pal:{shirt:'#ff6a3d'}},text:c.text,me:true}));
+  const C=cmEnsure(),base=p.mine?cmComments(p,true):p.kind==='met'?[]:cmComments(p,false),mine=(C.cm[p.id]||[]).map(c=>({id:c.id,at:c.at,who:{name:pname(),me:true,pal:playerLook()},text:c.text,me:true}));
   const reps=cmReplies().filter(x=>x.pid===p.id).map(x=>({id:x.id,at:x.at,who:x.who,text:x.text}));
   const all=[...base,...mine,...reps].filter(c=>c.at<=T).sort((a,b)=>a.at-b.at);
   const r=mulberry32(hashStr(G.seed+'|lk|'+p.id)),cap=p.mine?3+Math.floor(r()*6)+cmMetPeople().length*3:4+Math.floor(r()*40);
@@ -234,7 +234,7 @@ function renderComm(B){
   const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length,nAlb=(G.album||[]).length;
   const fil=`<div class="cfil"><button data-f="all" class="${cmMine||cmAlbum?'':'on'}">Tutti i post</button><button data-f="mine" class="${cmMine&&!cmAlbum?'on':''}">✎ I miei post (${nMine})</button><button data-f="album" class="${cmAlbum?'on':''}">📷 Album (${nAlb})</button></div>`;
   const bindFil=()=>B.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{cmAlbum=b.dataset.f==='album';cmMine=b.dataset.f==='mine';renderPhone();});
-  const av=(m)=>`<div class="cav" style="background:${m.pal.shirt}">${esc(m.name.split(' ').map(x=>x[0]).join('').slice(0,2))}</div>`;
+  const av=(m)=>faceImg(m.pal&&m.pal.hair?m.pal:facePal(m.name||'?',m.gender||'m'),'cav');
   if(cmAlbum){albumRender(B,fil);bindFil();return;}
   B.innerHTML=`<div class="note" style="margin:0 0 8px"><b>Marketers Pro</b> · la community dell’evento. Post e commenti sono generati dal gioco; le persone che incontri qui ti riconoscono.</div>
    <div class="cbox"><textarea id="cmT" maxlength="160" rows="2" placeholder="Cosa stai vivendo al Marketers World?"></textarea><div class="csug">${sug.map((s,i)=>`<button data-sg="${i}">${esc(s.length>34?s.slice(0,32)+'…':s)}</button>`).join('')}</div><div class="crow"><small id="cmN">0/160</small><button class="pb" id="cmP">Pubblica</button></div></div>`+

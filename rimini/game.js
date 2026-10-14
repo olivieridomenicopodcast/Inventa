@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=73;
+const BUILD=74;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -74,6 +74,10 @@ const NIKY=new Proxy({},{get:(_,k)=>playerLook()[k]});
 const pname=()=>(PLAYER.name||'Ospite').trim()||'Ospite';
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+const _faceC={};
+function faceURL(p){const key=[p.shirt,p.skin,p.hair,p.long?1:0,p.skirt?1:0,p.cap||'',p.glasses||'',p.pants||'',p.phones?1:0].join('|');if(_faceC[key])return _faceC[key];const c=document.createElement('canvas');c.width=c.height=30;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#1b2240';x.fillRect(0,0,30,30);x.fillStyle='#2a3566';x.fillRect(0,25,30,5);x.save();x.scale(2.5,2.5);person(x,6,24,0,0,p);x.restore();return _faceC[key]=c.toDataURL();}
+function facePal(name,gender){const r=mulberry32(hashStr('face|'+name)),s=FPAL[Math.floor(r()*FPAL.length)];return{shirt:s[0],pants:s[1],skin:SKINS[Math.floor(r()*SKINS.length)],hair:HAIRS[Math.floor(r()*HAIRS.length)],long:gender==='f',skirt:gender==='f'&&r()<.3,badge:'#ff6a3d'};}
+const faceImg=(p,cls)=>`<img class="${cls||'cav'}" src="${faceURL(p)}" alt="">`;
 function portrait(canvas,p){const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.clearRect(0,0,28,28);c.fillStyle='#1b2240';c.fillRect(0,0,28,28);c.fillStyle='#2a3566';c.fillRect(0,18,28,10);person(c,14,37,0,0,p);}
 
 /* ============================================================ costruzione dei piani */
@@ -393,7 +397,7 @@ function pickChoice(c){
 }
 function closeDlg(){DL=null;dlg.classList.add('hide');}
 function info(title,t){say({name:title,role:'Informazioni',p:{shirt:'#2f3552',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#4dd0ff'}},{t:t});}
-function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({name:n.name,role:n.role,kind:n.kind});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
+function addContact(n){if(G.contacts.some(c=>c.name===n.name))return false;if(n.kind==='att')cmMetNote(n.name);G.contacts.push({name:n.name,role:n.role,kind:n.kind,p:n.p?Object.assign({},n.p):null,gender:n.gender||null});A.stamp();toast('Nuovo contatto: '+n.name);return true;}
 function talkTo(n){
   if(n.kind==='pet'&&typeof petTalk==='function'){petTalk(n);return;}
   if(n.friend&&typeof friendTalk==='function'){friendTalk(n);return;}
@@ -767,7 +771,7 @@ function askMeeting(pid){
   B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const o=ops[+b.dataset.o];if(Math.random()<.18+ (1-pe.compat/100)*.25){toast(pe.name+' non è disponibile in quell’orario. Prova un’altra fascia.',2800);return;}
     G.meets.push({pid,day:o.d,start:o.t});toast(pe.name+' ha accettato: '+DAYNAMES[o.d]+' '+hm(o.t)+', Area networking.',3200);A.stamp();phoneTab='agenda';renderPhone();});
 }
-function personCard(pe,big){return `<div class="pcard ${big?'':'sm'}"><div class="av" style="background:${pe.pal.shirt}"><span>${esc(pe.name.split(' ').map(x=>x[0]).join(''))}</span></div><div class="pi"><b>${esc(pe.name)}</b><small>${esc(pe.job)} · ${esc(pe.city)}</small><em>${esc(pe.tag)}</em><span class="tm2">${pe.compat}% compatibile</span></div><button class="pb" data-mt="${pe.id}">Meeting</button></div>`;}
+function personCard(pe,big){return `<div class="pcard ${big?'':'sm'}"><div class="av">${faceImg(pe.pal,'avi')}</div><div class="pi"><b>${esc(pe.name)}</b><small>${esc(pe.job)} · ${esc(pe.city)}</small><em>${esc(pe.tag)}</em><span class="tm2">${pe.compat}% compatibile</span></div><button class="pb" data-mt="${pe.id}">Meeting</button></div>`;}
 function renderPhone(){
   const T=[['home','Home','⌂'],['prog','Programma','▦'],['agenda','Agenda','✓'],['net','Rete','☺'],['comm','Marketers Pro','🌐']];
   const tb=([k,n,i])=>`<button data-k="${k}" class="${phoneTab===k?'on':''}"><span>${i}</span>${n}</button>`;$('#phT').innerHTML=T.slice(0,2).map(tb).join('')+'<button class="qrb" id="qrb">▣</button>'+T.slice(2).map(tb).join('');{const u=cmUnread(cmT()),cb=document.querySelector('#phT [data-k=comm]');if(cb&&u&&phoneTab!=='comm')cb.insertAdjacentHTML('beforeend','<i class="bdg">'+u+'</i>');}

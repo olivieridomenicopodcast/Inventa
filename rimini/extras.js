@@ -247,7 +247,7 @@ function extrasContent(s,c){
 const EX_LINES={'Gabriele Lucesole':'Stasera facciamo baldoria? 🍻','Domenico Olivieri':'Voglio lasciare la fabbrica!'};
 function extrasWarm(who,r){if(EX_LINES[who.name]&&r()<.7)return EX_LINES[who.name];return null;}
 function extrasFeed(T){
-  const out=[],mk=(f,id,at,text)=>({id,at,m:{name:f,job:f==='Gabriele Lucesole'?'Coach':'Podcast coach, editor e sound designer',pal:{shirt:f==='Gabriele Lucesole'?'#6bc46d':'#2a5a8a'}},text,kind:'ex',q:false,mine:false});
+  const out=[],mk=(f,id,at,text)=>({id,at,m:{name:f,gender:'m',job:f==='Gabriele Lucesole'?'Coach':'Podcast coach, editor e sound designer',pal:(NPC.find(n=>n.name===f)||{}).p||facePal(f,'m')},text,kind:'ex',q:false,mine:false});
   [[0,18*60+40],[1,18*60+30],[2,17*60+50]].forEach(([d,m],i)=>out.push(mk('Gabriele Lucesole','exg'+i,d*1440+m,'Stasera facciamo baldoria? 🍻 #MW26')));
   [[0,10*60+20],[1,13*60],[2,9*60+30]].forEach(([d,m],i)=>out.push(mk('Domenico Olivieri','exd'+i,d*1440+m,['Voglio lasciare la fabbrica! (ma prima il caffè) #MW26','Voglio lasciare la fabbrica! Intanto mi alleno: oggi microfono e due chiacchiere.','Voglio lasciare la fabbrica, ve lo dico qui così sono costretto a farlo. #MW26'][i])));
   return out.filter(x=>x.at<=T);
