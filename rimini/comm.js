@@ -10,14 +10,32 @@ const CM_ABSENT=[
  'Se qualcuno prende appunti dei workshop, io offro un caffè virtuale 🙏',
  'Non ce l’ho fatta a venire al #MW26. Qualcuno mi racconta com’è l’Offworld?',
  'Invidia pura per chi è al Palacongressi oggi. Fate un saluto da parte mia!',
- 'Dalla scrivania non è la stessa cosa. Beati voi che siete a Rimini! #MW26'];
+ 'Dalla scrivania non è la stessa cosa. Beati voi che siete a Rimini! #MW26',
+ 'Ho il biglietto per l’anno prossimo già in testa. Oggi mi accontento delle vostre foto.',
+ 'Chiunque abbia visto qualche slide interessante: condividetela, vi prego!',
+ 'Giornata in ufficio mentre tutti sono a Rimini. Tengo duro con il caffè.',
+ 'Mi hanno detto che la Silent Stage è fantastica. Qualcuno mi dice com’è?',
+ 'Quest’anno ho dovuto rinunciare al #MW26. Mi consolo con i vostri aggiornamenti.',
+ 'Seguo il tag #MW26 da stamattina. Mi sembra di essere lì, ma senza il caffè.',
+ 'Un saluto a tutti i presenti da chi è rimasto a casa. Fate networking anche per me!',
+ 'Il vero dolore di non essere a Rimini: scoprire dopo cosa mi sono perso.',
+ 'Se vi capita di incontrare qualcuno che lavora con me, salutatelo da parte mia. #MW26',
+ 'Il prossimo anno non mi frega nessuno: biglietto preso prima che escano. Intanto, beati voi!'];
 const CM_PRE=[
  'Domani si parte: Rimini, Palacongressi, #MW26. Zaino pronto e batteria del telefono carica.',
  'Ultime ore prima del Marketers World. Chi c’è? Scrivetemi, ci incontriamo.',
  'Ho già salvato tre workshop nell’app. Il resto lo decido sul momento. #MW26',
  'Viaggio verso Rimini: playlist, caffè e un taccuino ancora vuoto.',
  'Quest’anno porto con me biglietti da visita veri. Sì, esistono ancora.',
- 'Primo anno al Marketers World: ansia e curiosità in parti uguali. #MW26'];
+ 'Primo anno al Marketers World: ansia e curiosità in parti uguali. #MW26',
+ 'Scarpe comode: pronto. Powerbank: pronto. Coraggio per parlare con sconosciuti: quasi.',
+ 'Ho scaricato l’app dell’evento. Mi aspetto di perdermi tra le sale entro un’ora.',
+ 'Check-in all’hotel: sembra di essere in gita scolastica, ma per adulti. #MW26',
+ 'Mi sono segnato due workshop imperdibili e uno “vediamo”. Voi?',
+ 'Domani ci si vede al Palacongressi! Chi vuole un caffè prima dell’apertura?',
+ 'La valigia è piena di libri e vuota di vestiti, come sempre. #MW26',
+ 'Ho appena scritto sul taccuino: “parla con almeno cinque persone nuove”. Vediamo.',
+ 'In treno verso Rimini con altre trenta persone che sembrano andare allo stesso posto.'];
 const CM_EVENT=[
  'Giorno {n} al Marketers World: i piedi chiedono pietà ma la testa è piena. #MW26',
  'Il Palacongressi pieno di gente che parla di lavoro con gli occhi che brillano. Energia pazzesca.',
@@ -29,9 +47,31 @@ const CM_EVENT=[
  'Il Main Stage pieno è un colpo d’occhio. Pelle d’oca. #MW26',
  'Consiglio da primo giorno: scegliete i workshop nell’app, le sale si riempiono in fretta.',
  'Una coda lunghissima per il firmacopie: segno che i libri servono ancora.',
- 'Scale mobili, ascensori e il mio senso dell’orientamento: oggi hanno vinto le scale mobili.'];
-const CM_EVE0=['Stasera Offworld al Village: karaoke e zero vergogna. #MW26','Giornata piena, serata ancora più piena. Ci vediamo al Village! #Offworld'];
-const CM_LAST=['Ultimo giorno: nostalgia già prima di salutarci. #MW26','Ultimi saluti, ultimi contatti scambiati. Grazie a chi ha reso questi giorni speciali.','Tornerò a casa con la testa piena di idee e il telefono pieno di nuovi contatti.'];
+ 'Scale mobili, ascensori e il mio senso dell’orientamento: oggi hanno vinto le scale mobili.',
+ '«{title}»: ho preso così tanti appunti che la penna è finita prima della sessione.',
+ 'Chi sta andando a «{title}»? Mi siedo vicino alla porta, vi tengo un posto.',
+ 'Pausa pranzo al volo: panino in piedi e due contatti nuovi. Si chiama efficienza. #MW26',
+ 'La cosa più bella del Marketers World? Parlare con gente che fa il tuo stesso lavoro e lo capisce.',
+ 'Ho appena chiesto a uno sconosciuto cosa pensa dell’AI nel suo lavoro. Un’ora dopo eravamo ancora lì.',
+ 'Il caffè dell’Area networking è il vero punto d’incontro. #MW26',
+ 'Batteria del telefono al 9%: tra foto, mappa e app, è la risorsa più preziosa dell’evento.',
+ 'Ho messo un like a metà dei post di #MW26. L’altra metà li metto domani.',
+ 'Qualcuno sa dove si trova la sala dopo «{title}»? Ho solo la mappa e tanta speranza.',
+ 'Mi hanno consigliato un workshop che non avevo segnato: ora sono contento di aver cambiato idea.',
+ 'Non pensavo che una sessione sulla «noia» mi desse tanta energia. #MW26',
+ 'Sala piena, aria condizionata che non ce la fa, ma nessuno se ne va. Questo dice tutto.',
+ 'L’app dice che sono in sala, il mio stomaco dice che è ora di pranzo. Vince lo stomaco.',
+ 'Ho conosciuto una persona che fa il mio stesso mestiere a mille chilometri da me. Il mondo è piccolo.',
+ 'Foto dal Main Stage: la mia è venuta mossa, ma l’emozione era reale. #MW26',
+ 'Il mio taccuino ha già tre pagine di cose da fare lunedì.',
+ 'Oggi ho scoperto che la sala al primo piano ha il WiFi migliore. Informazione preziosa.',
+ 'Pausa in Area networking: meglio di qualsiasi workshop, e non lo dico per cattiveria. 😅',
+ 'Ho appena sentito una frase che mi cambia la settimana. Poi ve la racconto. #MW26',
+ 'Fila per il caffè: il momento più democratico dell’evento.'];
+const CM_MORNING=['Ore 9: già in coda per entrare. Che bella energia, non pensavo.','Colazione veloce e via, la prima sessione inizia presto. #MW26','Buongiorno Rimini! Il Palacongressi si sveglia e noi con lui.'];
+const CM_AFTER=['Il pomeriggio è il momento in cui l’attenzione cala. Io resisto con il caffè.','Terza sessione di fila: la testa è piena, il taccuino anche.','Pausa pomeridiana: due chiacchiere e una cioccolata dal distributore.'];
+const CM_EVE0=['Stasera Offworld al Village: karaoke e zero vergogna. #MW26','Giornata piena, serata ancora più piena. Ci vediamo al Village! #Offworld','Dopo una giornata così, la serata è tutta da ballare. #MW26','Chi viene stasera all’Offworld? Prometto di non cantare. (Non è vero.)'];
+const CM_LAST=['Ultimo giorno: nostalgia già prima di salutarci. #MW26','Ultimi saluti, ultimi contatti scambiati. Grazie a chi ha reso questi giorni speciali.','Tornerò a casa con la testa piena di idee e il telefono pieno di nuovi contatti.','Il Marketers World finisce, ma le idee restano: adesso tocca metterle in pratica.','Tre giorni dopo: stanco morto e felicissimo. #MW26','Grazie a tutti quelli che ho incontrato: mi avete regalato un sacco di spunti.'];
 const CM_Q=[
  'Che strumento AI usate ogni giorno nel lavoro? Io sto provando a ridurre i passaggi manuali.',
  'Freelance o agenzia nel 2026? Voi come la vedete?',
@@ -39,14 +79,43 @@ const CM_Q=[
  'Podcast in video o solo audio? Mi serve un parere onesto.',
  'Qual è la cosa più utile che avete imparato quest’anno? Io: documentare tutto.',
  'Newsletter o social: se dovete scegliere un canale solo, quale?',
- 'Voi i report ai clienti come li fate? Slide, dashboard o vocale?'];
-const CM_GEN=['Concordo!','Bella osservazione, grazie per averla condivisa.','Interessante, ci pensavo proprio oggi.','Io la penso un po’ diversamente, ma il punto è valido.','Salvato, lo provo la prossima settimana.','Questa è oro 🙌','Lo giro al mio team.','Top. Aggiungo: misurate sempre i risultati.','Ci vediamo al prossimo Marketers!','Grazie per averlo scritto, mi ci ritrovo molto.','Ottimo spunto per il mio lavoro.','Complimenti, continua così!'];
-const CM_ANS=['Io uso un paio di strumenti e un controllo umano a fine giornata.','Dipende da cosa vuoi ottenere, ma io partirei dal più semplice.','Ci ho appena provato: funziona meglio con regole chiare.','Una volta a settimana, ma fatta bene.','Per me meglio un solo canale e farlo benissimo.','Prova entrambe e guarda i numeri dopo un mese.'];
-const CM_REACT_ABS=['Beati voi che siete lì!','Quanto mi piacerebbe esserci, il prossimo anno ci sono.','Fatemi sapere com’è, io seguo da lontano.','Invidia pura, godetevela!'];
-const CM_REACT_ATT=['Ci vediamo domani in sala!','Io ero lì, bellissima sessione.','Ci incontriamo all’Area networking?','Anch’io ho preso appunti, te li giro.'];
-const CM_WARM=['Che bello averti incontrato al #MW26, {me}!','Mi ha fatto davvero piacere conoscerti di persona.','Ci siamo conosciuti oggi: bella chiacchierata, ci sentiamo!','È stato un piacere incontrarti, {me}!','Ricordo bene la chiacchierata di oggi: teniamoci in contatto 🙌','{me}! Ci siamo visti proprio oggi. Grazie ancora per il confronto.'];
-const CM_METPOST=['Oggi ho conosciuto {me} al #MW26, {job}: bellissima chiacchierata. Ne riparliamo presto!','Tra le persone più interessanti incontrate oggi: {me}. Segnatevi il nome. #MW26','Una chiacchierata con {me} ({job}) mi ha dato idee nuove. Il Marketers World serve a questo.'];
-const CM_COMPOSE=['Sono a Rimini per il #MW26: chi c’è?','Che energia al Palacongressi! #MW26','Primo workshop fatto: spunti a pioggia.','Consiglio del giorno: scrivete tutto nel taccuino.','Cerco qualcuno con cui parlare di {job} all’Area networking.'];
+ 'Voi i report ai clienti come li fate? Slide, dashboard o vocale?',
+ 'Come gestite i clienti che non rispondono mai? Io ho due mail ferme da una settimana.',
+ 'Qual è il vostro rapporto con le call? Meno ne faccio, meglio lavoro.',
+ 'Quanto tempo dedicate alla formazione ogni settimana? Io sono a un’ora, mi pare poco.',
+ 'Meglio un tool unico o tanti strumenti collegati? Dubbio quotidiano.',
+ 'Chi usa ancora i fogli di calcolo per gestire i progetti? Alzi la mano.',
+ 'Come si prezza un lavoro di cui non si conosce la durata? Consigli?',
+ 'Il vostro miglior consiglio per chi comincia oggi nel nostro mestiere?',
+ 'Voi pianificate i contenuti con un mese di anticipo o improvvisate?',
+ 'Che podcast ascoltate in treno? Ne cerco di nuovi.',
+ 'Ha senso aprire un nuovo canale social nel 2026? Mi piacerebbe un parere.',
+ 'Quando dite no a un cliente? Io faccio fatica.',
+ 'Come tenete in ordine le idee? Io ho dodici taccuini e nessun sistema.',
+ 'Quanto conta la formazione in presenza rispetto ai corsi online? Per me tantissimo.',
+ 'Se doveste dare un consiglio a voi stessi di un anno fa, quale sarebbe?',
+ 'Avete già provato ad automatizzare le email di follow-up? Come è andata?',
+ 'Quale libro di marketing consigliereste a qualcuno che parte da zero?',
+ 'Come si convince un cliente a investire in contenuti di qualità? Sono a corto di argomenti.'];
+const CM_GEN=['Concordo!','Bella osservazione, grazie per averla condivisa.','Interessante, ci pensavo proprio oggi.','Io la penso un po’ diversamente, ma il punto è valido.','Salvato, lo provo la prossima settimana.','Questa è oro 🙌','Lo giro al mio team.','Top. Aggiungo: misurate sempre i risultati.','Ci vediamo al prossimo Marketers!','Grazie per averlo scritto, mi ci ritrovo molto.','Ottimo spunto per il mio lavoro.','Complimenti, continua così!',
+ 'Mi hai fatto venire un’idea. Grazie!','Esattamente quello che stavo pensando.','Detto meglio di come l’avrei detto io.','Posso citarti nel mio prossimo post?','Piccolo dettaglio che cambia tutto. Complimenti!','Ci ragiono su e ti faccio sapere.','Lo stampo e lo attacco in ufficio.','Parole sante.','Mi hai strappato un sorriso, grazie.','Segnato sul taccuino.','Sono d’accordo al 90%, ma sul resto ne parliamo di persona.','Bellissimo spunto, soprattutto l’ultima parte.','Questo andrebbe letto da tanti.','Condivido volentieri.','Posso farti una domanda in privato?','Sono d’accordo, ma bisogna anche saperlo fare.','Ottima sintesi.','Sempre sul pezzo!','Ne parlavo proprio ieri con un collega.','Che bella la community di Marketers Pro.','Mi iscrivo al tuo club di persone sensate.','Grazie, mi serviva proprio oggi.','Utilissimo, grazie!','Ci metto un cuore e torno a lavorare. ❤️','Mi sa che ti seguo.','Il tuo punto di vista è sempre una boccata d’aria.','Sembra facile, ma non lo è affatto.','Lo proverò e ti racconto com’è andata.','Aggiungo solo: fatelo con calma.','Ottimo promemoria per tutti noi.','Interessante, non ci avevo mai pensato.','Il mio capo dovrebbe leggere questo.','Le cose semplici sono le più difficili da fare bene.','Ho riso e imparato. Che combinazione!','Pensa che io faccio il contrario e funziona a metà.','Chapeau.','Grazie per la dritta, la applico domattina.','Qui dentro si impara più che ai webinar.','Spunto prezioso, soprattutto per chi comincia.'];
+const CM_ANS=['Io uso un paio di strumenti e un controllo umano a fine giornata.','Dipende da cosa vuoi ottenere, ma io partirei dal più semplice.','Ci ho appena provato: funziona meglio con regole chiare.','Una volta a settimana, ma fatta bene.','Per me meglio un solo canale e farlo benissimo.','Prova entrambe e guarda i numeri dopo un mese.',
+ 'Io ho risolto con un modello di mail e un promemoria a tre giorni.','Per me la risposta è: dipende dal cliente. Ma sempre per iscritto.','Ho smesso di cercare lo strumento perfetto: uso quello che ho e lo faccio bene.','Un’ora a settimana è un buon inizio. L’importante è non saltarla.','Meglio poche cose fatte con costanza che tante fatte a caso.','Parto sempre dal problema, poi vedo cosa serve.','Io ho provato e non mi ha convinto, ma vale la pena fare un test.','Parlane con tre colleghi: ti daranno tre risposte diverse e una verità.','Io i libri li ascolto: audiolibro mentre cammino.','Per me il segreto è dire di no una volta all’anno, a un cliente che ti sta stretto.','Dipende dal budget, ma in generale provo a fare prima in piccolo.','Se un cliente non risponde mai, di solito è un segnale. Io smetto di inseguirlo.','Io ho cominciato con un taccuino. Poi sono passato alle note digitali, ma non ho smesso di scrivere a mano.','Ho provato in tutti i modi: la cosa che funziona è fissare data e ora.'];
+const CM_REACT_ABS=['Beati voi che siete lì!','Quanto mi piacerebbe esserci, il prossimo anno ci sono.','Fatemi sapere com’è, io seguo da lontano.','Invidia pura, godetevela!','Io sono a casa a guardare le storie. Beati voi!','Mi mangio le mani per non esserci.','Divertitevi anche per me!','Prima o poi ci vengo anch’io, intanto grazie per gli aggiornamenti.','Aspettiamo i riassunti con ansia da casa.','Mi siete mancati in sala: alla prossima!','Voglio un resoconto dettagliato, eh!','Che bello leggervi da lontano, quasi come esserci.'];
+const CM_REACT_ATT=['Ci vediamo domani in sala!','Io ero lì, bellissima sessione.','Ci incontriamo all’Area networking?','Anch’io ho preso appunti, te li giro.','Io sono al primo piano: se passi mi fai un cenno!','Anche io, la sala era piena fino in fondo.','Ero a due file da te e non ti ho riconosciuto: la prossima volta ci salutiamo.','Ti ho visto in coda al caffè: sei sempre in movimento!','Ci sentiamo dopo cena, magari all’Offworld.','Sala bellissima, speaker ancora meglio.','Anch’io, il Palacongressi è una piccola città.','Domani ci rivediamo per il workshop del mattino?','Io sono in Area networking, ti aspetto lì.','Ci siamo incrociati proprio al varco!'];
+const CM_FAM={
+ creator:['Dal mio punto di vista, i contenuti vincono quando raccontano una persona.','Sul fronte contenuti: prima l’idea, poi la forma.','Per chi fa contenuti, la costanza è tutto.','Registro tutto, poi taglio. È la regola.','La storia batte la tecnica, quasi sempre.'],
+ design:['Dal lato del design: meno elementi, più chiarezza.','Quando guardo un layout controllo sempre prima la gerarchia.','Un buon design si nota quando manca.','Colori e spazi dicono molto più delle parole.','Ci vuole sempre un occhio esterno, anche nel design.'],
+ social:['Sui social la regola d’oro: rispondere alle persone.','Il tono di voce fa il 50% del lavoro.','Community vuol dire presenza, non solo contenuti.','Un buon commento vale più di mille like.','Parlare con le persone, non alle persone.'],
+ perf:['Prima di tutto: i numeri. Poi le opinioni.','Se non lo misuri non esiste. È un mantra ma funziona.','Test piccolo, decisione veloce.','Io guardo sempre il costo per risultato.','Un’ipotesi chiara vale più di tre dashboard.'],
+ tech:['Sul fronte tecnico: automatizzare solo ciò che già funziona a mano.','Prima capire il processo, poi costruire lo strumento.','Un prototipo brutto batte un progetto perfetto mai realizzato.','Con l’AI il collo di bottiglia siamo sempre noi, e va bene così.','Documentate tutto: il futuro voi ringrazierà.'],
+ strat:['Visione d’insieme: senza strategia è solo attività.','Chiedetevi sempre “e quindi?”. Cambia tutto.','Priorità, priorità, priorità.','Una buona strategia dice anche cosa non fare.','Pochi obiettivi, ben chiari.'],
+ biz:['Da imprenditore: fate le cose, poi perfezionate.','I clienti sono il miglior consulente che avrete mai.','Un’attività vive di relazioni e di cassa.','Vendere è un servizio, non un favore.','Partite piccoli, ma partite.'],
+ edu:['Da formatore: nessuno impara guardando. Si impara facendo.','Una domanda ben posta vale una lezione.','Ogni errore è materiale didattico.','Crescere è un mestiere che si fa in due.','Il feedback onesto è un regalo.']};
+const CM_WARM=['Che bello averti incontrato al #MW26, {me}!','Mi ha fatto davvero piacere conoscerti di persona.','Ci siamo conosciuti oggi: bella chiacchierata, ci sentiamo!','È stato un piacere incontrarti, {me}!','Ricordo bene la chiacchierata di oggi: teniamoci in contatto 🙌','{me}! Ci siamo visti proprio oggi. Grazie ancora per il confronto.','Mi ha fatto piacere incontrarti al #MW26. Scrivimi quando vuoi.','Piacere di averti conosciuto, {me}: hai un modo di ragionare che mi ha dato spunti.','Mi sei rimasto in mente dopo la chiacchierata, {me}. Facciamo qualcosa insieme?','Grazie per il tempo di oggi, {me}: è stato un incontro che non mi aspettavo.','Ti ho visto qui sopra e mi sono ricordato subito di te. Bella conoscenza!','Quando ci vediamo la prossima volta il caffè lo offro io, {me}.','Sei una delle belle sorprese di questo #MW26.','Se vuoi continuare la conversazione di oggi, io ci sono.'];
+const CM_REPLY=['Grazie del commento, {me}!','Esatto, hai colto il punto.','Ci ragiono e ti rispondo meglio più tardi.','Bella domanda, {me}: dipende da molte cose.','Concordo, ma proverei anche l’altra strada.','Mi fa piacere che ti sia utile!','Ci vediamo in giro e ne parliamo.','Hai ragione, non ci avevo pensato.','Grazie! Se vuoi ne parliamo in privato.','Capisco il tuo punto di vista.','Sì, anch’io la penso così.','Ottimo, fammi sapere come va.'];
+const CM_METPOST=['Oggi ho conosciuto {me} al #MW26, {job}: bellissima chiacchierata. Ne riparliamo presto!','Tra le persone più interessanti incontrate oggi: {me}. Segnatevi il nome. #MW26','Una chiacchierata con {me} ({job}) mi ha dato idee nuove. Il Marketers World serve a questo.','Ho incontrato {me}, {job}, e abbiamo parlato di tutto tranne che del tempo. Che bella gente.','Mi era venuta una domanda: l’ho fatta a {me} ({job}). Risposta migliore del previsto. #MW26','Se cercate un confronto onesto sul lavoro, parlate con {me}. Ve lo dice chi l’ha appena fatto.'];
+const CM_COMPOSE=['Sono a Rimini per il #MW26: chi c’è?','Che energia al Palacongressi! #MW26','Primo workshop fatto: spunti a pioggia.','Consiglio del giorno: scrivete tutto nel taccuino.','Cerco qualcuno con cui parlare di {job} all’Area networking.','Silent Stage provata: strana ma bellissima.','Sto cercando di capire come si arriva al primo piano. Consigli?','Una sola cosa da portare a casa oggi: scelgo quella che segno per ultima.'];
 
 const cmT=()=>G.day*1440+Math.floor(G.min);
 function cmInit(){return{liked:{},posts:[],cm:{},metT:{},seenT:0,notifT:0,pid:0};}
@@ -59,30 +128,35 @@ const cmPick=(r,a)=>a[Math.floor(r()*a.length)];
 function cmMembers(){
   if(G._cmM&&G._cmM.k===G.seed)return G._cmM.v;
   const r=mulberry32(hashStr(G.seed+'|members')),used=new Set(),out=[];
-  for(let i=0;i<30;i++){let nm;do{nm=cmPick(r,ATT_FIRST)+' '+cmPick(r,ATT_LAST);}while(used.has(nm));used.add(nm);
+  for(let i=0;i<90;i++){let nm;do{nm=cmPick(r,ATT_FIRST)+' '+cmPick(r,ATT_LAST);}while(used.has(nm));used.add(nm);
     const jb=cmPick(r,JOBS);out.push({id:'m'+i,name:nm,job:jb[0],fam:jb[1],city:cmPick(r,ATT_CITY),absent:r()<.3,pal:{shirt:['#c9a24a','#3da5d9','#6bc46d','#b57bff','#e86a8a','#f0f0f5','#ff6a3d'][i%7]}});}
   G._cmM={k:G.seed,v:out};return out;
 }
 /* post programmati nei tre giorni (e il giorno prima) */
 function cmPool(){
   if(G._cmP&&G._cmP.k===G.seed+'|'+PLAYER.job)return G._cmP.v;
-  const r=mulberry32(hashStr(G.seed+'|pool')),M=cmMembers(),out=[],N=46,start=-1500,end=2*1440+1400;
+  const r=mulberry32(hashStr(G.seed+'|pool')),M=cmMembers(),out=[],usedP=new Set(),N=110,start=-1500,end=2*1440+1400;
   const titles=[0,1,2].map(d=>PROGRAMMA.filter(e=>e.d===d&&(e.kind==='ws'||e.kind==='talk')&&e.title.length<70));
   for(let i=0;i<N;i++){
     const at=Math.round(start+(end-start)*(i+r()*.8)/N),m=M[Math.floor(r()*M.length)],day=Math.max(0,Math.floor(at/1440)),mn=((at%1440)+1440)%1440;
     let text,kind='ev',q=false;
-    if(m.absent&&r()<.75){text=cmPick(r,CM_ABSENT);kind='abs';}
-    else if(at<525){text=cmPick(r,CM_PRE);kind='pre';}
-    else{
-      const x=r();
-      if(x<.2){q=true;kind='q';text=cmPick(r,CM_Q);}
-      else if(x<.4){kind='tip';const f=JOBFAM[m.fam];text='Consiglio da '+m.job.toLowerCase()+': '+cmPick(r,TIPS[cmPick(r,f.tip)]);}
+    for(let tr=0;tr<10;tr++){
+      if(m.absent&&r()<.75){text=cmPick(r,CM_ABSENT);kind='abs';}
+      else if(at<525){text=cmPick(r,CM_PRE);kind='pre';}
       else{
-        const pool=day===2&&mn>900?CM_LAST:day===0&&mn>1080?CM_EVE0:CM_EVENT;
-        const e=titles[day][Math.floor(r()*titles[day].length)];
-        text=cmPick(r,pool).replace('{n}',day+1).replace('{title}',e?e.title:'un workshop');
+        const x=r();
+        if(x<.2){q=true;kind='q';text=cmPick(r,CM_Q);}
+        else if(x<.4){kind='tip';const f=JOBFAM[m.fam];text='Consiglio da '+m.job.toLowerCase()+': '+cmPick(r,TIPS[cmPick(r,f.tip)]);}
+        else{
+          const pool=day===2&&mn>900&&r()<.5?CM_LAST:day===0&&mn>1080&&r()<.5?CM_EVE0:mn<600&&r()<.35?CM_MORNING:(mn>840&&mn<1080&&r()<.3)?CM_AFTER:CM_EVENT;
+          const e=titles[day][Math.floor(r()*titles[day].length)];
+          text=cmPick(r,pool).replace('{n}',day+1).replace('{title}',e?e.title:'un workshop');
+        }
       }
+
+      if(!usedP.has(text))break;
     }
+    usedP.add(text);
     out.push({id:'c'+i,at,m,text,kind,q});
   }
   out.sort((a,b)=>a.at-b.at);G._cmP={k:G.seed+'|'+PLAYER.job,v:out};return out;
@@ -95,15 +169,19 @@ function cmMetPeople(){
 const cmFill=(s,extra)=>s.replace('{me}',pname()).replace('{job}',(extra&&extra.job)||ME().job);
 /* commenti di un post (del pool o mio): deterministici, ordinati nel tempo */
 function cmComments(p,mine){
-  const r=mulberry32(hashStr(G.seed+'|cm|'+p.id)),M=cmMembers(),met=mine?cmMetPeople().filter(x=>x.at<=p.at):[],out=[];
-  const n=mine?2+Math.floor(r()*3):p.q?2+Math.floor(r()*3):Math.floor(r()*3);
-  let t=p.at;const warm=met.slice().sort(()=>r()-.5).slice(0,Math.min(2,met.length));
+  const r=mulberry32(hashStr(G.seed+'|cm|'+p.id)),M=cmMembers(),met=mine?cmMetPeople().filter(x=>x.at<=p.at):[],out=[],usedT=new Set(),usedW=new Set();
+  const n=mine?2+Math.floor(r()*4):p.q?2+Math.floor(r()*4):Math.floor(r()*4);
+  let t=p.at;const warm=met.slice().sort(()=>r()-.5).slice(0,Math.min(3,met.length));
   for(let i=0;i<n;i++){
     t+=mine?4+Math.floor(r()*28):6+Math.floor(r()*70);
     let who,text,isMet=false;
     if(mine&&warm[i]){who=warm[i];text=cmFill(cmPick(r,CM_WARM));isMet=true;}
-    else{who=cmPick(r,M);while(!mine&&who===p.m)who=cmPick(r,M);
-      text=who.absent&&r()<.6?cmPick(r,CM_REACT_ABS):p.q&&!mine?cmPick(r,CM_ANS):r()<.25?cmPick(r,CM_REACT_ATT):cmPick(r,CM_GEN);}
+    else{let g2=0;do{who=cmPick(r,M);}while((who===p.m||usedW.has(who.id))&&g2++<12);
+      for(g2=0;g2<12;g2++){
+        const x=r();
+        text=who.absent&&x<.5?cmPick(r,CM_REACT_ABS):p.q&&!mine&&x<.7?cmPick(r,CM_ANS):x<.3?cmPick(r,CM_FAM[who.fam]||CM_GEN):x<.5?cmPick(r,CM_REACT_ATT):cmPick(r,CM_GEN);
+        if(!usedT.has(text))break;}}
+    usedT.add(text);if(who&&who.id)usedW.add(who.id);
     out.push({id:p.id+'_'+i,at:t,who,text,met:isMet});
   }
   return out;
@@ -112,7 +190,7 @@ function cmComments(p,mine){
 function cmReplies(){
   const C=cmEnsure(),out=[];
   for(const pid in C.cm)for(const c of C.cm[pid]){const r=mulberry32(hashStr(G.seed+'|rp|'+c.id));if(r()<.25)continue;
-    const M=cmMembers(),who=cmPick(r,M);out.push({id:'r'+c.id,pid,at:c.at+8+Math.floor(r()*24),who,text:cmPick(r,CM_GEN.concat(CM_ANS)),to:c.id});}
+    const M=cmMembers(),who=cmPick(r,M);out.push({id:'r'+c.id,pid,at:c.at+8+Math.floor(r()*24),who,text:cmFill(cmPick(r,CM_REPLY.concat(CM_GEN)),null),to:c.id});}
   return out;
 }
 /* feed visibile: pool + post degli incontrati + miei */
@@ -149,7 +227,7 @@ function cmNotify(){
 }
 const cmHL=s=>esc(s).replace(/(#[\wÀ-ÿ]+|@[\wÀ-ÿ]+)/g,'<span class="hl">$1</span>');
 let cmOpen={},cmMine=false;
-function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return[0,1,2,3,4].sort(()=>r()-.5).slice(0,3).map(i=>cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}));}
+function cmCompose(){const r=mulberry32(hashStr(G.seed+'|cmp|'+G.day));return CM_COMPOSE.map((_,i)=>i).sort(()=>r()-.5).slice(0,3).map(i=>cmFill(CM_COMPOSE[i],{job:ME().job.toLowerCase()}));}
 function renderComm(B){
   const C=cmEnsure(),T=cmT();C.seenT=T;
   const sug=cmCompose(),feed=cmFeed(T,cmMine),nMine=C.posts.length;

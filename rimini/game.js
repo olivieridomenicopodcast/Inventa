@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=59;
+const BUILD=60;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -267,9 +267,9 @@ function buildNPC(){
   add({id:'yoga',kind:'staff',name:'Insegnante di yoga',role:'Sessione sul prato',f:0,x:k(810),y:k(780),p:{shirt:'#7ad37a',pants:'#e8e8f0',skin:'#e0b085',hair:'#4a3322',badge:'#7ad37a',long:true},dir:0});
   add({id:'dj',kind:'staff',name:'Host Offworld',role:'Karaoke e DJ set',f:0,x:k(985)+75,y:k(600)+96,p:{shirt:'#161226',pants:'#232a44',skin:'#e8b98a',hair:'#c9a24a',badge:'#ff6a3d',cap:'#ff6a3d'},dir:0});
   // partecipanti inventati che girano: numero, aspetto e zone cambiano a ogni seme
-  const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0]];
-  const nAtt=12+Math.floor(RNG()*9);
-  for(let i=0;i<nAtt;i++){const r=pickFrom(ZONES);const fn=pickFrom(ATT_FIRST),ln=pickFrom(ATT_LAST);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);}
+  const ZONES=[[420,640,520,705,0],[740,640,830,705,0],[430,200,860,236,0],[300,420,395,620,0],[160,640,390,700,0],[960,560,1180,820,0],[420,780,860,860,0],[420,560,830,680,1],[400,120,860,200,1],[330,300,470,720,0],[600,640,700,740,0],[880,470,950,530,0],[420,780,860,860,0],[740,640,830,705,0],[960,560,1180,820,0],[330,300,470,720,0],[300,280,420,620,1],[860,300,1000,560,1],[420,560,830,680,1]];
+  const nAtt=46+Math.floor(RNG()*16),usedN=new Set();
+  for(let i=0;i<nAtt;i++){const r=pickFrom(ZONES);let fn,ln;do{fn=pickFrom(ATT_FIRST);ln=pickFrom(ATT_LAST);}while(usedN.has(fn+ln));usedN.add(fn+ln);const x0=k(r[0]),y0=k(r[1]),x1=k(r[2]),y1=k(r[3]);add({id:'att'+i,kind:'att',name:fn+' '+ln,role:'',f:r[4],x:x0+RNG()*(x1-x0),y:y0+RNG()*(y1-y0),p:randPal(),wander:{x0,y0,x1,y1},first:fn,job:null});const q=NPC[NPC.length-1],jb=pickFrom(JOBS);q.job=jb[0];q.fam=jb[1];q.role=jb[0]+' · '+pickFrom(ATT_CITY);if(FL[q.f]){[q.x,q.y]=freeSpot(q.f,q.x,q.y);}}
 }
 
 /* ============================================================ movimento e collisioni */
@@ -402,29 +402,32 @@ function nodeYoga(){
 }
 const tipFor=fam=>pickFrom(TIPS[pickFrom((JOBFAM[fam]||JOBFAM.strat).tip)]);
 /* risposte coerenti con il mestiere del personaggio: cambiano in base all'affinità con la famiglia di chi hai davanti */
-function jobChoices(n,onMet){
-  const me=ME(),nf=JOBFAM[n.fam||'strat'],a=aff(me.fam,n.fam||'strat'),hi=a>=.75,mid=a>=.62,tr=me.traits[hashStr('t|'+n.id)%me.traits.length];
+function jobChoices(n,onMet,withTrait){
+  const me=ME(),nf=JOBFAM[n.fam||'strat'],a=aff(me.fam,n.fam||'strat'),hi=a>=.75,mid=a>=.62,tr=me.traits[hashStr('t|'+n.id)%me.traits.length],r=chRng(n,'j');
   const meet=()=>{G.flags.jobTalk++;if(a>=.7)G.flags.hot++;onMet();};
-  const reply=hi?'Ma dai, '+me.job+'! Io sto dalla parte '+nf.lato+': siamo complementari, ci sarebbero mille cose da fare insieme. '
-    :mid?me.job+', interessante! Io sono più dalla parte '+nf.lato+'. Magari c’è qualcosa da fare insieme. '
-    :'Wow, '+me.job+': un mondo diverso dal mio, che sta dalla parte '+nf.lato+'. Mi incuriosisce molto. ';
+  const reply=chReply(n,a,nf.lato,me.job),bye=chPick(r,CH_BYE_OK),yes=chPick(r,CH_CONTACT);
   const ch=[
     {t:'Sono '+pname()+', '+me.job,n:{t:reply+'Scambiamoci i contatti?',c:[
-      {t:'Volentieri',n:null,act:meet},
-      {t:'Ti spiego cosa faccio',n:{t:'Ti ascolto!',c:[{t:JOBFAM[me.fam].pitch,n:{t:hi?'Bellissimo, è proprio quello che cerco: '+nf.cerca+'. Ci sentiamo dopo l’evento!':'Chiarissimo, grazie! Io cerco '+nf.cerca+'. Teniamoci in contatto.',c:[{t:'Contatti!',n:null,act:meet}]}}]}},
-      {t:'Dopo',n:null}]}},
-    {t:'('+TRAITS[tr].n+') '+TRAITS[tr].q,n:{t:'Bella domanda, '+pname()+'! Io sto cercando '+nf.cerca+'. '+(mid?'Direi che ci capiamo.':'Siamo diversi, ma proprio per questo può funzionare.'),c:[{t:'Scambiamoci i contatti',n:null,act:meet},{t:'Dopo',n:null}]}}
-  ];
+      {t:yes,n:null,act:meet},
+      {t:'Ti spiego cosa faccio',n:{t:'Ti ascolto!',c:[{t:JOBFAM[me.fam].pitch,n:{t:hi?'Bellissimo, è proprio quello che cerco: '+nf.cerca+'. '+bye:'Chiarissimo, grazie! Io cerco '+nf.cerca+'. '+bye,c:[{t:'Contatti!',n:null,act:meet}]}}]}},
+      {t:'Dopo',n:null}]}}];
+  if(withTrait)ch.push({t:'('+TRAITS[tr].n+') '+TRAITS[tr].q,n:{t:'Bella domanda, '+pname()+'! Io sto cercando '+nf.cerca+'. '+(mid?'Direi che ci capiamo.':'Siamo diversi, ma proprio per questo può funzionare.'),c:[{t:'Scambiamoci i contatti',n:null,act:meet},{t:'Dopo',n:null}]}});
   return ch;
 }
+function topicChoice(n,t,onMet){
+  const first=n.name.split(' ')[0],tip=t.tip?tipFor(n.fam||'strat'):'',txt=chAnswer(n,t,tip);
+  if(t.tip)return{t:t.q,n:{t:txt,c:[{t:'Lo segno!',n:null,act:()=>{onMet();addTip(tip,'consiglio di '+first);}}]}};
+  return{t:t.q,n:{t:txt,c:[{t:'Scambiamoci i contatti',n:null,act:onMet},{t:'Grazie, interessante!',n:null}]}};
+}
 function attendee(n){
-  const first=n.name.split(' ')[0],met=G.met[n.id];
-  if(met)return say(n,{t:'Ci siamo già presentati! Ci sentiamo dopo l’evento, ok?',c:[{t:'Certo!',n:null}]});
-  const tip=tipFor(n.fam||'strat');
-  say(n,{t:'Ciao! Sono '+first+', '+n.role.replace(' · ',' di ')+'. Tu?',c:[
-    ...jobChoices(n,()=>{G.met[n.id]=1;addContact(n);}),
-    {t:'Che workshop consigli?',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{G.met[n.id]=1;addContact(n);addTip(tip,'consiglio di '+first);}}]}},
-    {t:'Ciao, devo scappare!',n:null}
+  const met=G.met[n.id];
+  if(met)return say(n,{t:chMet(n),c:[{t:'Certo!',n:null}]});
+  const r=chRng(n,'o'),onMet=()=>{G.met[n.id]=1;addContact(n);},tp=chTopics(n,2),useTrait=r()<.5;
+  say(n,{t:chGreet(n),c:[
+    ...jobChoices(n,onMet,useTrait),
+    topicChoice(n,tp[0],onMet),
+    ...(useTrait?[]:[topicChoice(n,tp[1],onMet)]),
+    {t:chPick(r,CH_BYE),n:null}
   ]});
 }
 function nodeScout(){
@@ -604,10 +607,10 @@ function karaoke(e){
 function kDone(){G.flags.kara=true;G.flags.off++;G.min+=50;A.stamp();toast('Karaoke al Village vissuto!');}
 function meetNow(m){
   const pe=G.people.find(x=>x.id===m.pid),n={id:pe.id,name:pe.name,role:pe.job+' · '+pe.city,p:pe.pal,kind:'att',job:pe.job,fam:pe.fam};
-  const tip=tipFor(pe.fam);
-  say(n,{t:'Ciao '+pname()+'! Che bello incontrarti di persona. Allora, di cosa ti occupi?',c:[
-    ...jobChoices(n,()=>doneMeet(m,n)),
-    {t:'Parliamo di come cresce un business',n:{t:'Il consiglio che mi porto a casa: «'+tip+'»',c:[{t:'Lo segno!',n:null,act:()=>{addTip(tip,'meeting con '+pe.name);doneMeet(m,n);}}]}},
+  const tip=tipFor(pe.fam),tp=chTopics(n,1)[0],r=chRng(n,'mn');
+  say(n,{t:chPick(r,['Ciao '+pname()+'! Che bello incontrarti di persona. Allora, di cosa ti occupi?','Eccoti, '+pname()+'! Puntualissimo. Sediamoci un attimo: raccontami di te.','Piacere di vederti dal vivo! Parliamo un po’ di lavoro?','Ciao '+pname()+'! Ho aspettato questo incontro da quando ci siamo scritti.']),c:[
+    ...jobChoices(n,()=>doneMeet(m,n),true),
+    topicChoice(n,tp,()=>doneMeet(m,n)),
     {t:'Scusa, devo scappare',n:null}]});
 }
 function doneMeet(m,n){G.meets=G.meets.filter(x=>x!==m);G.flags.meet++;addContact(n);G.min+=30;A.stamp();}

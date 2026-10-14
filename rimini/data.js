@@ -62,8 +62,8 @@ const TIPS={
 };
 const TIPKEYS=Object.keys(TIPS);
 
-const ATT_FIRST=['Giulia','Marco','Chiara','Luca','Sara','Matteo','Elena','Davide','Francesca','Andrea','Martina','Simone','Alessia','Federico','Valentina','Paolo','Silvia','Riccardo','Federica','Nicola','Ilaria','Stefano','Laura','Giacomo','Beatrice','Tommaso','Arianna','Lorenzo','Camilla'];
-const ATT_LAST=['Rossi','Ferrari','Esposito','Bianchi','Romano','Colombo','Ricci','Marino','Greco','Bruno','Gallo','Conti','De Luca','Mancini','Costa','Giordano','Rizzo','Lombardi','Moretti','Barbieri','Fontana','Santoro'];
+const ATT_FIRST=['Giulia','Marco','Chiara','Luca','Sara','Matteo','Elena','Davide','Francesca','Andrea','Martina','Simone','Alessia','Federico','Valentina','Paolo','Silvia','Riccardo','Federica','Nicola','Ilaria','Stefano','Laura','Giacomo','Beatrice','Tommaso','Arianna','Lorenzo','Camilla','Gabriele','Noemi','Emanuele','Veronica','Alberto','Roberta','Claudio','Serena','Michele','Benedetta','Daniele','Elisa','Fabio','Greta','Giorgio','Irene','Jacopo','Monica','Pietro','Rebecca','Samuele','Teresa','Vittoria','Cristian','Agnese','Edoardo','Lucia','Mattia'];
+const ATT_LAST=['Rossi','Ferrari','Esposito','Bianchi','Romano','Colombo','Ricci','Marino','Greco','Bruno','Gallo','Conti','De Luca','Mancini','Costa','Giordano','Rizzo','Lombardi','Moretti','Barbieri','Fontana','Santoro','Caruso','Ferri','Pellegrini','Serra','Testa','Vitale','Silvestri','Fabbri','Orlando','Marchetti','Gentile','Rinaldi','Monti','Leone','Piras','Sartori','Basile','Cattaneo','Longo','Villa','Ferraro','Bellini','Amato'];
 const ATT_JOBS=['podcaster','social media manager','videomaker','copywriter','freelance','e-commerce manager','coach','consulente AI','media buyer','grafica e illustratrice','fondatore di una startup','content creator'];
 const ATT_CITY=['Milano','Roma','Torino','Bologna','Napoli','Firenze','Bari','Padova','Verona','Pesaro','Cagliari','Palermo','Genova','Trento','Perugia','Brescia','Udine','Catania','Lecce','Ancona'];
 
