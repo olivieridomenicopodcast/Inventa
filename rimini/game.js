@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=55;
+const BUILD=56;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -1112,11 +1112,21 @@ pad.addEventListener('pointerup',padEnd);pad.addEventListener('pointercancel',pa
 cv.addEventListener('pointerdown',e=>{if(G&&G.react){reactHit(Math.min(2,Math.floor(e.clientX/(W/3))));}});
 $('#act').addEventListener('pointerdown',e=>{e.preventDefault();act();});
 const getProfiles=()=>lsGet('rimini.profiles',[]);
+let jobAll=false;
 function jobUI(){
   const inp=$('#pjob');if(document.activeElement!==inp)inp.value=PLAYER.job||'';
-  const q=inp.value,sug=jobSuggest(q),box=$('#jobl');box.innerHTML='';
+  const q=inp.value,box=$('#jobl');box.innerHTML='';
+  const pick=j=>{PLAYER.job=j[0];lsSet('rimini.player',PLAYER);inp.value=j[0];jobAll=false;jobUI();};
+  if(jobAll&&!q.trim()){
+    Object.keys(JOBFAM).forEach(f=>{const h=document.createElement('div');h.className='jh';h.textContent=JOBFAM[f].n;box.appendChild(h);
+      JOBS.filter(j=>j[1]===f).forEach(j=>{const b=document.createElement('button');b.textContent=j[0];b.onmousedown=e=>e.preventDefault();b.onclick=()=>pick(j);box.appendChild(b);});});
+    const c=document.createElement('button');c.className='alt';c.textContent='▴ Chiudi elenco';c.onclick=()=>{jobAll=false;jobUI();};box.appendChild(c);
+  }else{
+  const sug=jobSuggest(q);
   sug.forEach(j=>{const b=document.createElement('button');b.textContent=j[0];b.onmousedown=e=>e.preventDefault();b.onclick=()=>{PLAYER.job=j[0];lsSet('rimini.player',PLAYER);inp.value=j[0];jobUI();};box.appendChild(b);});
   const alt=document.createElement('button');alt.className='alt';alt.textContent=q.trim()&&!jobFind(q)?'Altro: «'+q.trim()+'»':'Altro (scrivo la mia)';alt.onmousedown=e=>e.preventDefault();alt.onclick=()=>{inp.focus();};box.appendChild(alt);
+  if(!q.trim()){const all=document.createElement('button');all.className='alt';all.textContent='📂 Sfoglia tutte le mansioni ('+JOBS.length+')';all.onclick=()=>{jobAll=true;jobUI();};box.appendChild(all);}
+  }
   const pr=jobProfile(q);
   $('#jobsum').innerHTML=q.trim()?(pr.listed?'':'<b>Altro</b>: non è in lista, ti assegno uno stile in base alle parole. ')+'<b>Stile:</b> '+esc(pr.famN)+' · <b>Tratti:</b> '+pr.traits.map(t=>TRAITS[t].n).join(', ')+'. Cambia come parli, chi ti consiglia l’app e cosa ti propone la trama.':'Scegli un suggerimento o scrivi la tua mansione: cambia come parli, chi ti consiglia l’app e cosa ti propone la trama.';
 }
