@@ -17,6 +17,19 @@ function vBuilding(L,x,y,w,h,col,roof,label,doorX){
   txt(c,label,X+W/2,Y+8,'#fff',8);
   solid(L,X,Y+14,W,H-14-6);
 }
+/* Offworld: il palco del karaoke e del pigiama party, nel Marketers Village (est della piazza) */
+function vOffworld(L){
+  const c=L.c,tx=k(990),ty=k(545),tw=150,th=150;
+  paintTile(c,tx-50,ty+th+6,tw+110,124,'#2c2150','#3a2a66');
+  c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=2;c.strokeRect(tx-49,ty+th+7,tw+108,122);
+  paintWood(c,tx,ty+24,tw,th-24,'#2a2038','#35294a');
+  c.fillStyle='#ff6a3d';c.fillRect(tx,ty,tw,26);c.fillStyle='#fff';for(let i=0;i<15;i++)c.fillRect(tx+i*10,ty,5,26);c.fillStyle='rgba(0,0,0,.3)';c.fillRect(tx,ty+22,tw,4);
+  txt(c,'OFFWORLD',tx+tw/2,ty+38,'#ffd24d',16);c.fillStyle='#0e0b18';c.fillRect(tx+30,ty+52,90,34);c.fillStyle='#ff6a3d';c.fillRect(tx+30,ty+52,90,2);txt(c,'KARAOKE',tx+75,ty+70,'#fff',8);
+  desk(L,tx+14,ty+108,40,12,'#161226','DJ');c.fillStyle='#0b0d18';c.fillRect(tx+4,ty+52,8,34);c.fillRect(tx+tw-12,ty+52,8,34);solid(L,tx+28,ty+50,94,38);
+  table(L,tx+96,ty+118,8,'#cfc9ba');L.dyn.push({k:'lights',x:tx,y:ty+26,w:tw});
+  for(let i=0;i<tw+110;i+=10){c.fillStyle=['#ffd24d','#ff6a3d','#4dd0ff','#b57bff'][(i/10)%4];c.fillRect(tx-50+i,ty+th+2,3,3);}
+  L.tent={x:tx,y:ty};
+}
 function vBus(L,x,y){
   const c=L.c,X=k(x),Y=k(y),W=k(200),H=k(46);
   c.fillStyle='rgba(0,0,0,.28)';c.fillRect(X+2,Y+H-2,W,6);
@@ -51,11 +64,12 @@ function buildVillage(){
   // bacheca
   const gx=k(500),gy=k(570);c.fillStyle='#3a2a20';c.fillRect(gx,gy,k(40),k(28));c.fillStyle='#e8dcb8';c.fillRect(gx+3,gy+3,k(40)-6,k(28)-6);c.fillStyle='#ff6a3d';c.fillRect(gx+7,gy+7,10,8);c.fillStyle='#2aa7d8';c.fillRect(gx+22,gy+9,10,8);c.fillStyle='#3a2a20';c.fillRect(gx+k(18),gy+k(28),4,10);solid(L,gx,gy,k(40),k(28));
   // alberi, aiuole, panchine, bandiere
-  [[60,330],[60,560],[250,360],[430,340],[430,700],[880,340],[1050,340],[1250,330],[1250,560],[300,720],[1000,700],[1180,700],[60,760],[1200,760]].forEach(([x,y])=>tree(c,k(x),k(y),k(14)));
+  [[60,330],[60,560],[250,360],[430,340],[430,700],[880,340],[1050,340],[1250,330],[1250,560],[300,720],[60,760],[1200,760]].forEach(([x,y])=>tree(c,k(x),k(y),k(14)));
   [[250,300],[900,300],[420,470],[880,470]].forEach(([x,y])=>{c.fillStyle='#e86a8a';for(let i=0;i<5;i++)c.fillRect(k(x)+i*8,k(y)+((i*3)%5),5,5);c.fillStyle='#ffd24d';for(let i=0;i<5;i++)c.fillRect(k(x)+i*8+3,k(y)+8+((i*2)%4),4,4);});
-  [[760,600],[1000,600],[420,630]].forEach(([x,y])=>{c.fillStyle='#6a4a2a';c.fillRect(k(x),k(y),k(36),5);c.fillRect(k(x)+2,k(y)+5,3,5);c.fillRect(k(x)+k(36)-5,k(y)+5,3,5);});
+  [[760,600],[420,630]].forEach(([x,y])=>{c.fillStyle='#6a4a2a';c.fillRect(k(x),k(y),k(36),5);c.fillRect(k(x)+2,k(y)+5,3,5);c.fillRect(k(x)+k(36)-5,k(y)+5,3,5);});
   [[100,420],[1180,420]].forEach(([x,y])=>{c.fillStyle='#b6ad9b';c.fillRect(k(x),k(y)-k(40),3,k(40));c.fillStyle='#ff6a3d';c.fillRect(k(x)+3,k(y)-k(40),k(14),k(9));c.fillStyle='#fff';c.fillRect(k(x)+3,k(y)-k(40)+k(9),k(14),3);});
   txt(c,'BENVENUTI AL MARKETERS VILLAGE',k(650),k(560),'#7a7566',8);
+  vOffworld(L);
   solid(L,0,0,WW,4);solid(L,0,WH-4,WW,4);solid(L,0,0,4,WH);solid(L,WW-4,0,4,WH);
   return L;
 }
@@ -72,6 +86,9 @@ function villageSpots(I){
   I(VG.bus.x,VG.bus.y,46,'Sali sulla navetta per il Marketers World',()=>busStopTalk());
   I(VG.recep.x,VG.recep.y,40,'Reception del Marketers Village',()=>say(NPC.find(n=>n.id==='recep')||{name:'Reception',role:'Marketers Village',p:{shirt:'#1f2a50',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#ffd24d'}},{t:chPick(Math.random,['Benvenuto al Marketers Village! La navetta per il Palacongressi parte dalla fermata qui davanti.','Buongiorno! Se cerchi la navetta, è alla fermata in basso: ogni quarto d’ora.','Ciao! Colazione al bar, poi navetta. Il World comincia presto.']),c:[{t:'Grazie!',n:null}]}));
   I(VG.cafe.x,VG.cafe.y,34,'Un caffè prima della navetta',coffee);
+  {const ev=typeof activeAt==='function'?activeAt(['Village']):null;
+   I(1052,725,70,ev?'Offworld · '+(/Pigiama/.test(ev.title)?'pigiama party':'karaoke'):'Offworld · palco',()=>{if(typeof offworld==='function')offworld(ev);},34);}
+  I(255,268,36,G.day>=2?'Casa A: concludi il weekend':'Casa A: vai a dormire',()=>askNextDay());
   I(VG.board.x,VG.board.y,30,'Leggi la bacheca del Village',()=>info('Bacheca del Marketers Village','Il Marketers Village è il punto di ritrovo di chi sta per andare al Marketers World. Navetta per il Palacongressi ogni quarto d’ora, la mattina presto. Nelle pause si parla anche del Kalemana Festival e del Marketers Podcast. La sera, dopo l’Offworld, torna qui: puoi chiudere la giornata dalla fermata «Navetta» fuori dall’Ingresso A (dalle 17:00).'));
 }
 function busStopTalk(){
@@ -84,15 +101,26 @@ function busStopTalk(){
 function rideBus(toVillage){
   G.fade=1;A.blip();
   setTimeout(()=>{
-    if(toVillage){nextDay();return;}
+    if(toVillage){if(G.sandbox){nextDay();return;}eveningAtVillage();return;}
     G.f=0;G.p.x=k(632);G.p.y=k(885);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;
     if(!G.sandbox)G.min=Math.max(G.min+15,8*60+30);
     if(!G.flags.bus){G.flags.bus=true;A.stamp();}
     toast('In navetta verso il Marketers World… eccoti all’Ingresso A.',3200);
   },250);
 }
+/* la sera si torna al Village con la navetta: il tempo continua, ci sono l'Offworld e poi si va a dormire */
+function eveningAtVillage(){
+  G.f=2;G.p.x=k(700);G.p.y=k(752);[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;
+  G.min=Math.max(G.min,17*60)+12;G.fade=1;if(G.min>23*60+29)G.min=23*60+29;
+  toast('Eccoti al Marketers Village. Questa sera: Offworld al palco, alle 22:00.',3600);
+  if(G.min<22*60)setTimeout(()=>{const host={name:'Marketers Village',role:'Serata',p:{shirt:'#1f2a50',pants:'#232a44',skin:'#e0b085',hair:'#2a1d14',badge:'#ffd24d'}};
+    say(host,{t:G.day>=2?'È l’ultima sera! Alle 22:00, all’Offworld, c’è il pigiama party finale con la Family. Vuoi passare direttamente alla festa o girare liberamente e presentarti al Village alle 22?':'Alle 22:00 all’Offworld c’è il karaoke. Vuoi passare direttamente alla festa o girare liberamente e presentarti al Village alle 22?',c:[
+      {t:'Passo direttamente alla festa',n:null,act:()=>{G.min=22*60;G.p.x=k(1052);G.p.y=k(690);[G.p.x,G.p.y]=freeSpot(2,G.p.x,G.p.y);G.cam.x=G.p.x;G.cam.y=G.p.y;G.fade=1;toast('Sono le 22:00: la festa è cominciata!',2600);}},
+      {t:'Giro liberamente, ci vediamo alle 22',n:null}]});},900);
+}
 function nextDay(){
   if(G.day>=2){endGame();return;}
+  if(typeof villageCrowd==='function')villageCrowd(false);G.flags.pjOn=false;
   const prevDay=G.day;G.day++;G.min=8*60;G.f=VILLAGE_ON?2:0;
   if(VILLAGE_ON){G.p.x=k(VG.spawn.x);G.p.y=k(VG.spawn.y);}else{G.p.x=k(632);G.p.y=k(885);}
   G.p.dir=1;G.cam.x=G.p.x;G.cam.y=G.p.y;G.fade=1;
@@ -102,14 +130,14 @@ function nextDay(){
 function shuttleHome(){
   if(!G.sandbox&&G.min<17*60){info('Navetta per il Village','La navetta serale parte dalle 17:00. Fino ad allora il Marketers World è tutto tuo.');return;}
   const host={name:'Navetta serale',role:'Rientro al Marketers Village',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
-  say(host,{t:G.day>=2?'È l’ultima sera: tornando al Village finisce il tuo Marketers World. Sicuro?':'Vuoi chiudere la giornata e tornare al Marketers Village? Domani si ricomincia con la navetta.',c:[
-    {t:G.day>=2?'Sì, concludo il weekend':'Sì, torno al Village',n:null,act:()=>rideBus(true)},{t:'Resto ancora un po’',n:null}]});
+  say(host,{t:G.day>=2?'È l’ultima sera: al Marketers Village, alle 22:00, c’è il pigiama party finale all’Offworld. Vuoi andare?':'Vuoi tornare al Marketers Village? Questa sera c’è l’Offworld alle 22:00; poi si va a dormire e domani si ricomincia con la navetta.',c:[
+    {t:'Sì, torno al Village',n:null,act:()=>rideBus(true)},{t:'Resto ancora un po’',n:null}]});
 }
 
 /* tasto "passa al giorno dopo": chiude la giornata e riparte dal Village (domenica: conclude il weekend) */
 function askNextDay(){
   const last=G.day>=2,host={name:last?'Fine del weekend':'Fine giornata',role:'Marketers World',p:{shirt:'#2a3566',pants:'#232a44',skin:'#dfae80',hair:'#1a1a20',badge:'#ff6a3d',cap:'#2a3566'}};
-  say(host,{t:last?'Vuoi concludere il tuo Marketers World? Vedrai il riepilogo finale.':'Vuoi chiudere la giornata di '+DAYNAMES[G.day]+' e passare a '+DAYNAMES[G.day+1]+'? Tornerai al Marketers Village e domani si riparte con la navetta.',c:[
+  say(host,{t:last?'Vuoi concludere il tuo Marketers World? Vedrai il riepilogo finale.':(G.f===2?'Vuoi andare a dormire e passare a '+DAYNAMES[G.day+1]+'? Domani si riparte con la navetta.':'Vuoi chiudere la giornata di '+DAYNAMES[G.day]+' e passare a '+DAYNAMES[G.day+1]+'? Salti la serata: tornerai al Marketers Village e domani si riparte con la navetta (per la serata prendi la navetta dalle 17:00).'),c:[
     {t:last?'Sì, concludi':'Sì, passa al giorno dopo',n:null,act:()=>{if(last)endGame();else nextDay();}},
     {t:'No, resto ancora un po’',n:null}]});
 }

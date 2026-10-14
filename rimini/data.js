@@ -206,7 +206,7 @@ const ROOMS={
  'Sala Castello':{f:0,x:920,y:255},
  'Sala della Marina':{f:1,x:350,y:277},'Sala del Parco':{f:1,x:350,y:349},'Sala del Borgo':{f:1,x:350,y:421},
  'Sala by CANVA':{f:1,x:920,y:370},'Sala Finance by FINECO':{f:1,x:920,y:480},'Sala by Active Powered':{f:1,x:920,y:615},'Sala Real Estate by Building Production':{f:1,x:197,y:478},
- 'MK PRO con Ilaria Foresti':{f:0,x:575,y:238},'Stand Urlico Hoepli':{f:0,x:800,y:238},'Village':{f:0,x:1060,y:690},'Game Quiz':{f:0,x:725,y:238},'Gamification':{f:0,x:725,y:238}
+ 'MK PRO con Ilaria Foresti':{f:0,x:575,y:238},'Stand Urlico Hoepli':{f:0,x:800,y:238},'Village':{f:2,x:1052,y:715},'Game Quiz':{f:0,x:725,y:238},'Gamification':{f:0,x:725,y:238}
 };
 const TOPIC_TIPS={AI:'ai','Growth & Advertising':'sale',Business:'sale','Brand & Comunicazione':'brand','Social & Creator':'soc',Economics:'eco','Mindset & Lifestyle':'mind'};
 const MORE_TIPS={eco:['Separa sempre i soldi dell’attività da quelli personali.','Calcola il margine reale, non solo il fatturato.','Metti da parte una quota fissa per le tasse ogni mese.']};

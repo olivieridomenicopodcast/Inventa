@@ -181,6 +181,7 @@ body:not(.mob) #pad,body:not(.mob) #act{display:none}
 #cred{position:fixed;inset:0;z-index:70;background:#000;overflow:hidden;display:block}#cred .crin{display:block;position:absolute;left:0;right:0;text-align:center;color:#fff;padding:0 24px;animation:crl 46s linear forwards}#cred canvas{display:block;margin:0 auto 26px;width:110px;height:100px;image-rendering:pixelated;margin-bottom:26px}#cred h1{font-family:'Press Start 2P',monospace;font-weight:400;font-size:20px;line-height:1.5;color:#ff6a3d;margin:0 0 30px}#cred p{font-size:17px;line-height:1.6;margin:0 0 34px}#cred p.cs{font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.9;color:#7f89b0;margin-bottom:8px}#cred b{color:#fff;font-size:19px}#credSkip{position:absolute;right:14px;bottom:14px;z-index:2;padding:10px 14px;border-radius:10px;border:1px solid #3a4468;background:rgba(255,255,255,.08);color:#fff;font:600 13px 'Space Grotesk',sans-serif}@keyframes crl{from{transform:translateY(100vh)}to{transform:translateY(-100%)}}
 .lvw{position:relative;display:inline-block;flex:none}.lvb{position:absolute;right:-4px;bottom:-4px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#ff6a3d;color:#1a0a04;font:700 9px/15px 'Space Grotesk',sans-serif;text-align:center;font-style:normal;border:1px solid #0c1020}.lvc{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid #2a3566}.lvh{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.lvh b{font-size:14px;color:#fff}.lvh small{color:#9fb0d8;font-size:12px}.lvbar{height:6px;border-radius:3px;background:#1b2240;overflow:hidden}.lvbar i{display:block;height:100%;background:#ff6a3d}.lvq{margin-top:8px;padding:0;border:0;background:none;color:#4dd0ff;font:600 12px 'Space Grotesk',sans-serif;text-decoration:underline}.hwh{font-weight:700;color:#fff;font-size:15px;margin:6px 0 4px}.lvrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1b2240;font-size:13px;color:#cfd8ee}.lvrow b{color:#fff;flex:1}.lvrow small{color:#9fb0d8}.lvb2{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ff6a3d;color:#1a0a04;font:700 11px 'Space Grotesk',sans-serif}
 #phone .pg b{display:block;color:#fff;font-family:inherit;font-size:14px;line-height:1.45;margin-bottom:3px}#phone .pg small{color:#aebbe0!important;font-size:12px}
+body.rhythm #hud,body.rhythm #goal,body.rhythm #toast{display:none!important}
 #end{position:fixed;inset:0;z-index:26;display:grid;place-items:center;background:rgba(2,4,10,.8);backdrop-filter:blur(5px);padding:14px}
 #end .box{width:min(560px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:22px;background:#0c1020;border:1px solid var(--line);border-radius:18px}
 #end h2{font-family:'Press Start 2P',monospace;font-weight:400;font-size:15px;line-height:1.5;margin-bottom:8px;color:var(--ac)}
@@ -259,7 +260,7 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <div id="end" class="hide"><div class="box" id="endB"></div></div>
 <div id="toast"></div>
 <div id="title">
-<div id="bld" data-b="90">build</div>
+<div id="bld" data-b="91">build</div>
   <header class="top"><a class="brand" href="index.html"><i></i>INVENTA <span class="crumb">/ RIMINI 3 GIORNI</span></a><div class="tools"><a class="pill" href="index.html">← Hub</a></div></header>
   <div class="in">
     <div>
@@ -281,5 +282,6 @@ body.phone-open #toast{top:auto!important;bottom:calc(max(18px,env(safe-area-ins
 <script src="rimini/game.js"></script>
 <script src="rimini/extras.js"></script>
 <script src="rimini/finale.js"></script>
+<script src="rimini/karaoke.js"></script>
 </body>
 </html>
