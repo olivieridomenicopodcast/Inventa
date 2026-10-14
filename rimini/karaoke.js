@@ -87,7 +87,7 @@ function karScene(R,hs){
 }
 function karDone(R,s,pt,e){
   const acc=R.hits/R.notes.length,stars=acc>=.85?3:acc>=.55?2:1,star='⭐'.repeat(stars);
-  G.flags.kara=true;G.flags.off=(G.flags.off||0)+1;G.min=Math.min(G.min+12,23*60+29);A.stamp();
+  G.flags.kara=true;G.flags.off=(G.flags.off||0)+1;G.flags.kn=(G.flags.kn||0)+1;G.flags.ks=(G.flags.ks||0)+stars;G.min=Math.min(G.min+12,23*60+29);A.stamp();
   if(pt&&!pt.contact){addContact({id:pt.id,name:pt.name,role:pt.job+' · '+(pt.city||''),p:pt.pal,kind:'att',job:pt.job,fam:pt.fam,gender:pt.gender});}
   const react=stars===3?'Standing ovation! Il pubblico canta il ritornello con te e i telefoni sono tutti accesi.':stars===2?'Bella esibizione! Applausi e qualcuno chiede il bis.':'Qualche stonatura, ma il pubblico ti salva cantando il ritornello. Coraggio!';
   const duo=pt?' '+pt.name.split(' ')[0]+' ti dà il cinque: «Rifacciamolo!»'+(pt.contact?'':' Vi scambiate i contatti.'):'';
@@ -127,7 +127,7 @@ function startParty(kind){
 }
 function partyDone(R,kind){
   const acc=R.hits/R.notes.length,star=acc>=.85?'⭐⭐⭐':acc>=.55?'⭐⭐':'⭐';
-  G.flags.pjp=true;G.min=Math.min(G.min+10,23*60+29);A.stamp();
+  G.flags.pjp=true;G.min=Math.min(G.min+10,23*60+29);A.stamp();G.flags.pjg=(G.flags.pjg||0)+1;
   const msg=kind==='dance'?(acc>=.85?'La Family fa il trenino dietro di te!':acc>=.55?'Bel ballo! Qualcuno ti chiede la mossa.':'Hai ballato con il cuore: conta quello.'):(acc>=.85?'Piumino ovunque, hai vinto la guerra di cuscini!':acc>=.55?'Cuscinate a pareggio: tutti ridono.':'Hai preso più cuscini di quanti ne hai tirati… ma ti sei divertito.');
   pigiamaParty(null,kind==='dance'?'Ballo: '+R.hits+'/'+R.notes.length+' '+star+'. '+msg:'Cuscinate: '+R.hits+'/'+R.notes.length+' '+star+'. '+msg);
 }
