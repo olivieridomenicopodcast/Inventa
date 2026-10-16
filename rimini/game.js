@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=113;
+const BUILD=114;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -743,6 +743,7 @@ function quests(){
     {t:'Segui un workshop del venerdì',s:'Prenotalo nell’app e vai nella sala giusta',ok:F.ws>=1},
     {t:'Segui 2 speech dal palco',s:'Sabato o domenica, Sala della Piazza ('+F.talk+'/2)',ok:F.talk>=2},
     {t:'Fai un meeting dall’app',s:'Scheda Networking, poi Area networking ('+F.meet+'/1)',ok:F.meet>=1},
+    ...(typeof mmMatchCount==='function'?[{t:'Fai 10 match in Match Mode',s:'Rete › Match: metti mi piace ai profili e speri che ricambino ('+Math.min(10,mmMatchCount())+'/10)',ok:mmMatchCount()>=10}]:[]),
     {t:'Fai rete nel tuo settore',s:'Incontra 3 persone vicine al tuo mestiere ('+Math.min(3,F.hot)+'/3)',ok:F.hot>=3},
     {t:'Ricevi una proposta di collaborazione',s:'Dalla talent scout, da sabato vicino all’Area networking',ok:F.offer},
     {t:'Scrivi un post su Marketers Pro',s:'Pulsante Marketers Pro o scheda dell’app',ok:cmEnsure().posts.length>=1},
