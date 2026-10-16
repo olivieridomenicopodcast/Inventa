@@ -1,5 +1,5 @@
 'use strict';
-const BUILD=115;
+const BUILD=116;
 (function(){const el=document.getElementById('bld');if(el){const hb=+el.dataset.b;el.textContent='build '+BUILD+(hb!==BUILD?' (pagina '+hb+')':'');}})();
 /* RIMINI 3 GIORNI · giochino 2D dentro il Palacongressi (fan project non ufficiale) */
 const $=s=>document.querySelector(s);
@@ -62,6 +62,7 @@ function person(c,x,y,dir,step,p){
   if(dir===0){c.fillRect(x-2,y-18-bob,1,2);c.fillRect(x+1,y-18-bob,1,2);c.fillStyle='rgba(200,80,80,.5)';c.fillRect(x-1,y-15-bob,2,1);}
   else if(dir===2)c.fillRect(x-3,y-18-bob,1,2);else if(dir===3)c.fillRect(x+2,y-18-bob,1,2);
   // cuffie (Niky)
+  if(p.gphones){const gl=.55+.35*Math.sin((G?G.t:0)*5);c.fillStyle='rgba(61,255,122,'+(.18*gl).toFixed(2)+')';c.fillRect(x-7,y-25-bob,14,10);c.fillStyle='#1b1d28';c.fillRect(x-5,y-24-bob,10,1);c.fillRect(x-5,y-23-bob,1,5);c.fillRect(x+4,y-23-bob,1,5);c.fillStyle='#3dff7a';c.fillRect(x-6,y-21-bob,2,4);c.fillRect(x+4,y-21-bob,2,4);c.fillStyle='#caffdc';c.fillRect(x-6,y-21-bob,1,1);c.fillRect(x+5,y-21-bob,1,1);}
   if(p.phones){c.fillStyle='#1b1d28';c.fillRect(x-5,y-24-bob,10,1);c.fillRect(x-5,y-23-bob,1,5);c.fillRect(x+4,y-23-bob,1,5);c.fillStyle=p.badge||'#ff6a3d';c.fillRect(x-6,y-20-bob,2,4);c.fillRect(x+4,y-20-bob,2,4);}
   if(p.cap){c.fillStyle=p.cap;c.fillRect(x-5,y-24-bob,10,3);if(dir===0)c.fillRect(x-5,y-22-bob,10,1);}
   if(p.gear&&typeof drawGear==='function')drawGear(c,x,y,dir,bob,p.gear);
@@ -607,7 +608,7 @@ function drawTheatre(){
   const w=G.watching,t=G.t;
   if(!stCv){stCv=document.createElement('canvas');stCv.width=320;stCv.height=180;}
   const c=stCv.getContext('2d');c.imageSmoothingEnabled=false;
-  const main=w.where==='main';
+  const main=w.where==='main',sil=/^Silent Stage/.test(w.label||'');
   c.fillStyle='#090b18';c.fillRect(0,0,320,180);
   c.fillStyle='#151830';c.fillRect(0,0,320,9);for(let k=0;k<9;k++){c.fillStyle=['#ff6a3d','#4dd0ff','#ffd24d'][k%3];c.fillRect(14+k*36,5,5,3);}
   // fasci
@@ -621,7 +622,7 @@ function drawTheatre(){
   // relatore
   const sx=Math.round(160+Math.sin(t*.35)*48),mv=Math.cos(t*.35)*Math.abs(Math.sin(t*.7))>.35;
   c.fillStyle='rgba(255,240,200,.08)';c.beginPath();c.moveTo(sx-6,10);c.lineTo(sx+6,10);c.lineTo(sx+30,128);c.lineTo(sx-30,128);c.fill();
-  c.save();c.translate(sx,128);c.scale(2,2);person(c,0,0,mv?(Math.cos(t*.35)>0?3:2):0,mv?t*2:0,Object.assign({badge:'#ffd24d'},w.c.pal));
+  c.save();c.translate(sx,128);c.scale(2,2);person(c,0,0,mv?(Math.cos(t*.35)>0?3:2):0,mv?t*2:0,Object.assign({badge:'#ffd24d'},w.c.pal,sil?{gphones:true}:{}));
   // microfono ad archetto
   c.fillStyle='#111';c.fillRect(-2,-19,1,3);c.fillRect(-3,-16,3,1);c.restore();
   // pubblico
@@ -630,10 +631,11 @@ function drawTheatre(){
       const bob=w.applause>0?Math.round(Math.sin(t*14+i)*1.5):0;
       c.fillStyle=SC_[(i*7+r*3)%SC_.length];c.fillRect(x-5*sz,y+4*sz+bob,10*sz,7*sz);
       c.fillStyle=SH[(i*5+r)%SH.length];c.fillRect(x-3*sz,y-1+bob,7*sz,7*sz);c.fillStyle='rgba(0,0,0,.2)';c.fillRect(x-3*sz,y+4*sz+bob,7*sz,1);
+      if(sil){const gl=.55+.35*Math.sin(t*5+i*.7);c.fillStyle='rgba(61,255,122,'+(.2*gl).toFixed(2)+')';c.fillRect(x-5*sz,y-2+bob,10*sz,7*sz);c.fillStyle='#3dff7a';c.fillRect(x-4*sz,y-2+bob,8*sz,1);c.fillRect(x-4*sz,y+bob,2*sz,3*sz);c.fillRect(x+3*sz,y+bob,2*sz,3*sz);}
       if(hv<.07&&Math.sin(t*3+i)>0){c.fillStyle='#d8f0ff';c.fillRect(x+3*sz,y-6+bob,3,4);}
       if(w.applause>0&&hv>.8){c.fillStyle='#fff';c.fillRect(x-1,y-5+bob+Math.round(Math.sin(t*20+i)),2,2);}}}
   // giocatore di spalle in prima fila
-  const nx=34,ny=171;const PL=playerLook();c.fillStyle=PL.shirt;c.fillRect(nx-6,ny+4,12,8);c.fillStyle=PL.hair;c.fillRect(nx-4,ny-2,9,PL.long?12:8);c.fillStyle='#1b1d28';c.fillRect(nx-5,ny-3,11,1);c.fillStyle='#4dd0ff';c.fillRect(nx-6,ny,2,4);c.fillRect(nx+5,ny,2,4);c.fillStyle='#fff';c.fillRect(nx+8,ny+5,6,5);c.fillStyle='#ccd';c.fillRect(nx+9,ny+6,4,1);
+  const nx=34,ny=171;const PL=playerLook();c.fillStyle=PL.shirt;c.fillRect(nx-6,ny+4,12,8);c.fillStyle=PL.hair;c.fillRect(nx-4,ny-2,9,PL.long?12:8);c.fillStyle='#1b1d28';c.fillRect(nx-5,ny-3,11,1);c.fillStyle=sil?'rgba(61,255,122,.28)':'rgba(0,0,0,0)';c.fillRect(nx-8,ny-3,17,9);c.fillStyle=sil?'#3dff7a':'#4dd0ff';c.fillRect(nx-6,ny,2,4);c.fillRect(nx+5,ny,2,4);c.fillStyle='#fff';c.fillRect(nx+8,ny+5,6,5);c.fillStyle='#ccd';c.fillRect(nx+9,ny+6,4,1);
   c.fillStyle='rgba(0,0,0,.25)';c.fillRect(0,172,320,8);
   // composizione
   const barH=MOB?Math.max(250,H*.36):210;
