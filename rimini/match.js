@@ -70,21 +70,20 @@ function matchTick(){
   const S=mmState();for(const id in S.s){if(S.s[id]>0&&!S.m[id]){const c=mmFind(id);if(c&&c.likesMe&&c.at<=cmT())mmMatch(c);}}
 }
 function matchHtml(){
-  const D=mmDeck(),S=mmState(),T=cmT();
-  const seen=D.filter(c=>c.at<=T),got=seen.filter(c=>c.likesMe).length,miss=seen.length-got;
+  const D=mmDeck(),S=mmState();
   const skipped=D.filter(c=>S.s[c.id]<0).length;
   const left=D.filter(c=>S.s[c.id]===undefined||(!mmHide&&S.s[c.id]<0));
   let h='';
   if(mmFlash){h+=`<div class="mmflash">È un match con <b>${esc(mmFlash)}</b>! L’abbiamo aggiunto ai tuoi contatti.</div>`;mmFlash=null;}
   h+=`<div class="mmh"><span>MATCH MODE</span><label class="mmtg">NASCONDI SALTATI · ${skipped}<input type="checkbox" id="mmhide" ${mmHide?'checked':''}><i></i></label></div>`;
-  h+=`<div class="mmst"><span>♥ ${got} ti hanno messo mi piace</span><span>✕ ${miss} ti hanno scartato</span><span>💘 ${mmMatchCount()} match</span></div>`;
+  h+=`<div class="mmst"><span>💘 ${mmMatchCount()} match</span></div>`;
   const c=left[0];
-  if(!c){h+=`<div class="note">Hai visto tutti i profili per ora. ${skipped&&mmHide?'Togli «Nascondi saltati» per riconsiderare chi hai scartato.':'Altri potrebbero ancora mettere mi piace al tuo profilo: ricontrolla più tardi.'}</div>`;return h;}
+  if(!c){h+=`<div class="note">Hai visto tutti i profili per ora. ${skipped&&mmHide?'Togli «Nascondi saltati» per riconsiderare chi hai scartato.':'Se qualcuno ricambia il tuo mi piace, riceverai una sorpresa: ricontrolla più tardi.'}</div>`;return h;}
   const top=c.compat>=85;
   h+=`<div class="mmcard" id="mmcard" data-id="${c.id}"><div class="mmph"><img src="${mmPortrait(c.p)}" alt=""><div class="mmst1" id="mmY">COLLABORA</div><div class="mmst2" id="mmN">SALTA</div>
     <div class="mmbt"><button class="mmx" id="mmbN" aria-label="Salta">✕</button><button class="mmy" id="mmbY" aria-label="Mi piace">♥</button></div></div>
     <div class="mmrole"><span>${esc((c.job||'').toUpperCase())} · ${esc(c.co.toUpperCase())}</span><em>${top?'TOP MATCH':c.compat+'% COMPATIBILE'}</em></div>
-    <div class="mmname">${esc(c.name)}</div><div class="mmop">${esc(c.open)}${c.likesMe&&c.at<=T?'<span class="mmlk">ti ha messo mi piace</span>':''}</div><div class="mmcity">📍 ${esc(c.city||'Rimini')}</div>
+    <div class="mmname">${esc(c.name)}</div><div class="mmop">${esc(c.open)}</div><div class="mmcity">📍 ${esc(c.city||'Rimini')}</div>
     <div class="mmsec">// IN DUE PAROLE</div><p class="mmbio">${esc(c.bio)}</p>
     <div class="mmpro"><div class="mmsec">// PROFILO</div><div>👤 ${esc(MM_WORK[c.fam]||'')}</div><div>🏢 ${esc(c.sector)}</div><div>🔎 ${esc(c.seek.replace('Cerca: ',''))}</div></div></div>
     <div class="mmleft">Profili rimasti: ${left.length}</div>`;
