@@ -30,6 +30,7 @@ function scoreRun(){
   add('Pigiama party',F.pjp?1:0,40);
   add('Giochi del pigiama party',F.pjg||0,15);
   add('Proposta di collaborazione',F.offer?1:0,50);
+  add('Match in Match Mode',typeof mmMatchCount==='function'?mmMatchCount():0,12);
   add('Post su Marketers Pro',C.posts.length,8);
   add('Mi piace ricevuti',cmMyPts(cmT()),2);
   add('Livello su Marketers Pro',lv.l-1,20,'Livello '+lv.l);
