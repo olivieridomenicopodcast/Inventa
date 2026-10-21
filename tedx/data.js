@@ -153,3 +153,8 @@ const NOTES=[
  ['Inventato','Tutti i dialoghi, le personalità e le reazioni dei personaggi (anche di quelli con nome reale), gli ospiti fittizi (gestore dell’Astra, cittadini da reclutare, candidati 2027, referenti di aziende), le piante dell’Astra e dell’Auditorium nei dettagli, i minigiochi.'],
  ['Da verificare','Volontari e Adventure del 2024 e 2025 (non ci sono liste pubbliche), numero esatto dei giochi di Gradara, tema e speaker 2027.'],
  ['Easter egg 2027','Nel 2027 compare un nuovo volontario che porta la firma di chi ha fatto il gioco.']];
+
+/* slide dei talk mostrate durante il timer: inventate (generiche), i titoli sono quelli pubblici */
+const SLIDES={'Gabriele Pagnini':['Ingegneria del Pensiero','Come pensiamo prima di decidere','Un esempio di tutti i giorni','Cambiare il modo di guardare un problema','Una sola idea da portare a casa'],
+ 'Zico Pieri':['La magia del confine tra il possibile e l\u2019impossibile','Dove finisce il limite?','Un passo dopo l\u2019altro','Il confine si sposta','Quello che resta dopo il traguardo'],
+ 'Rodolfo Canestrari':['Quando le tue radici sono lunghe 15.000 chilometri','Da dove veniamo, davvero?','Una storia scritta nelle stelle','Origine e futuro','Guardare in alto per capire dove siamo']};

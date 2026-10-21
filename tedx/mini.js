@@ -25,16 +25,42 @@ function ticketsMini(cfg,done){const r=mulberry32(hashStr('tk|'+(cfg.seed||'x'))
   const kk=e=>{if(!MINI)return removeEventListener('keydown',kk);if(e.key==='1')pick(true);else if(e.key==='2')pick(false);};addEventListener('keydown',kk);
   MINI.iv=setInterval(()=>{t+=.1;const b=$('#tb');if(b)b.style.width=Math.max(0,100-t/LIM*100)+'%';if(t>=LIM){fb='Troppa coda: la persona ha aspettato troppo.';A.bad();next();}},100);}
 
-/* ---------- cue dei 18 minuti (stage manager) ---------- */
-function cueMini(cfg,done){const DUR=20,M=[{at:15/18*DUR,t:'3 minuti',c:'#4dff9a'},{at:17/18*DUR,t:'1 minuto',c:'#ffd24d'},{at:DUR*.995,t:'STOP',c:'#ff5d5d'}];let t=0,res=[null,null,null],msg='';
-  openMini(`<h2>Backstage · il timer dei 18 minuti</h2><p>${esc(cfg.intro||'Lo speaker è sul palco. Mostra i segnali nel momento giusto: a 15 minuti, a 17 e allo scadere dei 18.')}</p><canvas id="cuc" width="320" height="100" style="width:100%;image-rendering:pixelated;background:#0b0b10;border-radius:10px"></canvas><p id="cum" style="min-height:22px;color:var(--ac2)"></p><div class="row"><button class="btn" id="cuB">SEGNALE (Spazio)</button></div>`,{});
+/* ---------- cue dei 18 minuti (stage manager): si vede lo speech sul palco e il timer ---------- */
+function wrapText(c,txt,x,y,maxW,lh){const w=txt.split(' ');let l='',yy=y;for(const t of w){const test=l?l+' '+t:t;if(c.measureText(test).width>maxW&&l){c.fillText(l,x,yy);l=t;yy+=lh;}else l=test;}if(l)c.fillText(l,x,yy);return yy;}
+function stageScene(c,t,dur,o){const SC_=['#3a2a4a','#2a3a5a','#4a2a2a','#2a4a3a','#4a4a2a','#3a3a3a'],SH=['#e8b98a','#c98e62','#f0c8a0','#a8734c'];
+  c.imageSmoothingEnabled=false;c.fillStyle='#090b18';c.fillRect(0,0,320,150);
+  for(let k=0;k<4;k++){const x=40+k*80,fl=.05+.04*Math.sin(t*1.3+k*1.7);c.fillStyle='rgba('+(k%2?'255,120,120':'255,200,160')+','+fl.toFixed(3)+')';c.beginPath();c.moveTo(x-3,2);c.lineTo(x+3,2);c.lineTo(x+28,96);c.lineTo(x-28,96);c.fill();}
+  // schermo
+  c.fillStyle='#05060d';c.fillRect(50,4,220,74);const g=c.createLinearGradient(54,0,266,0);g.addColorStop(0,'#2a1020');g.addColorStop(.6,'#4a1a1a');g.addColorStop(1,'#5a2a2a');c.fillStyle=g;c.fillRect(54,8,212,66);
+  const n=o.slides.length,si=Math.min(n-1,Math.floor(t/dur*n)),sl=o.slides[si];
+  c.fillStyle='#fff';c.textAlign='left';c.textBaseline='top';c.font=(si===0?'7':'6')+'px '+PIX;wrapText(c,sl,62,si===0?24:20,196,10);
+  c.fillStyle='#e62b1e';c.font='5px '+PIX;c.fillText('TEDx',62,12);c.textAlign='right';c.fillStyle='#ffd24d';c.fillText((si+1)+'/'+n,258,64);
+  // palco
+  c.fillStyle='#171a30';c.fillRect(0,78,320,24);c.fillStyle='#2d3360';c.fillRect(0,100,320,3);c.fillStyle='#e62b1e';c.fillRect(0,102,320,1);
+  // clock da palco
+  const left=Math.max(0,dur-t),mm=Math.floor(left/dur*18),ss=Math.floor((left/dur*18-mm)*60);c.fillStyle='#000';c.fillRect(8,84,56,14);c.fillStyle=left/dur<.17?'#ff5d5d':left/dur<.34?'#ffd24d':'#4dff9a';c.font='8px '+PIX;c.textAlign='center';c.textBaseline='middle';c.fillText(String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0'),36,91);
+  // speaker
+  const sx=Math.round(170+Math.sin(t*.45)*52),mv=Math.cos(t*.45)*Math.abs(Math.sin(t*.8))>.3;c.save();c.translate(sx,102);c.scale(2,2);person(c,0,0,mv?(Math.cos(t*.45)>0?3:2):0,mv?t*2:0,Object.assign({badge:'#ffd24d'},palOf(o.speaker||'Speaker')));c.fillStyle='#111';c.fillRect(-2,-19,1,3);c.fillRect(-3,-16,3,1);c.restore();
+  // segnale al palco
+  if(o.flash&&t-o.flash.at<1.4){c.fillStyle=o.flash.c;c.globalAlpha=Math.max(0,1-(t-o.flash.at)/1.4);c.fillRect(120,106,80,10);c.globalAlpha=1;c.fillStyle='#000';c.font='6px '+PIX;c.textAlign='center';c.fillText(o.flash.t,160,111);}
+  // pubblico
+  const rows=[114,124,134,144];for(let r=0;r<4;r++){const sz=.9+r*.12,cnt=Math.floor(320/(10*sz))+1;for(let i=0;i<cnt;i++){const x=Math.round(i*10*sz+(r%2)*4),y=rows[r];const bob=o.applause?Math.round(Math.sin(t*14+i)*1.5):0;c.fillStyle=SC_[(i*7+r*3)%SC_.length];c.fillRect(x-4*sz,y+3*sz+bob,8*sz,5*sz);c.fillStyle=SH[(i*5+r)%SH.length];c.fillRect(x-3*sz,y-1+bob,6*sz,6*sz);}}
+  if(o.applause){c.fillStyle='rgba(255,255,255,.07)';c.fillRect(0,0,320,150);}
+}
+function cueMini(cfg,done){const DUR=20,M=[{at:15/18*DUR,t:'-3',f:'3 MINUTI',c:'#4dff9a'},{at:17/18*DUR,t:'-1',f:'1 MINUTO',c:'#ffd24d'},{at:DUR*.995,t:'STOP',f:'STOP',c:'#ff5d5d'}];let t=0,res=[null,null,null],msg='';
+  const sc={speaker:cfg.speaker||'',slides:cfg.slides||['Il talk','Una sola idea','Un esempio','Cosa portare a casa'],flash:null,applause:false};
+  openMini(`<h2>Backstage · il timer dei 18 minuti</h2><p>${esc(cfg.intro||'Lo speaker è sul palco. Mostra i segnali nel momento giusto.')}</p><canvas id="cuc" width="320" height="210" style="width:100%;image-rendering:pixelated;background:#0b0b10;border-radius:10px"></canvas><p id="cum" style="min-height:22px;color:var(--ac2)"></p><div class="row"><button class="btn" id="cuB">SEGNALE (Spazio)</button></div>`,{});
   const c=$('#cuc').getContext('2d');
-  const press=()=>{if(t>DUR+1)return;let bi=-1,bd=9;M.forEach((m,i)=>{if(res[i]===null){const d=Math.abs(t-m.at);if(d<bd){bd=d;bi=i;}}});if(bi<0||bd>2.4){msg='Troppo presto o a vuoto.';A.bad();return;}const p=bd<.5?3:bd<1.1?2:1;res[bi]=p;msg=['','Un po\' in ritardo/anticipo: lo speaker se ne accorge.','Buono.','Perfetto, tempo da orologio.'][p];A.tone(500+p*150,.1,'triangle',.06);};
+  const press=()=>{if(t>DUR+1)return;let bi=-1,bd=9;M.forEach((m,i)=>{if(res[i]===null){const d=Math.abs(t-m.at);if(d<bd){bd=d;bi=i;}}});if(bi<0||bd>2.4){msg='Troppo presto o a vuoto.';A.bad();return;}const p=bd<.5?3:bd<1.1?2:1;res[bi]=p;sc.flash={at:t,c:M[bi].c,t:M[bi].f};msg=['','Un po’ in ritardo o in anticipo: lo speaker se ne accorge.','Buono.','Perfetto, tempo da orologio.'][p];A.tone(500+p*150,.1,'triangle',.06);};
   $('#cuB').onclick=press;MINI.act=press;
-  MINI.iv=setInterval(()=>{t+=.05;c.fillStyle='#0b0b10';c.fillRect(0,0,320,100);c.fillStyle='#2d2d40';c.fillRect(10,48,300,6);M.forEach((m,i)=>{const x=10+m.at/DUR*300;c.fillStyle=res[i]!==null?'#888':m.c;c.fillRect(x-2,38,4,26);c.fillStyle='#fff';c.font='8px '+PIX;c.textAlign='center';c.fillText(m.t,x,32);if(res[i]!==null){c.fillStyle='#fff';c.fillText('★'.repeat(res[i]),x,80);}});
-    const px=10+Math.min(t,DUR)/DUR*300;c.fillStyle='#e62b1e';c.fillRect(px-1,22,3,56);c.fillStyle='#ffd24d';const mm=Math.floor(Math.min(t,DUR)/DUR*18),ss=Math.floor((Math.min(t,DUR)/DUR*18-mm)*60);c.font='12px '+PIX;c.textAlign='left';c.fillText(String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0'),10,96);
+  MINI.iv=setInterval(()=>{t+=.05;stageScene(c,Math.min(t,DUR),DUR,sc);
+    // linea del tempo
+    c.fillStyle='#0b0b10';c.fillRect(0,150,320,60);c.fillStyle='#2d2d40';c.fillRect(10,176,300,6);
+    M.forEach((m,i)=>{const x=10+m.at/DUR*300;c.fillStyle=res[i]!==null?'#888':m.c;c.fillRect(x-2,166,4,26);c.fillStyle='#fff';c.font='6px '+PIX;c.textAlign='center';c.textBaseline='alphabetic';c.fillText(m.t,x-(i===1?6:i===2?0:0),i===1?160:i===2?154:160);if(res[i]!==null)c.fillText('★'.repeat(res[i]),x,204);});
+    const px=10+Math.min(t,DUR)/DUR*300;c.fillStyle='#e62b1e';c.fillRect(px-1,160,3,38);
     const pp=$('#cum');if(pp)pp.textContent=msg;
-    if(t>DUR+1.2){clearInterval(MINI.iv);const s=res.reduce((a,b)=>a+(b||0),0);openMini(`<h2>Talk finito in tempo</h2><p class="q">${esc(cfg.out||'Applauso in sala.')} Punteggio cue: ${s}/9.</p><div class="row"><button class="btn" id="cuD">Continua</button></div>`,{act:()=>$('#cuD').click()});$('#cuD').onclick=()=>{closeMini();done(s,9);};}},50);}
+    if(t>DUR&&!sc.applause){sc.applause=true;A.stamp();}
+    if(t>DUR+1.6){clearInterval(MINI.iv);const s=res.reduce((a,b)=>a+(b||0),0);openMini(`<h2>Talk finito in tempo</h2><p class="q">${esc(cfg.out||'Applauso in sala.')} Punteggio cue: ${s}/9.</p><div class="row"><button class="btn" id="cuD">Continua</button></div>`,{act:()=>$('#cuD').click()});$('#cuD').onclick=()=>{closeMini();done(s,9);};}},50);}
 
 /* ---------- corsa (XRun) ---------- */
 function runMini(cfg,done){const SECS=cfg.secs||14;let d=0,t=0,fin=false;

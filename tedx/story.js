@@ -45,7 +45,7 @@ TK('n1_open','Accompagna Carlo Pagnini','astra',110,100,NPCx('Carlo Pagnini','96
 TK('n1_tick','Accoglienza all’ingresso','astra',70,350,tm('francesca'),()=>chain(tm('francesca'),['Il sold out è questo: file ordinate, biglietti controllati. Pronto{|a}? Si entra a gruppi.'],()=>ticketsMini({title:'Accoglienza all’Astra',seed:'2024',n:10,year:2024},(s,n)=>{G.met.francesca=1;done('n1_tick',10+s*3,s+'/'+n+' controlli giusti');})));
 TK('n1_cue','Cue per Silvia','astra',110,185,tm('silvia'),()=>chain(tm('silvia'),[
  'Sono Silvia, presento io la serata. Tra poco tocca a Gabriele Pagnini: ricordati, tre minuti, un minuto, stop.',
- 'Tu stai in regia e mostri i segnali al palco. Niente panico: i 18 minuti passano in fretta.'],()=>cueMini({intro:'Primo talk della serata. Mostra i segnali al momento giusto.',out:'Applauso lungo: il TEDxPantano è partito bene.'},(s)=>{G.met.silvia=1;done('n1_cue',15+s*3);})));
+ 'Tu stai in regia e mostri i segnali al palco. Niente panico: i 18 minuti passano in fretta.'],()=>cueMini({speaker:'Gabriele Pagnini',slides:SLIDES['Gabriele Pagnini'],intro:'Gabriele Pagnini sul palco: “Ingegneria del Pensiero”. Mostra i segnali al momento giusto.',out:'Applauso lungo: il TEDxPantano è partito bene.'},(s)=>{G.met.silvia=1;done('n1_cue',15+s*3);})));
 TK('n1_fin','Dopo l’ultimo talk','astra',360,126,tm('christian'),()=>chain(tm('christian'),[
  'Dieci speaker, un cinema-teatro pieno. Abbiamo fatto TEDxPantano.',
  'Non c’erano mai stati tanti volontari tutti insieme nello stesso posto, a Pesaro, per qualcosa di così.',
@@ -73,7 +73,7 @@ TK('n2_tick','Accoglienza e accrediti','scavolini',330,497,tm('francesca'),()=>c
 TK('n2_back','Accompagna gli speaker','scavolini',150,78,spk('Vera Gheno'),()=>chain(spk('Vera Gheno'),[
  'Il mio talk è sull’intreccio tra lingua e realtà: l’ho scritto io, ci lavoro da settimane, e stasera lo porto qui. Un po’ di ansia c’è sempre.',
  {q:'Come la tranquillizzi prima del palco?',c:[['Respira, hai solo 18 minuti e una sola idea.','Grazie: è proprio quello che mi serviva.',2],['Dai, vai e basta.','Eh... un po’ meno aiuto.',0],['Ti accompagno fino all’ultimo passo.','Che gentile: ci sto.',1]]}],g=>done('n2_back',15+g*5)));
-TK('n2_cue','Il timer dei 18 minuti','scavolini',600,76,tm('daniele'),()=>chain(tm('daniele'),['Sono Daniele, lo Stage Manager. Per questo talk ti affido il timer: tre minuti, un minuto, stop.'],()=>cueMini({intro:'Zico Pieri sul palco: “La magia del confine tra il possibile e l’impossibile”.',out:'Standing ovation.'},s=>{G.met.daniele=1;done('n2_cue',15+s*3);})));
+TK('n2_cue','Il timer dei 18 minuti','scavolini',600,76,tm('daniele'),()=>chain(tm('daniele'),['Sono Daniele, lo Stage Manager. Per questo talk ti affido il timer: tre minuti, un minuto, stop.'],()=>cueMini({speaker:'Zico Pieri',slides:SLIDES['Zico Pieri'],intro:'Zico Pieri sul palco: “La magia del confine tra il possibile e l’impossibile”.',out:'Standing ovation.'},s=>{G.met.daniele=1;done('n2_cue',15+s*3);})));
 TK('n2_fin','Fine di Intrecci','scavolini',400,216,tm('christian'),()=>chain(tm('christian'),[
  'Otto speaker, una platea piena, un auditorium vero. Intrecci è stato un intreccio anche di mani: quasi 40 volontari.',
  {q:'Come ti senti?',c:[['Stanchissim{o|a}, ma felice.','Il mix perfetto.',1],['Orgoglios{o|a} di aver fatto parte della squadra.','Anche noi di te.',1],['Voglio fare di più l’anno prossimo.','Ti prendiamo in parola.',1]]}],()=>done('n2_fin',25)));
@@ -120,7 +120,7 @@ TK('n3_tick','Accoglienza e biglietti','scavolini',330,497,tm('francesca'),()=>c
 TK('n3_back','La presentatrice','scavolini',300,78,tm('sara'),()=>chain(tm('sara'),[
  'Sono Sara, ma sul palco sono “essenonesiste”. Presento io: otto interventi, nove persone sul palco, perché il talk di Rondine è a due voci.',
  {q:'Qualcosa da dirle prima di salire?',c:[['In bocca al lupo, siamo con te.','Crepi! Mi serviva.',2],['Sbrigati, sei in ritardo.','Eh... meglio non iniziare con questa.',0],['Ti porto un bicchiere d’acqua.','Grazie, gentile.',1]]}],g=>{G.met.sara=1;done('n3_back',15+g*5);}));
-TK('n3_cue','Il timer dei 18 minuti','scavolini',600,76,tm('daniele'),()=>chain(tm('daniele'),['Sei il mio braccio destro in regia. Rodolfo Canestrari sale ora: ricordati i segnali.'],()=>cueMini({intro:'Rodolfo Canestrari sul palco: “Quando le tue radici sono lunghe 15.000 chilometri”.',out:'La sala applaude in piedi.'},s=>{done('n3_cue',15+s*3);})));
+TK('n3_cue','Il timer dei 18 minuti','scavolini',600,76,tm('daniele'),()=>chain(tm('daniele'),['Sei il mio braccio destro in regia. Rodolfo Canestrari sale ora: ricordati i segnali.'],()=>cueMini({speaker:'Rodolfo Canestrari',slides:SLIDES['Rodolfo Canestrari'],intro:'Rodolfo Canestrari sul palco: “Quando le tue radici sono lunghe 15.000 chilometri”.',out:'La sala applaude in piedi.'},s=>{done('n3_cue',15+s*3);})));
 TK('n3_fin','Radici è finito','scavolini',400,216,tm('christian'),()=>chain(tm('christian'),[
  'La prima edizione è stata una scommessa, la seconda una conferma, oggi TEDx Pesaro è un progetto culturale stabile.',
  'Ma non finisce qui: ci sono ancora le Adventure dell’autunno. Gradara Ludens, Fano Comics, e la consegna dei giochi.'],()=>done('n3_fin',25)));
