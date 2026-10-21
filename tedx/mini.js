@@ -57,21 +57,56 @@ function comicMini(done){const pick=[];let i=0;
     $('#miniB').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const o=q.o[+b.dataset.k];pick.push(i===0?o[0]:o[1]);A.blip();i++;show();});};
   show();}
 
-/* ---------- convincere uno speaker ---------- */
+/* ---------- convincere uno speaker: approcci, obiezioni e domande finali cambiano per ogni persona e per ogni tentativo ---------- */
 const PTRAIT={
- entusiasta:{open:'Che bella proposta! Un TEDx a Pesaro... mi incuriosisce, dimmi tutto.',obj:'Mi piace! Ma poi cosa devo preparare, esattamente?',opts:[['Un talk sotto i 18 minuti, una sola idea: ti seguiamo noi nella preparazione.',2],['Una presentazione con tantissime slide e dati.',0],['Decidi tu: noi non c’entriamo.',0]]},
- pratico:{open:'Mi interessa, ma prima vorrei capire come funziona la cosa.',obj:'Quanto tempo mi porta via? E la logistica?',opts:[['Ti mandiamo un calendario chiaro: prove, tecnica, arrivo, tutto pianificato.',2],['Non ti preoccupare, si vedrà.',0],['Ci sono diverse riunioni, ma ne vale la pena.',1]]},
- riflessivo:{open:'Ci devo pensare. Per me un talk è una cosa seria: non voglio dire cose a caso.',obj:'Non so se la mia idea sia adatta a un palco...',opts:[['Ti ascoltiamo e la modelliamo insieme, senza snaturarla.',2],['Basta che sia famosa.',0],['Se hai dubbi, lasciamo stare.',0]]},
- impegnato:{open:'Un TEDx... bella cosa. Ma sono molto preso in questo periodo.',obj:'Ho l’agenda piena fino a primavera...',opts:[['Capiamo: ti proponiamo prove brevi e a distanza, adatte ai tuoi tempi.',2],['Allora non fa niente...',0],['È un onore: devi trovare il tempo.',0]]}};
-const POPT=[['Ti racconto cos’è TEDx Pesaro e perché la tua idea merita il palco.',{entusiasta:2,pratico:1,riflessivo:1,impegnato:1},'Ti spiego il progetto: un’associazione di volontari, un evento senza scopo di lucro, una sola idea per talk.'],
- ['Con il tuo nome porteremo un sacco di pubblico.',{entusiasta:1,pratico:0,riflessivo:0,impegnato:0},'Il nome è importante, ma ci interessa l’idea.'],
- ['Raccontami l’idea: ti aiuto a limarla.',{entusiasta:1,pratico:1,riflessivo:2,impegnato:1},'Mi piacerebbe sentire la tua idea, prima di tutto.'],
- ['Ti offriamo un compenso per venire.',{entusiasta:-1,pratico:-1,riflessivo:-1,impegnato:-1},'Aspetta: ricordo che nei TEDx gli speaker non vengono pagati. Non è questo il punto.']];
+ entusiasta:{open:['Che bella proposta! Un TEDx a Pesaro... mi incuriosisce, dimmi tutto.','Ah, TEDx! Ne ho sentito parlare benissimo. Racconta.','Interessante! Ho un po’ di idee in testa, ma dimmi prima tu.'],
+  obj:[{t:'Mi piace! Ma poi cosa devo preparare, esattamente?',o:[['Un talk sotto i 18 minuti, una sola idea: ti seguiamo noi nella preparazione.',2],['Una presentazione con tantissime slide e dati.',0],['Decidi tu: noi non c’entriamo.',0]]},
+       {t:'Però voglio fare qualcosa di mio, non un discorso ingessato.',o:[['Certo: l’importante è una sola idea, raccontata a modo tuo.',2],['Ti scriviamo noi il testo.',0],['Dipende, vediamo se è adatto.',1]]},
+       {t:'E se esagero con l’entusiasmo e vado fuori tempo?',o:[['Il timer ti aiuta: segnali a 3 minuti, a 1 minuto e allo stop.',2],['Tranquillo: nessuno ti ferma.',0],['Per questo tagliamo tutto a 10 minuti.',1]]}]},
+ pratico:{open:['Mi interessa, ma prima vorrei capire come funziona la cosa.','Ok, dimmi i fatti: cosa, quando, dove.','Pensiamoci in concreto: cosa serve da parte mia?'],
+  obj:[{t:'Quanto tempo mi porta via? E la logistica?',o:[['Ti mandiamo un calendario chiaro: prove, tecnica, arrivo, tutto pianificato.',2],['Non ti preoccupare, si vedrà.',0],['Ci sono diverse riunioni, ma ne vale la pena.',1]]},
+       {t:'Chi si occupa della parte tecnica, microfoni e slide?',o:[['Un team dedicato: tu porti l’idea, noi prepariamo tutto.',2],['Arrangiati con il tuo computer.',0],['Ne parliamo il giorno stesso.',1]]},
+       {t:'E per spostamenti e orari, come funziona?',o:[['Ti indichiamo orari e punto d’incontro, e un volontario ti accompagna.',2],['Vedi tu.',0],['Chiedi agli altri speaker.',1]]}]},
+ riflessivo:{open:['Ci devo pensare. Per me un talk è una cosa seria: non voglio dire cose a caso.','Mi piacerebbe, ma ho bisogno di capire il senso di tutto.','Prima di rispondere vorrei sapere che cosa vi aspettate da me.'],
+  obj:[{t:'Non so se la mia idea sia adatta a un palco...',o:[['Ti ascoltiamo e la modelliamo insieme, senza snaturarla.',2],['Basta che sia famosa.',0],['Se hai dubbi, lasciamo stare.',0]]},
+       {t:'Ho paura di semplificare troppo un tema complesso.',o:[['Una sola idea, anche profonda: la complessità si può raccontare con un esempio.',2],['Non importa, tanto non se ne accorge nessuno.',0],['Dividi il tema in cinque parti.',1]]},
+       {t:'Che spazio c’è per le sfumature in 18 minuti?',o:[['Più di quanto sembri: una buona idea ha bisogno di poche parole ben scelte.',2],['Poco: bisogna dire sì o no.',0],['Si fa quel che si può.',1]]}]},
+ impegnato:{open:['Un TEDx... bella cosa. Ma sono molto preso in questo periodo.','Interessante, ma ho l’agenda piena: dimmi cosa serve.','Mi fa piacere, davvero. Il problema è il tempo.'],
+  obj:[{t:'Ho l’agenda piena fino a primavera...',o:[['Capiamo: ti proponiamo prove brevi e a distanza, adatte ai tuoi tempi.',2],['Allora non fa niente...',0],['È un onore: devi trovare il tempo.',0]]},
+       {t:'Non posso mica venire a Pesaro dieci volte.',o:[['Bastano due o tre incontri, il resto lo facciamo online.',2],['Dobbiamo vederci ogni settimana.',0],['Allora lascia perdere.',0]]},
+       {t:'Posso limitarmi a venire il giorno stesso?',o:[['Una prova breve prima aiuta, ma ci adattiamo ai tuoi impegni.',2],['No, è obbligatorio essere presenti sempre.',0],['Se proprio non puoi...',1]]}]}};
+const POOL1=[
+ {t:'Ti racconto cos’è TEDx Pesaro e perché la tua idea merita il palco.',s:{entusiasta:2,pratico:1,riflessivo:1,impegnato:1},r:'Ti spiego il progetto: un’associazione di volontari, un evento senza scopo di lucro, una sola idea per talk.'},
+ {t:'Mi piace molto quello che fai{info}: vorremmo che lo raccontassi qui.',s:{entusiasta:2,pratico:1,riflessivo:1,impegnato:1},r:'Ho seguito il tuo lavoro e mi è sembrato adatto al nostro palco.'},
+ {t:'Raccontami l’idea: ti aiuto a limarla.',s:{entusiasta:1,pratico:1,riflessivo:2,impegnato:1},r:'Mi piacerebbe sentire la tua idea, prima di tutto.'},
+ {t:'Il palco è piccolo ma la comunità è vera: persone che ascoltano davvero.',s:{entusiasta:2,pratico:0,riflessivo:2,impegnato:1},r:'È un pubblico curioso: viene per le idee, non per i nomi.'},
+ {t:'Ti garantiamo un percorso di preparazione chiaro, tappa per tappa.',s:{entusiasta:1,pratico:2,riflessivo:1,impegnato:2},r:'Niente improvvisazione: sai cosa succede e quando.'},
+ {t:'Una sola idea, meno di 18 minuti: poche parole ben scelte.',s:{entusiasta:1,pratico:2,riflessivo:2,impegnato:1},r:'È la regola dei TEDx: breve, concreto, memorabile.'},
+ {t:'Ti offriamo un compenso per venire.',s:{entusiasta:-1,pratico:-1,riflessivo:-1,impegnato:-1},r:'Aspetta: nei TEDx gli speaker non vengono pagati, e non pagano. Non è questo il punto.'},
+ {t:'Con il tuo nome porteremo un sacco di pubblico.',s:{entusiasta:1,pratico:0,riflessivo:0,impegnato:0},r:'Il nome è importante, ma ci interessa soprattutto l’idea.'},
+ {t:'Dal palco puoi promuovere il tuo libro o la tua attività.',s:{entusiasta:-1,pratico:-1,riflessivo:-1,impegnato:-1},r:'No, un attimo: i TEDx non ammettono promozione commerciale dal palco.'},
+ {t:'Dai, non farti pregare: dobbiamo chiudere il programma.',s:{entusiasta:-1,pratico:-1,riflessivo:-1,impegnato:-1},r:'Non mi piace essere messo sotto pressione. Così non ci siamo.'},
+ {t:'Gli sponsor possono suggerirti cosa dire.',s:{entusiasta:-1,pratico:-1,riflessivo:-1,impegnato:-1},r:'Mi sembra strano: gli sponsor non dovrebbero decidere i contenuti.'}];
+const POOL3=[
+ {t:'Dove ci vediamo per le prove?',o:[['Online per le prime, poi una prova in sala.',2],['Il giorno stesso, con calma.',0],['Quando vuoi tu, ma porta le slide pronte.',1]]},
+ {t:'E se mi blocco sul palco?',o:[['Hai il timer, un volontario dietro le quinte e nessuna fretta: ti aiutiamo noi.',2],['Non succede.',0],['Improvvisa.',0]]},
+ {t:'Posso portare il mio libro o il mio prodotto?',o:[['Si parla dell’idea, non si fa promozione: ma il tuo nome sarà nel programma.',2],['Sì, certo: vendilo.',0],['Chiedilo agli sponsor.',0]]},
+ {t:'Il mio talk verrà pubblicato?',o:[['Sì: i video seguono le regole TEDx e vengono pubblicati online.',2],['Forse.',1],['No, resta in sala.',0]]},
+ {t:'Posso portare qualcuno con me?',o:[['Certo: ti riserviamo due posti e un volontario per accompagnarti.',2],['No, nessuno.',0],['Solo se paga il biglietto.',1]]}];
 function persuade(npc,trait,onDone){
   const T=PTRAIT[trait]||PTRAIT.entusiasta;let score=0,tries=0;
-  const start=()=>{score=0;const open={t:T.open,nx:r1()};say(npc,open,null);};
-  const r1=()=>({t:'Come la imposti?',c:POPT.map(o=>({t:o[0],act:()=>{score+=o[1][trait]||0;},n:{t:o[2],nx:()=>r2()}}))});
-  const r2=()=>({t:T.obj,nx:()=>({t:'Come rispondi?',c:T.opts.map(o=>({t:o[0],act:()=>{score+=o[1];},n:{t:o[1]>=2?'Va bene, mi hai convinto.':o[1]===1?'Mmm... forse, sì.':'Non mi convince.',nx:()=>fin()}}))})});
-  const fin=()=>{if(score>=3){return{t:'Va bene: ci sto. Mandatemi i dettagli e cominciamo a lavorare al talk!',c:[{t:'Grazie! A presto.',n:null,act:()=>onDone(true)}]};}
-    tries++;return{t:'Grazie del tempo, ma ora non me la sento. Riparliamone con calma.',c:[{t:'Riprovo con un altro approccio',n:null,act:()=>start()},{t:'Rinuncio per ora (la squadra se ne occupa)',n:null,act:()=>onDone(false)}]};};
-  const open0={t:T.open,nx:r1()};say(npc,open0);}
+  const seed=()=>mulberry32(hashStr('prs|'+npc.name+'|'+tries));
+  const info=SPK_INFO[npc.name]?' come '+SPK_INFO[npc.name]:'';
+  const start=()=>{score=0;const r=seed();
+    const goods=shuffle(POOL1.filter(o=>Math.max(...Object.values(o.s))>0&&o.s.entusiasta!==undefined&&o.s[trait]>=1),r).slice(0,r()<.5?2:3);
+    const bads=shuffle(POOL1.filter(o=>!goods.includes(o)&&(o.s[trait]||0)<=0),r).slice(0,4-goods.length);
+    const o1=shuffle([...goods,...bads],r);
+    const ob=T.obj[Math.floor(r()*T.obj.length)],o2=shuffle(ob.o,r),q3=POOL3[Math.floor(r()*POOL3.length)],o3=shuffle(q3.o,r);
+    const op=T.open[Math.floor(r()*T.open.length)];
+    const fin=()=>{const need=4;if(score>=need){return{t:'Va bene: ci sto. Mandatemi i dettagli e cominciamo a lavorare al talk!',c:[{t:'Grazie! A presto.',n:null,act:()=>onDone(true)}]};}
+      tries++;return{t:'Grazie del tempo, ma ora non me la sento. Riparliamone con calma.',c:[{t:'Riprovo con un altro approccio',n:null,act:()=>start()},{t:'Rinuncio per ora (la squadra se ne occupa)',n:null,act:()=>onDone(false)}]};};
+    const r3={t:q3.t,c:o3.map(o=>({t:o[0],act:()=>{score+=o[1];},n:{t:o[1]>=2?'Perfetto, mi hai convinto.':o[1]===1?'Mmm... forse sì.':'Non mi convince.',nx:()=>fin()}}))};
+    const r2={t:ob.t,nx:{t:'Come rispondi?',c:o2.map(o=>({t:o[0],act:()=>{score+=o[1];},n:{t:o[1]>=2?'Va bene, questo mi piace.':o[1]===1?'Mmm... forse.':'Non mi convince.',nx:r3}}))}};
+    const r1={t:'Come la imposti?',c:o1.map(o=>({t:o.t.replace('{info}',info),act:()=>{score+=o.s[trait]||0;},n:{t:o.r,nx:r2}}))};
+    say(npc,{t:op,nx:r1});};
+  start();}

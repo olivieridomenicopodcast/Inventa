@@ -74,7 +74,7 @@ function palOf(name,extra){const r=mulberry32(hashStr('pal|'+name)),f=isF(name);
 let PLAYER={name:'Volontario',g:'m',si:0,ki:1,hi:0,hs:'short'};
 function playerLook(){return{shirt:SHIRTS[PLAYER.si%SHIRTS.length],pants:'#232a44',skin:SKINC[PLAYER.ki%SKINC.length],hair:HAIRC[PLAYER.hi%HAIRC.length],long:PLAYER.hs==='long',bald:PLAYER.hs==='bald',badge:'#e62b1e',phones:!!PLAYER.phones,gphones:!!PLAYER.gph};}
 const gx=(s)=>String(s).replace(/\{([^|}]*)\|([^}]*)\}/g,(m,o,a)=>PLAYER.g==='f'?a:o);
-function drawFace(cn,p){const x=cn.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,cn.width,cn.height);x.fillStyle='#1b1b28';x.fillRect(0,0,cn.width,cn.height);x.fillStyle='#2d2d44';x.fillRect(0,cn.height-5,cn.width,5);x.save();x.scale(cn.width/12,cn.width/12);person(x,6,13.5,0,0,Object.assign({},p,{badge:p.badge}));x.restore();}
+function drawFace(cn,p){const x=cn.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,cn.width,cn.height);x.fillStyle='#1b1b28';x.fillRect(0,0,cn.width,cn.height);x.fillStyle='#2d2d44';x.fillRect(0,cn.height-5,cn.width,5);x.save();x.scale(cn.width/12,cn.width/12);person(x,6,24,0,0,p);x.restore();}
 const _faceC={};function faceURL(p){const key=JSON.stringify(p);if(_faceC[key])return _faceC[key];const c=document.createElement('canvas');c.width=c.height=30;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#1b1b28';x.fillRect(0,0,30,30);x.fillStyle='#2d2d44';x.fillRect(0,25,30,5);x.save();x.scale(2.5,2.5);person(x,6,24,0,0,p);x.restore();return _faceC[key]=c.toDataURL();}
 const faceImg=(p,cls)=>`<img class="${cls||''}" src="${faceURL(p)}" alt="">`;
 
