@@ -158,19 +158,19 @@ TK('n4_end','Il 21 marzo 2027','sede',300,106,tm('christian'),()=>chain(tm('chri
 const CH=[
  {id:'p',year:'Febbraio 2024',title:'Nasce Spazio Rosso',intro:'1° febbraio 2024. Un’associazione di volontari vuole portare TEDx a Pesaro. Tu entri in squadra.',start:{map:'sede',x:260,y:290},phases:[{name:'La squadra',tasks:['p1','p2','p3']}],outro:'Febbraio 2024. La licenza sarà in viaggio, il nome sarà TEDxPantano. Si parte.'},
  {id:'2024',year:'2024',title:'TEDxPantano · Limiti',intro:'22 marzo 2024, Cinema Teatro Astra. La prima edizione di TEDx a Pesaro, nell’anno di Pesaro Capitale italiana della Cultura. Tema: “Limiti”.',start:{map:'sede',x:260,y:290},
-  phases:[{name:'Organizzazione',tasks:['n1_nome','n1_sp1','n1_sp2','n1_sp3','n1_astra','n1_vol']},{name:'22 marzo 2024 · Astra',card:'22 marzo 2024, ore 20. Si apre la prima edizione.',start:{map:'astra',x:75,y:390},tasks:['n1_open','n1_tick','n1_cue','n1_fin']}],
+  phases:[{name:'Organizzazione',tasks:['n1_nome','n1_sp1','n1_sp2','n1_sp3','n1_astra','n1_vol']},{name:'22 marzo 2024 · Astra',card:'22 marzo 2024, ore 20. Si apre la prima edizione.',start:{map:'astra',x:75,y:390},seq:1,tasks:['n1_tick','n1_open','n1_cue','n1_fin']}],
   outro:'Sold out. Dieci speaker, un cinema-teatro pieno, una squadra che non si fermerà.',stage:2024},
  {id:'2025',year:'2025',title:'TEDx Pesaro · Intrecci',intro:'Marzo 2025. Il nome diventa TEDx Pesaro e la sede l’Auditorium Scavolini. Tema: “Intrecci”.',start:{map:'sede',x:260,y:290},
-  phases:[{name:'Organizzazione',tasks:['n2_nome','n2_sp1','n2_sp2','n2_sp3','n2_spons','n2_vol']},{name:'22 marzo 2025 · Scavolini',card:'22 marzo 2025. L’Auditorium Scavolini apre le porte.',start:{map:'scavolini',x:400,y:630},tasks:['n2_setup','n2_tick','n2_back','n2_cue','n2_fin']},{name:'Il giorno dopo',card:'Domenica. Il giorno dopo, tutta Pesaro corre.',start:{map:'pesaro',x:470,y:460},tasks:['n2_corsa']}],
+  phases:[{name:'Organizzazione',tasks:['n2_nome','n2_sp1','n2_sp2','n2_sp3','n2_spons','n2_vol']},{name:'22 marzo 2025 · Scavolini',card:'22 marzo 2025. L’Auditorium Scavolini apre le porte.',seq:1,start:{map:'scavolini',x:400,y:630},tasks:['n2_setup','n2_tick','n2_back','n2_cue','n2_fin']},{name:'Il giorno dopo',card:'Domenica. Il giorno dopo, tutta Pesaro corre.',start:{map:'pesaro',x:470,y:460},tasks:['n2_corsa']}],
   outro:'Otto speaker, quasi 40 volontari. TEDx Pesaro ha una casa.',stage:2025},
  {id:'2026',year:'2026',title:'TEDx Pesaro · Radici',intro:'2026. Terza edizione, “Radici”. Oltre al palco, le Adventure: eventi fuori dal palco, in giro per Pesaro, Fano e Gradara.',start:{map:'sede',x:260,y:290},
   phases:[{name:'Organizzazione',tasks:['n3_nome','n3_sp1','n3_sp2','n3_sp3','n3_rondine','n3_spons','n3_plus']},
    {name:'Adventure · febbraio e marzo',card:'Febbraio 2026. Le Adventure portano TEDx fuori dal palco.',start:{map:'pesaro',x:470,y:470},tasks:['n3_gen','n3_par','n3_gent','n3_cibo','n3_xrun']},
-   {name:'22 marzo 2026 · Scavolini',card:'22 marzo 2026, dalle 15:30 alle 19:00. Radici.',start:{map:'scavolini',x:400,y:630},tasks:['n3_setup','n3_tick','n3_back','n3_cue','n3_fin']},
+   {name:'22 marzo 2026 · Scavolini',card:'22 marzo 2026, dalle 15:30 alle 19:00. Radici.',seq:1,start:{map:'scavolini',x:400,y:630},tasks:['n3_setup','n3_tick','n3_back','n3_cue','n3_fin']},
    {name:'Adventure · autunno',card:'Settembre e ottobre 2026. Le Adventure continuano.',start:{map:'pesaro',x:470,y:470},tasks:['n3_gquiz','n3_gdono','n3_abio','n3_fumetto']}],
   outro:'Otto interventi, nove speaker, oltre 600 biglietti. E un autunno di giochi, fumetti e solidarietà.',stage:2026},
  {id:'2027',year:'2027',title:'Verso il 21 marzo 2027',intro:'Autunno 2026, verso il 2027. I Consiglieri raccolgono le autocandidature per il palco.',start:{map:'pesaro',x:470,y:470},
-  phases:[{name:'Verso il 2027',tasks:['n4_box','n4_vote','n4_niky','n4_end']}],outro:'Il 21 marzo 2027, all’Auditorium Scavolini, TEDx Pesaro tornerà. Il resto ancora da scrivere.',final:true}];
+  phases:[{name:'Verso il 2027',seq:1,tasks:['n4_box','n4_vote','n4_niky','n4_end']}],outro:'Il 21 marzo 2027, all’Auditorium Scavolini, TEDx Pesaro tornerà. Il resto ancora da scrivere.',final:true}];
 
 /* ===================== stato e flusso ===================== */
 function newState(){return{ch:0,ph:0,done:{},sub:{},pts:0,met:{},spk:{},vol:0,tree:0,stage:{},map:'sede',score:{},ended:false};}
@@ -178,7 +178,8 @@ const curCh=()=>CH[G.ch],curPh=()=>CH[G.ch].phases[G.ph];
 const phaseTasks=()=>curPh().tasks.map(id=>TASKS[id]);
 const subCount=id=>Object.keys(G.sub[id]||{}).length;
 function subDone(id,i){(G.sub[id]=G.sub[id]||{})[i]=1;}
-function activeTasks(){return phaseTasks().filter(t=>!G.done[t.id]);}
+function activeTasks(){const l=phaseTasks().filter(t=>!G.done[t.id]);return curPh().seq?l.slice(0,1):l;}
+const lockedTasks=()=>{const a=activeTasks().map(t=>t.id);return phaseTasks().filter(t=>!G.done[t.id]&&!a.includes(t.id));};
 function save(){if(!G)return;const d=Object.assign({},G,{map:G.map,x:PL.x,y:PL.y});lsSet('tedx.save',{G:d,P:PLAYER});}
 function finishTask(id,pts,msg){if(G.done[id])return;G.done[id]=1;G.pts+=pts;G.tree++;A.stamp();toast((msg||'Fatto')+' · +'+pts,2800);save();STORY.populate(G.map);
   if(activeTasks().length===0)setTimeout(phaseComplete,900);}
@@ -207,8 +208,9 @@ const CROWD={sede:0,pesaro:6,astra:0,scavolini:0,gradara:7,fano:7,farina:2,forum
 const LINES=['Che bella giornata per un TEDx.','Ho sentito dire che ci sono idee molto interessanti.','Sono venut{o|a} da fuori città: mi hanno parlato bene.','Peccato per la coda, ma ne valeva la pena.','Mi piace che sia fatto tutto da volontari.','Sai dov’è il bar?'];
 const STORY={
  populate(mapId){NPCS=[];const m=MAPS[mapId];if(!m||!G)return;
-  const ph=curPh(),tasks=phaseTasks().filter(t=>!G.done[t.id]&&t.map===mapId&&!t.multi);
+  const ph=curPh(),tasks=activeTasks().filter(t=>t.map===mapId&&!t.multi);
   tasks.forEach(t=>{const w=t.who;NPCS.push({x:t.x,y:t.y,dir:0,name:w.name,role:w.role,p:w.p,mark:true,show:true,task:t.id});});
+  lockedTasks().filter(t=>t.map===mapId&&!t.multi&&t.who).forEach(t=>{NPCS.push({x:t.x,y:t.y,dir:0,name:t.who.name,role:t.who.role,p:t.who.p,show:true,talk:true,locked:t.id});});
   const inTasks=new Set(tasks.map(t=>t.who&&t.who.key));
   (AMB[mapId]||[]).forEach(([k,x,y,minCh])=>{if(G.ch<minCh||inTasks.has(k))return;const T0=TEAM[k];if(!T0)return;const f=freeSpot(m,x,y);NPCS.push({x:f[0],y:f[1],dir:0,name:T0.n,role:T0.r,p:palOf(T0.n),team:k,show:true,talk:true});});
   const dday=/22 marzo/.test(ph.name||'');let nCrowd=CROWD[mapId]||0;if(dday&&(mapId==='astra'))nCrowd=12;if(dday&&mapId==='scavolini')nCrowd=G.ch>=3?18:14;
@@ -229,7 +231,8 @@ const STORY={
   return{map:best.map,x:best.x,y:best.y,label:best.who.name};},
  drawWorld(c,m){for(const t of activeTasks()){if(!t.multi||t.map!==m.id)continue;t.multi.forEach((s,i)=>{if(G.sub[t.id]&&G.sub[t.id][i])return;const b=Math.sin(T*5+i)>0?0:1;c.fillStyle='#ffd24d';c.fillRect(Math.round(s.x)-3,Math.round(s.y)-16+b,6,6);c.fillStyle='#fff6c0';c.fillRect(Math.round(s.x)-1,Math.round(s.y)-15+b,2,2);c.fillStyle='rgba(255,210,77,.25)';c.beginPath();c.ellipse(s.x,s.y,9,4,0,0,7);c.fill();});}}
 };
-function ambient(n){if(n.team){G.met[n.team]=1;chain(n,[(TEAM[n.team]?'Io sono '+TEAM[n.team].n+': '+TEAM[n.team].r+'.':'Ciao!'),'Se ti serve una mano, sai dove trovarci. Grazie di essere con noi.'],()=>{save();});toast('Nel Taccuino: '+n.name,1800);return;}
+function ambient(n){if(n.locked){const a=activeTasks()[0];chain(n,[a?'Adesso non \u00e8 ancora il momento: prima c\u2019\u00e8 da fare altro. Il prossimo passo \u00e8: \u201c'+a.label+'\u201d. Poi torna da me.':'Ci vediamo dopo.']);return;}
+  if(n.team){G.met[n.team]=1;chain(n,[(TEAM[n.team]?'Io sono '+TEAM[n.team].n+': '+TEAM[n.team].r+'.':'Ciao!'),'Se ti serve una mano, sai dove trovarci. Grazie di essere con noi.'],()=>{save();});toast('Nel Taccuino: '+n.name,1800);return;}
   const r=mulberry32(hashStr(n.name+G.ch));chain(n,[LINES[Math.floor(r()*LINES.length)]]);}
 function runTask(t){if(G.done[t.id])return;t.run();}
 
